@@ -1,45 +1,70 @@
 "use server";
-import { eq, not } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
+import { headers } from "next/headers";
 import { todo } from "@/db/schema/schema";
+import { auth } from "@/lib/auth";
 
-export const getData = async () => {
-  const data = await db.select().from(todo);
-  return data;
-};
-
-export const addTodo = async (id: string, text: string) => {
-  await db.insert(todo).values({
-    id: id,
-    text: text,
+export async function getData() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
   });
-};
+  if (!session) throw new Error("Not authenticated");
 
-export const deleteTodo = async (id: string) => {
-  await db.delete(todo).where(eq(todo.id, id));
+  return db.select().from(todo).where(eq(todo.userId, session.user.id));
+}
 
-  revalidatePath("/");
-};
+// adding todo
+export async function addTodo(id: string, text: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Not authenticated");
 
-export const toggleTodo = async (id: string) => {
+  await db.insert(todo).values({
+    id,
+    text,
+    done: false,
+    userId: session.user.id,
+  });
+}
+//--------Edit todo
+export async function editTodo(id: string, newText: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Not authenticated");
+
   await db
     .update(todo)
-    .set({
-      done: not(todo.done),
-    })
-    .where(eq(todo.id, id));
+    .set({ text: newText })
+    .where(and(eq(todo.id, id), eq(todo.userId, session.user.id)));
+}
 
-  revalidatePath("/");
-};
+export async function toggleTodo(id: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Not authenticated");
 
-export const editTodo = async (id: string, text: string) => {
+  // you could also inline a toggle, but here's the safe way:
+  const [t] = await db
+    .select({ done: todo.done })
+    .from(todo)
+    .where(and(eq(todo.id, id), eq(todo.userId, session.user.id)));
+
+  if (!t) throw new Error("Not found or not yours");
+
+  await db.update(todo).set({ done: !t.done }).where(eq(todo.id, id));
+}
+
+export async function deleteTodo(id: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Not authenticated");
+
   await db
-    .update(todo)
-    .set({
-      text: text,
-    })
-    .where(eq(todo.id, id));
-
-  revalidatePath("/");
-};
+    .delete(todo)
+    .where(and(eq(todo.id, id), eq(todo.userId, session.user.id)));
+}
