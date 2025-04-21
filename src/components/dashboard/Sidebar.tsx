@@ -8,10 +8,9 @@ import { LiaTasksSolid } from "react-icons/lia";
 
 import SidebarSection from "./sidebar/sidebar-section";
 import SidebarItem from "./sidebar/sidebar-item";
-import { SignOutButton } from "../auth/sign-out";
-
-
-
+import { usePathname } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import UserProfile from "./sidebar/user-profile";
 
 const navigation = {
   quicklinks: [
@@ -29,19 +28,43 @@ const navigation = {
     },
   ],
   mainMenu: [
-    {id: "dashboard-main", title: "Dashboard", icon: MdDashboard, path: "/dashboard"},
-    {id: "todo-manager", title: "Todos", icon: LiaTasksSolid, path: "/dashboard/tasks"},
-    {id: "bookmark", title: "BookMarks", icon: LiaTasksSolid, path: "/dashboard/bookmarks"}
-  ]
+    {
+      id: "dashboard-main",
+      title: "Dashboard",
+      icon: MdDashboard,
+      path: "/dashboard",
+    },
+    {
+      id: "todo-manager",
+      title: "Todos",
+      icon: LiaTasksSolid,
+      path: "/dashboard/tasks",
+    },
+    {
+      id: "bookmark",
+      title: "BookMarks",
+      icon: LiaTasksSolid,
+      path: "/dashboard/bookmarks",
+    },
+  ],
 };
-
-
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
+  const { data } = authClient.useSession();
+
+  //for path checking
+  const isActive = (path: string) => {
+    // For the dashboard main page, only be active on exact match
+    if (path === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+    return pathname === path || pathname?.startsWith(`${path}/`);
+  };
   return (
     <div
-      className={`relative h-screen bg-[#1a1a1a] border-r border-gray-800 transition-all duration-200 ease-in-out ${
+      className={`relative h-screen  bg-[#1a1a1a] border-r border-gray-800 transition-all duration-200 ease-in-out  ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
@@ -60,16 +83,27 @@ export default function Sidebar() {
         </button>
       </div>
       {/* sidebar menu items */}
-    
-        <SidebarSection title="Main Menu">
-          {navigation.mainMenu.map((item)=> (
-            <SidebarItem href={item.path} key={item.id} label={item.title} icon={<item.icon/>}/>
-          ))}
-        </SidebarSection>
-        {/* Sidebar Projects Section */}
-      
-      <SignOutButton/>
-     
+
+      <SidebarSection title="Main Menu" isCollapsed={isCollapsed}>
+        {navigation.mainMenu.map((item) => (
+          <SidebarItem
+            href={item.path}
+            key={item.id}
+            label={item.title}
+            icon={<item.icon />}
+            isActive={isActive(item.path)}
+            isCollapsed={isCollapsed}
+          />
+        ))}
+      </SidebarSection>
+      {/* Sidebar Projects Section */}
+      <div className="p-4 bottom-0 fixed">
+        <UserProfile
+          name={data?.user.name || ""}
+          email={data?.user.email || ""}
+          avatarUrl={data?.user.image || ""}
+        />
+      </div>
     </div>
   );
 }

@@ -8,8 +8,7 @@ interface SidebarItemProps {
   href: string;
   onClick?: () => void;
   isActive?: boolean;
-  rightIcon?: ReactNode;
-  className?: string;
+  isCollapsed?: boolean;
 }
 
 export default function SidebarItem({
@@ -18,24 +17,23 @@ export default function SidebarItem({
   href,
   onClick,
   isActive = false,
-  rightIcon,
-  className = "",
+  isCollapsed = false,
 }: SidebarItemProps) {
   return (
     <Link href={href}>
-     <motion.div whileHover={{x: 4}} whileTap={{scale: 0.98}}
-      onClick={onClick}
-      className={`flex items-center px-4 py-2 cursor-pointer ${
-        isActive
-          ? "bg-gray-100 text-gray-900 mx-2 rounded-md"
-          : "hover:bg-gray-800 rounded-md mx-2 text-gray-300"
-      } ${className} `}
-    >
-      <div className={`mr-3 ${isActive ? 'text-gray-900' : "text-gray-500"}`}>{icon}</div>
-      <span className="flex-grow font-medium text-sm">{label}</span>
-      {rightIcon && <div className=" ml-2 text-gray-500">{rightIcon}</div>}
-    </motion.div>
+      <motion.div
+        whileHover={{ x: 4 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onClick}
+        className={`flex items-center px-4 py-2 cursor-pointer transition-colors ${
+          isActive
+            ? "bg-gray-100 text-gray-900 mx-2 rounded-md"
+            : "hover:bg-gray-800 rounded-md mx-2 text-gray-300"
+        } ${isCollapsed ? "justify-center" : ""}  `}
+      >
+        <div className={`${isCollapsed ? "" : "mr-3"}`}>{icon}</div>
+        {!isCollapsed && <span className=" font-medium text-sm">{label}</span>}
+      </motion.div>
     </Link>
-   
   );
 }
