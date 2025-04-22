@@ -29,8 +29,8 @@ export default function AddSkillModal({
 
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0  flex items-center justify-center z-50 ">
-      <div className="max-w-md w-full rounded-lg p-6 border border-gray-400">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-xs  flex items-center justify-center z-50 ">
+      <div className="max-w-md w-full rounded-lg p-6 border border-gray-400 bg-white dark:bg-black">
         {/* modal header and closer */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Add New Skill</h2>

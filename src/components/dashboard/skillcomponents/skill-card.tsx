@@ -11,9 +11,9 @@ interface SkillCardProps {
 
 export default function SkillCard({skill, onEdit, onDelete}:SkillCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const percentage = (skill.currentHours / skill.targetHours) * 100;
 
-
-  // formatting time 
+  // formatting time
   const formatTime = (hours: number) => {
     const wholeHours = Math.floor(hours);
     const minutes = Math.round((hours - wholeHours) * 60);
@@ -25,40 +25,62 @@ export default function SkillCard({skill, onEdit, onDelete}:SkillCardProps) {
     } ${minutes} minute'${minutes !== 1 ? "s" : ""}`;
   };
 
-
   return (
-    <div className=' p-2 rounded-md hover:shadow-md border border-gray-500 cursor-pointer'>
+    <div className=" p-4 rounded-xl hover:shadow-md border border-gray-500 cursor-pointer shadow-sm transition-shadow">
       {/* skill card header and expand card */}
-      <div className='flex justify-between items-start mb-4'>
-        <div className=''>
-          <h3 className='text-xl font-medium'>{skill.skillName}</h3>
-          <span className='text-sm'>{skill.category}</span>
+      <div className="flex justify-between items-start mb-4">
+        <div className="">
+          <h3 className="text-xl font-medium">{skill.skillName}</h3>
+          <span className="text-sm">{skill.category}</span>
         </div>
-        <div>
-          <button>
-            <PlusIcon/>
+        <div className="flex items-center gap-2">
+          <button style={{ color: skill.skillColor }}>
+            <PlusIcon />
           </button>
-          <button className='' onClick={()=> setIsExpanded(!isExpanded)}>
-            {isExpanded ? <ChevronUpIcon/> : <ChevronDownIcon/>}
+          <button className="" onClick={() => setIsExpanded(!isExpanded)}>
+            {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
           </button>
         </div>
       </div>
       {/* skill card data */}
-      <div>
-        <div className='flex items-center justify-between'>
+      <div className="mb-2">
+        <div className="flex justify-between text-sm mb-1">
           <span>{formatTime(skill.currentHours)}</span>
           <span>{formatTime(skill.targetHours)}</span>
         </div>
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500 ease-out"
+            style={{
+              width: `${Math.min(percentage, 100)}%`,
+              backgroundColor: skill.skillColor,
+            }}
+          />
+        </div>
+      </div>
+      {/* showign percentage of complete skill */}
+      <div className="flex justify-between items-center text-sm">
+        <div>{percentage.toFixed(1)}% complete</div>
       </div>
       {/* skill card expansion for showing delete and edit button */}
       {isExpanded && (
-        <div>
-          <div>
-            <button onClick={()=> onEdit(skill)}>Edit</button>
-            <button onClick={()=> onDelete(skill.id)}>Delete</button>
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => onEdit(skill)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => onDelete(skill.id)}
+              className="text-sm text-red-600 hover:text-red-700"
+            >
+              Delete
+            </button>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
