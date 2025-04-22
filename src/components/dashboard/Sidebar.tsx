@@ -11,6 +11,7 @@ import SidebarItem from "./sidebar/sidebar-item";
 import { usePathname } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import UserProfile from "./sidebar/user-profile";
+import { ModeToggle } from "../layout/mode-toggle";
 
 const navigation = {
   quicklinks: [
@@ -64,16 +65,19 @@ export default function Sidebar() {
   };
   return (
     <div
-      className={`relative h-screen  bg-[#1a1a1a] border-r border-gray-800 transition-all duration-200 ease-in-out  ${
+      className={`relative h-screen text-white  bg-[#1a1a1a] border-r border-gray-800 transition-all duration-200 ease-in-out  ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
-      <div className="flex items-center justify-between p-4">
-        <div className={`flex items-center `}>
-          <div className="w-8 h-8 rounded-md bg-green-600" />
+      <div className="flex items-center justify-between  p-4">
+        <div className={`flex items-center justify-between gap-2`}>
           {!isCollapsed && (
-            <span className="ml-2 font-semibold">Dashboard</span>
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-md bg-green-600" />
+              <span className="ml-2 font-semibold text-white">Dashboard</span>
+            </div>
           )}
+          <ModeToggle />
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -102,6 +106,7 @@ export default function Sidebar() {
           name={data?.user.name || ""}
           email={data?.user.email || ""}
           avatarUrl={data?.user.image || ""}
+          isCollapsed={isCollapsed}
         />
       </div>
     </div>
