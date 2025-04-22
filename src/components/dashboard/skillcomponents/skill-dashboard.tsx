@@ -4,17 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Skill } from "@/types/skillDashboardTypes";
 import { useState } from "react";
 import SkillCard from "./skill-card";
+import { v4 as uuidv4 } from "uuid";
+import { addSkillCard } from "@/actions/skillCardAction";
 
-export default function SkillDashboard() {
-  const [skills, setSkills] = useState<Skill[]>([]);
+interface skillcardProps {
+  skillcards: Skill[];
+}
+
+export default function SkillDashboard({ skillcards }: skillcardProps) {
+  const [skills, setSkills] = useState<Skill[]>(skillcards);
   const [isSkillmodalOpen, setIsSkillmodalOpen] = useState(false);
 
   const handleAddSkill = (newSkill: Omit<Skill, "id" | "currentHours">) => {
     const skill: Skill = {
       ...newSkill,
-      id: Math.random().toString(36).substr(2, 9),
+      id: uuidv4(),
       currentHours: 0,
     };
+    addSkillCard(skill);
     setSkills((prev) => [...prev, skill]);
   };
 

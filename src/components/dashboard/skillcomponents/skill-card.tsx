@@ -1,15 +1,15 @@
-import { Skill } from '@/types/skillDashboardTypes'
-import { ChevronDownIcon, ChevronUpIcon, PlusIcon } from 'lucide-react'
-import React, { useState } from 'react'
-
+"use client";
+import { Skill } from "@/types/skillDashboardTypes";
+import { ChevronDownIcon, ChevronUpIcon, PlusIcon } from "lucide-react";
+import React, { useState } from "react";
 
 interface SkillCardProps {
-  skill: Skill
-  onEdit: (skill: Skill) => void
-  onDelete: (id: string) => void
+  skill: Skill;
+  onEdit: (skill: Skill) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function SkillCard({skill, onEdit, onDelete}:SkillCardProps) {
+export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const percentage = (skill.currentHours / skill.targetHours) * 100;
 
