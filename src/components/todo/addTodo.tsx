@@ -1,5 +1,5 @@
 "use client";
-import { ChangeEvent, FC, useState } from "react";
+import { FC, useState } from "react";
 
 interface Props {
   createTodo: (value: string) => void;
@@ -8,11 +8,6 @@ interface Props {
 const AddTodo: FC<Props> = ({ createTodo }) => {
   // State for handling input value
   const [input, setInput] = useState("");
-
-  // Event handler for input change
-  const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-  };
 
   // Event handler for adding a new todo
   const handleAdd = async () => {
@@ -27,7 +22,7 @@ const AddTodo: FC<Props> = ({ createTodo }) => {
       <input
         type="text"
         className="w-full px-2 py-1 border border-gray-200 rounded outline-none"
-        onChange={handleInput}
+        onChange={(e) => setInput(e.target.value)}
         value={input}
       />
       {/* Button for adding a new todo */}

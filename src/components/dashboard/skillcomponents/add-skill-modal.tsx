@@ -1,18 +1,31 @@
+"use client";
+import { Button } from "@/components/ui/button";
+import { Skill } from "@/types/skillDashboardTypes";
 import { XIcon } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 
 interface AddSkillModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAddSkill: (skill: Omit<Skill, "id" | "currentHours">) => void;
 }
 
-export default function AddSkillModal({ isOpen, onClose }: AddSkillModalProps) {
+export default function AddSkillModal({
+  isOpen,
+  onClose,
+  onAddSkill,
+}: AddSkillModalProps) {
   const [formData, setFormData] = useState({
     skillName: "",
     category: "",
     targetHours: 10000,
     skillColor: "#6366f1",
   });
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAddSkill(formData);
+    onClose();
+  };
 
   if (!isOpen) return null;
   return (
@@ -29,7 +42,7 @@ export default function AddSkillModal({ isOpen, onClose }: AddSkillModalProps) {
           </button>
         </div>
         {/* skill form */}
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* skill name */}
             <div>
@@ -98,6 +111,15 @@ export default function AddSkillModal({ isOpen, onClose }: AddSkillModalProps) {
                 }
                 className="block mt-1 w-full h-10 rounded-md border border-gray-400 "
               />
+            </div>
+            {/* form buttons */}
+            <div className="mt-3 flex justify-end space-x-3">
+              <Button variant={"outline"} onClick={onClose}>
+                Cancel
+              </Button>
+              <Button variant={"default"} type="submit">
+                Add Skill
+              </Button>
             </div>
           </div>
         </form>

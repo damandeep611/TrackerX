@@ -1,8 +1,8 @@
 export interface Skill {
-  id: string
-  name: string
-  category: string
-  targetHours: number
-  currentHours: number
-  color: string
+  id: string;
+  skillName: string;
+  category: string;
+  targetHours: number;
+  currentHours: number;
+  skillColor: string;
 }
