@@ -1,8 +1,8 @@
-"use server"
+"use server";
 import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 
 export async function getSkillCard() {
@@ -42,4 +42,15 @@ export async function addSkillCard({
     skillColor,
     userId: session.user.id,
   });
+}
+
+export async function deleteSkillCard(id: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Not authenticated");
+
+  await db
+    .delete(skillCard)
+    .where(and(eq(skillCard.id, id), eq(skillCard.userId, session.user.id)));
 }

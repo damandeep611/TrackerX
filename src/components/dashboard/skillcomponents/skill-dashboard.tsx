@@ -5,7 +5,7 @@ import { Skill } from "@/types/skillDashboardTypes";
 import { useState } from "react";
 import SkillCard from "./skill-card";
 import { v4 as uuidv4 } from "uuid";
-import { addSkillCard } from "@/actions/skillCardAction";
+import { addSkillCard, deleteSkillCard } from "@/actions/skillCardAction";
 
 interface skillcardProps {
   skillcards: Skill[];
@@ -33,6 +33,7 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
 
   const handleDeleteSkill = (id: string) => {
     setSkills((prev) => prev.filter((skill) => skill.id !== id));
+    deleteSkillCard(id);
   };
   return (
     <div>
