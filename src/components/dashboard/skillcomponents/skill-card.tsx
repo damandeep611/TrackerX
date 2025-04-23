@@ -48,7 +48,13 @@ export default function SkillCard({
           <button style={{ color: skill.skillColor }}>
             <PlusIcon />
           </button>
-          <button className="" onClick={() => setIsExpanded(!isExpanded)}>
+          <button
+            className="cursor-pointer"
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
+          >
             {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
           </button>
         </div>
