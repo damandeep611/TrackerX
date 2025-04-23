@@ -17,6 +17,7 @@ export const skillCard = pgTable("skillcard", {
   targetHours: integer("target-hours").notNull(),
   currentHours: integer("current-hours").notNull(),
   skillColor: text("skill-color").notNull(),
+  slug: text("slug").notNull().unique(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),

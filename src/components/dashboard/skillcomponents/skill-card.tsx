@@ -8,15 +8,9 @@ interface SkillCardProps {
   skill: Skill;
   onEdit: (skill: Skill) => void;
   onDelete: (id: string) => void;
-  skillcardId: string;
 }
 
-export default function SkillCard({
-  skill,
-  onEdit,
-  onDelete,
-  skillcardId,
-}: SkillCardProps) {
+export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const percentage = (skill.currentHours / skill.targetHours) * 100;
   const navigate = useRouter();
@@ -35,7 +29,7 @@ export default function SkillCard({
 
   return (
     <div
-      onClick={() => navigate.push(`/dashboard/skills/${skillcardId}`)}
+      onClick={() => navigate.push(`/dashboard/skills/${skill.slug}`)}
       className=" p-4 rounded-xl hover:shadow-md border border-gray-500 dark:bg-gray-900 cursor-pointer shadow-sm transition-shadow"
     >
       {/* skill card header and expand card */}

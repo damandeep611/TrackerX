@@ -5,4 +5,5 @@ export interface Skill {
   targetHours: number;
   currentHours: number;
   skillColor: string;
+  slug: string;
 }

@@ -7,7 +7,7 @@ import React, { useState } from "react";
 interface AddSkillModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddSkill: (skill: Omit<Skill, "id" | "currentHours">) => void;
+  onAddSkill: (skill: Omit<Skill, "id" | "currentHours" | "slug">) => void;
 }
 
 export default function AddSkillModal({
@@ -20,6 +20,7 @@ export default function AddSkillModal({
     category: "",
     targetHours: 10000,
     skillColor: "#6366f1",
+
   });
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

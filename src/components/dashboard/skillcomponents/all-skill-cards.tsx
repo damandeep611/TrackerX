@@ -15,13 +15,19 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
   const [skills, setSkills] = useState<Skill[]>(skillcards);
   const [isSkillmodalOpen, setIsSkillmodalOpen] = useState(false);
 
-  const handleAddSkill = (newSkill: Omit<Skill, "id" | "currentHours">) => {
+  const handleAddSkill = async (
+    newSkill: Omit<Skill, "id" | "currentHours" | "slug">
+  ) => {
     const skill: Skill = {
       ...newSkill,
       id: uuidv4(),
       currentHours: 0,
+      slug: newSkill.skillName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, ""),
     };
-    addSkillCard(skill);
+    await addSkillCard(skill);
     setSkills((prev) => [...prev, skill]);
   };
 
@@ -50,7 +56,6 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
         {skills.map((skill) => (
           <SkillCard
             key={skill.id}
-            skillcardId={skill.id}
             skill={skill}
             onEdit={handleEditSkill}
             onDelete={handleDeleteSkill}

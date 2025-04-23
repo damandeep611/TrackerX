@@ -1,17 +1,21 @@
-import { db } from '@/db/drizzle';
-import { skillCard } from '@/db/schema/schema';
-import { eq } from 'drizzle-orm';
-import React from 'react'
+import { db } from "@/db/drizzle";
+import { skillCard } from "@/db/schema/schema";
+import { eq } from "drizzle-orm";
+import React from "react";
 
-export default async function SkillOverview({params}: {params: Promise< {id: string}>}) {
+export default async function SkillOverview({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const resolvedParams = await params;
-  const skillId = resolvedParams.id;
+  const skillSlug = resolvedParams.slug;
 
   try {
     const skill = await db
       .select()
       .from(skillCard)
-      .where(eq(skillCard.id, skillId))
+      .where(eq(skillCard.slug, skillSlug))
       .limit(1);
 
     if (!skill[0]) return <div>Skill Not found...</div>;
