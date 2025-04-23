@@ -1,17 +1,25 @@
 "use client";
 import { Skill } from "@/types/skillDashboardTypes";
 import { ChevronDownIcon, ChevronUpIcon, PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 interface SkillCardProps {
   skill: Skill;
   onEdit: (skill: Skill) => void;
   onDelete: (id: string) => void;
+  skillcardId: string;
 }
 
-export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
+export default function SkillCard({
+  skill,
+  onEdit,
+  onDelete,
+  skillcardId,
+}: SkillCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const percentage = (skill.currentHours / skill.targetHours) * 100;
+  const navigate = useRouter();
 
   // formatting time
   const formatTime = (hours: number) => {
@@ -26,7 +34,10 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
   };
 
   return (
-    <div className=" p-4 rounded-xl hover:shadow-md border border-gray-500 dark:bg-gray-900 cursor-pointer shadow-sm transition-shadow">
+    <div
+      onClick={() => navigate.push(`/dashboard/skills/${skillcardId}`)}
+      className=" p-4 rounded-xl hover:shadow-md border border-gray-500 dark:bg-gray-900 cursor-pointer shadow-sm transition-shadow"
+    >
       {/* skill card header and expand card */}
       <div className="flex justify-between items-start mb-4">
         <div className="">

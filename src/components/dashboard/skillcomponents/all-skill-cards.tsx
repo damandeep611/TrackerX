@@ -50,6 +50,7 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
         {skills.map((skill) => (
           <SkillCard
             key={skill.id}
+            skillcardId={skill.id}
             skill={skill}
             onEdit={handleEditSkill}
             onDelete={handleDeleteSkill}
