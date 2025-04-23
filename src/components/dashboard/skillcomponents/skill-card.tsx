@@ -84,7 +84,10 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
               Edit
             </button>
             <button
-              onClick={() => onDelete(skill.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onDelete(skill.id);
+              }}
               className="text-sm text-red-600 hover:text-red-700"
             >
               Delete
