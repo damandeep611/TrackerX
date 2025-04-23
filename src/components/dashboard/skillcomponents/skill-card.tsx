@@ -1,8 +1,9 @@
 "use client";
 import { Skill } from "@/types/skillDashboardTypes";
-import { ChevronDownIcon, ChevronUpIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, PlusIcon, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { MdDelete } from "react-icons/md";
 
 interface SkillCardProps {
   skill: Skill;
@@ -90,7 +91,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
               }}
               className="text-sm text-red-600 hover:text-red-700"
             >
-              Delete
+              <MdDelete size={25} />
             </button>
           </div>
         </div>
