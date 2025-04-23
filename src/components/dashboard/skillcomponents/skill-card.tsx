@@ -26,7 +26,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
   };
 
   return (
-    <div className=" p-4 rounded-xl hover:shadow-md border border-gray-500 cursor-pointer shadow-sm transition-shadow">
+    <div className=" p-4 rounded-xl hover:shadow-md border border-gray-500 dark:bg-gray-900 cursor-pointer shadow-sm transition-shadow">
       {/* skill card header and expand card */}
       <div className="flex justify-between items-start mb-4">
         <div className="">

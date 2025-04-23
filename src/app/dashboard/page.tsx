@@ -1,5 +1,5 @@
 import { getSkillCard } from "@/actions/skillCardAction";
-import SkillDashboard from "@/components/dashboard/skillcomponents/skill-dashboard";
+import SkillDashboard from "@/components/dashboard/skillcomponents/all-skill-cards";
 
 export default async function DashboardPage() {
   const skillData = await getSkillCard();
