@@ -1,6 +1,6 @@
 "use client";
 import { Skill } from "@/types/skillDashboardTypes";
-import { ChevronDownIcon, ChevronUpIcon, PlusIcon, Trash } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { MdDelete } from "react-icons/md";
