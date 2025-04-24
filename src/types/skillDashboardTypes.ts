@@ -7,3 +7,11 @@ export interface Skill {
   skillColor: string;
   slug: string;
 }
+
+
+export interface SkillTodo {
+  id: string;
+  title: string;
+  description?: string;
+  relatedSkill: string;
+}

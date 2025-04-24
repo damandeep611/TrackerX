@@ -22,3 +22,11 @@ export const skillCard = pgTable("skillcard", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
+
+export const skillTodo = pgTable("skilltodo", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("task").notNull(),
+  relatedSkill: text("related_skill")
+    .notNull()
+    .references(() => skillCard.id, { onDelete: "cascade" }),
+});

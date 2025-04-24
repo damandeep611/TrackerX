@@ -1,5 +1,5 @@
 "use client";
-import AddSkillModal from "@/components/dashboard/skillcomponents/add-skill-modal";
+import AddSkillModal from "@/components/dashboard/skillcardComponents/add-skill-modal";
 import { Button } from "@/components/ui/button";
 import { Skill } from "@/types/skillDashboardTypes";
 import { useState } from "react";
