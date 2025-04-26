@@ -1,4 +1,3 @@
-import SkillTaskDashboard from "@/components/dashboard/skillTaskDashboard/SkillTaskDashboard";
 import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
 import { eq } from "drizzle-orm";
@@ -26,7 +25,6 @@ export default async function SkillOverview({
         <div className=" absolute top-2 left-1 px-8 pb-2 border-b border-gray-500 w-full">
           <h2 className="text-2xl font-bold">{skill[0].skillName}</h2>
         </div>
-        <SkillTaskDashboard />
       </div>
     );
   } catch (error) {
