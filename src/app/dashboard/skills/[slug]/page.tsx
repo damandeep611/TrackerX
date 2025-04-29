@@ -1,3 +1,5 @@
+import { getSkillTasks } from "@/actions/skillTaskAction";
+import SkillTodoList from "@/components/dashboard/skilltodos/skill-todo-list";
 import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
 import { eq } from "drizzle-orm";
@@ -10,6 +12,7 @@ export default async function SkillOverview({
 }) {
   const resolvedParams = await params;
   const skillSlug = resolvedParams.slug;
+  const skillTodoData = await getSkillTasks();
 
   try {
     const skill = await db
@@ -24,6 +27,9 @@ export default async function SkillOverview({
       <div className=" relative min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden">
         <div className=" absolute top-2 left-1 px-8 pb-2 border-b border-gray-500 w-full">
           <h2 className="text-2xl font-bold">{skill[0].skillName}</h2>
+        </div>
+        <div>
+          <SkillTodoList initialSkillTodos={skillTodoData} />
         </div>
       </div>
     );

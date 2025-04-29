@@ -42,3 +42,15 @@ export const task = pgTable("task", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const skillTask = pgTable("skillTask", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: text("user_id").references(() => user.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  tag: varchar("tag", { length: 50 }),
+  duration: integer("duration").default(0).notNull(),
+  date: timestamp("date").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

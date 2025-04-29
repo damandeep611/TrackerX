@@ -1,15 +1,15 @@
-// src/app/actions/todoActions.ts (or your preferred location)
+//the functions that are in the user server are executed on the server but can be directly called from client components
 "use server";
 
-import { and, eq, desc } from "drizzle-orm";
-import { db } from "@/db/drizzle"; // Assuming your drizzle instance is here
-import { task } from "@/db/schema/schema"; // Import your new schema
-import { auth } from "@/lib/auth"; // Assuming your Better Auth setup is here
-import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { and, eq, desc } from "drizzle-orm"; // these are the query builders functions that are imported from drizzle orm,
+import { db } from "@/db/drizzle"; //db is the configured database instance to interact with the neon pg db
+import { task } from "@/db/schema/schema"; // task schema which will map over the task database table in neon pg
+import { auth } from "@/lib/auth"; // better auth - auth utilities
+import { headers } from "next/headers"; // to access incoming request headers and session retrieval in server actions
+import { revalidatePath } from "next/cache"; //to invalidate cache for specific route and to ensure fresh data is fetched
 import { NewTodo, Todo } from "@/types/todoTypes"; // Import your types
 
-// Helper function to get authenticated user ID
+//-- Helper function to get authenticated user ID, as this will fetch the current user session from auth
 async function getUserId(): Promise<string> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -33,7 +33,7 @@ export async function getTasks(): Promise<Todo[]> {
 
   // Map database results to the Todo type expected by the frontend
   // Ensure date fields are converted to strings (ISO format is common)
-  return tasks.map(t => ({
+  return tasks.map((t) => ({
     id: t.id,
     title: t.title,
     tag: t.tag,
@@ -47,7 +47,9 @@ export async function getTasks(): Promise<Todo[]> {
 }
 
 // 2. Add Task Action
-export async function addTask(newTodo: NewTodo): Promise<{ success: boolean; error?: string; newTask?: Todo }> {
+export async function addTask(
+  newTodo: NewTodo
+): Promise<{ success: boolean; error?: string; newTask?: Todo }> {
   const userId = await getUserId();
 
   // Basic validation (matches TodoForm validation)
@@ -71,7 +73,7 @@ export async function addTask(newTodo: NewTodo): Promise<{ success: boolean; err
       .returning(); // Get the inserted task back
 
     if (!insertedTasks || insertedTasks.length === 0) {
-       throw new Error("Failed to insert task or retrieve result.");
+      throw new Error("Failed to insert task or retrieve result.");
     }
 
     const createdTask = insertedTasks[0];
@@ -81,16 +83,15 @@ export async function addTask(newTodo: NewTodo): Promise<{ success: boolean; err
 
     // Return the newly created task in the format expected by the frontend
     const newTask: Todo = {
-        id: createdTask.id,
-        title: createdTask.title,
-        tag: createdTask.tag,
-        description: createdTask.description,
-        date: createdTask.date.toISOString(),
-        duration: createdTask.duration,
-        createdAt: createdTask.createdAt.toISOString(),
-        updatedAt: createdTask.updatedAt.toISOString(),
+      id: createdTask.id,
+      title: createdTask.title,
+      tag: createdTask.tag,
+      description: createdTask.description,
+      date: createdTask.date.toISOString(),
+      duration: createdTask.duration,
+      createdAt: createdTask.createdAt.toISOString(),
+      updatedAt: createdTask.updatedAt.toISOString(),
     };
-
 
     return { success: true, newTask };
   } catch (error) {
@@ -100,89 +101,112 @@ export async function addTask(newTodo: NewTodo): Promise<{ success: boolean; err
 }
 
 // 3. Update Task Time Action
-export async function updateTaskTime(taskId: string, newDuration: number): Promise<{ success: boolean; error?: string }> {
-    const userId = await getUserId();
+export async function updateTaskTime(
+  taskId: string,
+  newDuration: number
+): Promise<{ success: boolean; error?: string }> {
+  const userId = await getUserId();
 
-    // Validate duration (optional, but good practice)
-    if (typeof newDuration !== 'number' || newDuration < 0) {
-        return { success: false, error: "Invalid duration value." };
+  // Validate duration (optional, but good practice)
+  if (typeof newDuration !== "number" || newDuration < 0) {
+    return { success: false, error: "Invalid duration value." };
+  }
+
+  try {
+    const result = await db
+      .update(task)
+      .set({
+        duration: newDuration,
+        updatedAt: new Date(), // Update the timestamp
+      })
+      .where(and(eq(task.id, taskId), eq(task.user_id, userId)));
+
+    if (result.rowCount === 0) {
+      return {
+        success: false,
+        error: "Task not found or you don't have permission to update it.",
+      };
     }
 
-    try {
-        const result = await db
-            .update(task)
-            .set({
-                duration: newDuration,
-                updatedAt: new Date(), // Update the timestamp
-            })
-            .where(and(eq(task.id, taskId), eq(task.user_id, userId)));
-
-        if (result.rowCount === 0) {
-            return { success: false, error: "Task not found or you don't have permission to update it." };
-        }
-
-        revalidatePath("/"); // Adjust the path as needed
-        return { success: true };
-
-    } catch (error) {
-        console.error("Failed to update task time:", error);
-        return { success: false, error: "Failed to update task time. Please try again." };
-    }
+    revalidatePath("/"); // Adjust the path as needed
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update task time:", error);
+    return {
+      success: false,
+      error: "Failed to update task time. Please try again.",
+    };
+  }
 }
-
 
 // 4. Edit Task Action
 // Takes the fields allowed to be edited from TodoCard [cite: 3, 11]
-export async function editTask(taskId: string, updatedFields: { title: string; description: string | null; tag: string | null }): Promise<{ success: boolean; error?: string }> {
-    const userId = await getUserId();
+export async function editTask(
+  taskId: string,
+  updatedFields: {
+    title: string;
+    description: string | null;
+    tag: string | null;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const userId = await getUserId();
 
-    // Basic validation (matches TodoCard validation) [cite: 10]
-    if (!updatedFields.title || !updatedFields.title.trim()) {
-        return { success: false, error: "Title is required" };
+  // Basic validation (matches TodoCard validation) [cite: 10]
+  if (!updatedFields.title || !updatedFields.title.trim()) {
+    return { success: false, error: "Title is required" };
+  }
+
+  try {
+    const result = await db
+      .update(task)
+      .set({
+        title: updatedFields.title.trim(),
+        description: updatedFields.description?.trim() || null,
+        tag: updatedFields.tag?.trim() || null,
+        updatedAt: new Date(), // Update the timestamp
+      })
+      .where(and(eq(task.id, taskId), eq(task.user_id, userId)));
+
+    if (result.rowCount === 0) {
+      return {
+        success: false,
+        error: "Task not found or you don't have permission to edit it.",
+      };
     }
 
-    try {
-        const result = await db
-            .update(task)
-            .set({
-                title: updatedFields.title.trim(),
-                description: updatedFields.description?.trim() || null,
-                tag: updatedFields.tag?.trim() || null,
-                updatedAt: new Date(), // Update the timestamp
-            })
-            .where(and(eq(task.id, taskId), eq(task.user_id, userId)));
-
-         if (result.rowCount === 0) {
-            return { success: false, error: "Task not found or you don't have permission to edit it." };
-        }
-
-        revalidatePath("/"); // Adjust the path as needed
-        return { success: true };
-
-    } catch (error) {
-        console.error("Failed to edit task:", error);
-        return { success: false, error: "Failed to edit task. Please try again." };
-    }
+    revalidatePath("/"); // Adjust the path as needed
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to edit task:", error);
+    return { success: false, error: "Failed to edit task. Please try again." };
+  }
 }
 
 // 5. Delete Task Action
-export async function deleteTask(taskId: string): Promise<{ success: boolean; error?: string }> {
-    const userId = await getUserId();
+export async function deleteTask(
+  taskId: string
+): Promise<{ success: boolean; error?: string }> {
+  const userId = await getUserId();
 
-    try {
-        const result = await db
-            .delete(task)
-            .where(and(eq(task.id, taskId), eq(task.user_id, userId)));
+  try {
+    const result = await db
+      .delete(task)
+      .where(and(eq(task.id, taskId), eq(task.user_id, userId)));
 
-        if (result.rowCount === 0) {
-             return { success: false, error: "Task not found or you don't have permission to delete it." };
-        }
-
-        revalidatePath("/"); // Adjust the path as needed
-        return { success: true };
-
-    } catch (error) {
-        console.error("Failed to delete task:", error);
-        return { success: false, error: "Failed to delete task. Please try again." };
+    if (result.rowCount === 0) {
+      return {
+        success: false,
+        error: "Task not found or you don't have permission to delete it.",
+      };
     }
+
+    revalidatePath("/"); // Adjust the path as needed
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete task:", error);
+    return {
+      success: false,
+      error: "Failed to delete task. Please try again.",
+    };
+  }
 }

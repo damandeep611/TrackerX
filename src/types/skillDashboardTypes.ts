@@ -8,10 +8,26 @@ export interface Skill {
   slug: string;
 }
 
+//why type definations ? - well these types or interfaces let us define the shape of the data.
+//  so maintain consistency in frontend and backend as these types are passed to both client and server components 
 
-export interface SkillTodo {
+
+//this skillTodo type is what the todo card will contain 
+export interface skillTodo {
   id: string;
   title: string;
-  description?: string;
-  relatedSkill: string;
+  tag: string | null;
+  description: string | null;
+  date: string;
+  duration: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+// the structure to define the new skilltodo created by form and server action 
+export type newSkillTodo ={
+  title: string;
+  description: string | null;
+  tag: string | null;
 }

@@ -1,41 +1,38 @@
-// src/components/TodoList.tsx (or your component path)
 "use client";
 
-import { useState, useTransition } from "react"; // Import useTransition
+import { useState, useTransition } from "react";
 import { PlusCircle, XCircle } from "lucide-react";
 import { NewTodo, Todo } from "@/types/todoTypes";
-import TodoForm from "./TodoForm"; // [cite: 60]
-import TodoCard from "./TodoCard"; // [cite: 60]
-// Import your server actions
+import TodoForm from "./TodoForm";
+import TodoCard from "./TodoCard";
+
 import {
   addTask,
   updateTaskTime,
   editTask,
   deleteTask,
-} from "@/actions/taskAction"; // Adjust path as needed
+} from "@/actions/taskAction";
 
 interface TodoListProps {
-  initialTodos?: Todo[]; // [cite: 61] Passed from a Server Component ideally
+  initialTodos?: Todo[]; // remove the optional later after testing code
 }
 
-// Helper function to generate temporary IDs for optimistic updates
+// later user uuid for generating id
 const generateTempId = (): string => {
   return `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 };
 
 export function TodoList({ initialTodos = [] }: TodoListProps) {
-  // [cite: 61]
-  const [todos, setTodos] = useState<Todo[]>(initialTodos); // [cite: 61]
-  const [isAddingTodo, setIsAddingTodo] = useState(false); // [cite: 62]
+  const [todos, setTodos] = useState<Todo[]>(initialTodos);
+  const [isAddingTodo, setIsAddingTodo] = useState(false);
   // Use useTransition for non-critical state updates during server actions
   const [isPending, startTransition] = useTransition();
-  const [updatingTodoId, setUpdatingTodoId] = useState<string | null>(null); // [cite: 62]
-  const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null); // [cite: 63]
+  const [updatingTodoId, setUpdatingTodoId] = useState<string | null>(null);
+  const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   // Keep track of submission state for the form specifically
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
 
   const handleAddTodo = async (newTodoData: NewTodo) => {
-    // [cite: 64]
     setIsSubmittingForm(true); // Indicate form submission start
     const tempId = generateTempId();
 

@@ -174,7 +174,7 @@ export default function TodoCard({
               {formatDate(todo.date)}
             </span>
           </div>
-          
+
           <div className="flex space-x-2">
             <button
               onClick={handleEdit}
@@ -208,7 +208,10 @@ export default function TodoCard({
           {/* Time tracking section */}
           <div>
             <p className="text-sm ">
-              Tracked Time: <span className="font-medium">{formatDuration(todo.duration)}</span>
+              Tracked Time:{" "}
+              <span className="font-medium">
+                {formatDuration(todo.duration)}
+              </span>
             </p>
           </div>
 
@@ -217,7 +220,7 @@ export default function TodoCard({
             {[...Array(5)].map((_, index) => {
               const isActive = todo.duration >= (index + 1) * 30;
               const isNext = todo.duration === index * 30;
-              
+
               return (
                 <button
                   key={index}
@@ -225,9 +228,10 @@ export default function TodoCard({
                   disabled={isUpdating || isDeleting || (!isActive && !isNext)}
                   className={`
                     w-8 h-8 rounded-full border-2 transition-all duration-200
-                    ${isActive 
-                      ? "bg-green-500 border-green-500 shadow-sm" 
-                      : isNext
+                    ${
+                      isActive
+                        ? "bg-green-500 border-green-500 shadow-sm"
+                        : isNext
                         ? "border-green-300 hover:border-green-500"
                         : "border-gray-200 opacity-50 cursor-not-allowed"
                     }
@@ -240,6 +244,6 @@ export default function TodoCard({
         </div>
       </div>
     </div>
-  )
+  );
   
 }
