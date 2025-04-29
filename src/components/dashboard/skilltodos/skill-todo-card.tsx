@@ -100,8 +100,8 @@ export default function SkillTodoCard({
   // rendering the form when the form is being edited
   if (isEditing) {
     return (
-      <div className="rounded-lg">
-        <div>
+      <div className="rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div className="space-y-3">
           {/* title of todo being edited */}
           <div className="">
             <label
@@ -165,14 +165,14 @@ export default function SkillTodoCard({
           {/* editing action buttons */}
           <div className="flex  justify-end space-x-2">
             <button
-            onClick={handleCancelEdit}
+              onClick={handleCancelEdit}
               className="bg-red-700 text-white py-2 px-4 text-sm hover:bg-red-900"
               disabled={isUpdating}
             >
               Cancel
             </button>
             <button
-            onClick={handleSaveEdit}
+              onClick={handleSaveEdit}
               className="bg-green-600 text-white py-2 px-4 text-sm hover:bg-green-800"
               disabled={isUpdating}
             >
@@ -196,14 +196,26 @@ export default function SkillTodoCard({
                 {todo.tag}
               </span>
             )}
-            <span className="text-xs text-gray-500">{formatDate(todo.date)}</span>
+            <span className="text-xs text-gray-500">
+              {formatDate(todo.date)}
+            </span>
           </div>
           {/* right side of edit and delete button */}
           <div className="flex space-x-2">
-            <button onClick={handleEdit} className="p-1 hover:text-blue-500" aria-label="Edit task" disabled={isUpdating}>
+            <button
+              onClick={handleEdit}
+              className="p-1 hover:text-blue-500"
+              aria-label="Edit task"
+              disabled={isUpdating}
+            >
               <Pencil size={16} />
             </button>
-            <button onClick={()=> onDeleteTodo(todo.id)} className="p-1 hover:text-red-500" aria-label="Delete task" disabled={isUpdating || isDeleting}>
+            <button
+              onClick={() => onDeleteTodo(todo.id)}
+              className="p-1 hover:text-red-500"
+              aria-label="Delete task"
+              disabled={isUpdating || isDeleting}
+            >
               <Trash size={16} />
             </button>
           </div>
@@ -222,35 +234,33 @@ export default function SkillTodoCard({
           {/* display format duration */}
           <div>
             <p className="text-sm">
-              Tracked Time: <span className="font-medium">{formatDuration(todo.duration)}</span>
+              Tracked Time:{" "}
+              <span className="font-medium">
+                {formatDuration(todo.duration)}
+              </span>
             </p>
           </div>
           {/* time block list of array cirlces */}
-          <div className="flex items-center space-x-2 border border-pink-300">
-            {[
-              ...Array(5).map((_, index) => {
-                const blockMinutes = (index + 1) * 30;
-                const isActive = todo.duration >= blockMinutes;
-                const isNext = todo.duration === index * 30;
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleTimeBlockClick(index)}
-                    disabled={
-                      isUpdating || isDeleting || (!isActive && !isNext)
-                    }
-                    className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                      isActive
-                        ? "bg-green-500 border-green-500 shadow-sm"
-                        : isNext
-                        ? "border-green-300 hover:border-green-500"
-                        : "border-gray-200 opacity-50 cursor-not-allowed"
-                    }`}
-                    aria-label={`${blockMinutes} minute block`}
-                  />
-                );
-              }),
-            ]}
+          <div className="flex items-center space-x-2 ">
+            {[...Array(5)].map((_, index) => {
+              const isActive = todo.duration >= (index + 1) * 30;
+              const isNext = todo.duration === index * 30;
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleTimeBlockClick(index)}
+                  disabled={isUpdating || isDeleting || (!isActive && !isNext)}
+                  className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                    isActive
+                      ? "bg-green-500 border-green-500 shadow-sm"
+                      : isNext
+                      ? "border-green-300 hover:border-green-500"
+                      : "border-gray-200 opacity-50 cursor-not-allowed"
+                  }`}
+                  aria-label={`${(index + 1) * 30} minute block`}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
