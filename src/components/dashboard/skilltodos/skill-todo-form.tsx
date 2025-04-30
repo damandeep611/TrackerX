@@ -5,7 +5,7 @@ import React, { useState } from "react";
 //defining the props expected by the skilltodoform component
 //these are the callback props as they will be passed functions from parent component of TodoList
 interface SkillTodoFormProps {
-  onAddSkillTodo: (todo: newSkillTodo) => void; //function to call when the form is submitted successfully
+  onAddSkillTodo: (todo: Omit<newSkillTodo, "skillId">) => void; //function to call when the form is submitted successfully
   onCancel: () => void; //function to call when the cancel button is clicked
   isSubmitting?: boolean; //optional prop to indicate if the parent component is currently processing the submission
 }
@@ -25,23 +25,23 @@ export default function SkillTodoForm({
 
   // event handlers and calling this function when the submit button is clicked
 
-  const handleSubmit = (e: React.FormEvent)=> {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     //client side validation to ensure the title is not empty or blank whitespace
-    if(!title.trim()){
+    if (!title.trim()) {
       setValidationError("Task name is required");
       return; //stop submission if validation fails
     }
     onAddSkillTodo({
       title: title.trim(),
       description: description.trim() || null,
-      tag: tag.trim() || null
-    })
+      tag: tag.trim() || null,
+    });
     setTitle("");
     setDescription("");
     setTag("");
-    setValidationError("")
-  }
+    setValidationError("");
+  };
   return (
     <div className="p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -94,14 +94,23 @@ export default function SkillTodoForm({
             className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Optional"
             value={description}
-            onChange={(e)=> setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
             disabled={isSubmitting}
           />
         </div>
         {/* form buttons */}
         <div>
-          <button type="button" onClick={onCancel} className="py-2 px-4 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
-          <button type="submit" className="py-2 px-4 text-sm bg-blue-500 text-white hover:bg-blue-800 rounded-lg">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="py-2 px-4 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="py-2 px-4 text-sm bg-blue-500 text-white hover:bg-blue-800 rounded-lg"
+          >
             {isSubmitting ? "adding..." : "Add Task"}
           </button>
         </div>

@@ -1,0 +1,39 @@
+export const skillCard = pgTable("skillcard", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  skillName: text("skill_name").notNull(),
+  category: text("category").notNull(),
+  targetHours: integer("target-hours").notNull(),
+  currentHours: integer("current-hours").notNull(),
+  skillColor: text("skill-color").notNull(),
+  slug: text("slug").notNull().unique(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+
+export const skillTask = pgTable("skillTask", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: text("user_id").references(() => user.id),
+  skill_id: uuid("skill_id").references(() => skillCard.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  tag: varchar("tag", { length: 50 }),
+  duration: integer("duration").default(0).notNull(),
+  date: timestamp("date").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+
+and this is the types of the skillcard 
+
+export interface Skill {
+  id: string;
+  skillName: string;
+  category: string;
+  targetHours: number;
+  currentHours: number;
+  skillColor: string;
+  slug: string;
+}

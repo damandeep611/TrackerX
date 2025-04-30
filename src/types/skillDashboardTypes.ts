@@ -15,6 +15,7 @@ export interface Skill {
 //this skillTodo type is what the todo card will contain 
 export interface skillTodo {
   id: string;
+  skill_id: string;
   title: string;
   tag: string | null;
   description: string | null;
@@ -24,10 +25,10 @@ export interface skillTodo {
   updatedAt: string;
 }
 
-
-// the structure to define the new skilltodo created by form and server action 
-export type newSkillTodo ={
+// the structure to define the new skilltodo created by form and server action
+export type newSkillTodo = {
   title: string;
   description: string | null;
   tag: string | null;
-}
+  skillId: string;
+};

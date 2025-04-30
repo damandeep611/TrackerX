@@ -6,6 +6,7 @@ import {
   integer,
   varchar,
   timestamp,
+  numeric,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
@@ -23,7 +24,9 @@ export const skillCard = pgTable("skillcard", {
   skillName: text("skill_name").notNull(),
   category: text("category").notNull(),
   targetHours: integer("target-hours").notNull(),
-  currentHours: integer("current-hours").notNull(),
+  currentHours: numeric("current-hours", { precision: 5, scale: 2 })
+    .default("0.00")
+    .notNull(),
   skillColor: text("skill-color").notNull(),
   slug: text("slug").notNull().unique(),
   userId: text("user_id")
@@ -46,6 +49,7 @@ export const task = pgTable("task", {
 export const skillTask = pgTable("skillTask", {
   id: uuid("id").primaryKey().defaultRandom(),
   user_id: text("user_id").references(() => user.id),
+  skill_id: uuid("skill_id").references(() => skillCard.id),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   tag: varchar("tag", { length: 50 }),

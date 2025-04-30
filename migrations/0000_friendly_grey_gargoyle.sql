@@ -51,11 +51,36 @@ CREATE TABLE "skillcard" (
 	"skill_name" text NOT NULL,
 	"category" text NOT NULL,
 	"target-hours" integer NOT NULL,
-	"current-hours" integer NOT NULL,
+	"current-hours" numeric(5, 2) DEFAULT '0.00' NOT NULL,
 	"skill-color" text NOT NULL,
 	"slug" text NOT NULL,
 	"user_id" text NOT NULL,
 	CONSTRAINT "skillcard_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE "skillTask" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" text,
+	"skill_id" uuid,
+	"title" varchar(255) NOT NULL,
+	"description" text,
+	"tag" varchar(50),
+	"duration" integer DEFAULT 0 NOT NULL,
+	"date" timestamp DEFAULT now() NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "task" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" text,
+	"title" varchar(255) NOT NULL,
+	"description" text,
+	"tag" varchar(50),
+	"duration" integer DEFAULT 0 NOT NULL,
+	"date" timestamp DEFAULT now() NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "todo" (
@@ -68,4 +93,7 @@ CREATE TABLE "todo" (
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "skillcard" ADD CONSTRAINT "skillcard_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "skillTask" ADD CONSTRAINT "skillTask_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "skillTask" ADD CONSTRAINT "skillTask_skill_id_skillcard_id_fk" FOREIGN KEY ("skill_id") REFERENCES "public"."skillcard"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "task" ADD CONSTRAINT "task_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "todo" ADD CONSTRAINT "todo_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;

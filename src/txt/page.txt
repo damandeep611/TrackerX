@@ -1,0 +1,43 @@
+and this is the page.tsx file which is made in /dashboard/skills/[slug]/page.tsx
+
+
+import { getSkillTasks } from "@/actions/skillTaskAction";
+import SkillTodoList from "@/components/dashboard/skilltodos/skill-todo-list";
+import { db } from "@/db/drizzle";
+import { skillCard } from "@/db/schema/schema";
+import { eq } from "drizzle-orm";
+import React from "react";
+
+export default async function SkillOverview({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const resolvedParams = await params;
+  const skillSlug = resolvedParams.slug;
+  const skillTodoData = await getSkillTasks();
+
+  try {
+    const skill = await db
+      .select()
+      .from(skillCard)
+      .where(eq(skillCard.slug, skillSlug))
+      .limit(1);
+
+    if (!skill[0]) return <div>Skill Not found...</div>;
+    return (
+      // the skilloverview tasks to show here
+      <div className=" relative min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden">
+        <div className=" absolute top-2 left-1 px-8 pb-2 border-b border-gray-500 w-full">
+          <h2 className="text-2xl font-bold">{skill[0].skillName}</h2>
+        </div>
+        <div>
+          <SkillTodoList initialSkillTodos={skillTodoData} />
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error("Error Fetching skills:", error);
+    return <div>Error loading skill please try again</div>;
+  }
+}

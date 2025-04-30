@@ -34,10 +34,15 @@ export async function getSkillCard() {
   });
   if (!session) throw new Error("Not authenticated");
 
-  return db
+  const skills = await db
     .select()
     .from(skillCard)
     .where(eq(skillCard.userId, session.user.id));
+
+  return skills.map((skill) => ({
+    ...skill,
+    currentHours: parseFloat(skill.currentHours),
+  }));
 }
 
 // Get skill by slug
@@ -79,8 +84,8 @@ export async function addSkillCard({
   await db.insert(skillCard).values({
     skillName,
     category,
-    targetHours,
-    currentHours: 0,
+    targetHours: Math.floor(targetHours),
+    currentHours: "0.00",
     skillColor,
     slug,
     userId: session.user.id,

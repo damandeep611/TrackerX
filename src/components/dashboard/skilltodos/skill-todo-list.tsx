@@ -8,6 +8,8 @@ import { addSkillTasks, deleteSkillTask, editSkillTask, updateskillTaskTime } fr
 
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
+  skillId: string;
+  skillSlug: string;
 }
 
 const generateTempId = (): string => {
@@ -17,6 +19,8 @@ const generateTempId = (): string => {
 
 export default function SkillTodoList({
   initialSkillTodos = [],
+  skillId,
+  skillSlug,
 }: SkillTodoListProps) {
   const [skillTodos, setSkillTodos] = useState<skillTodo[]>(initialSkillTodos);
   const [isAddingTodo, setIsAddingTodo] = useState(false);
@@ -28,11 +32,14 @@ export default function SkillTodoList({
   // event handlers
 
   // handles the submission of skillTodos from the skilltodoform
-  const handleAddTodo = async (newTodoData: newSkillTodo) => {
+  const handleAddTodo = async (newTodoData: Omit<newSkillTodo, "skillId">) => {
     setIsSubmittingForm(true);
     const tempId = generateTempId();
+
+    // update object
     const optimisticTodos: skillTodo = {
       id: tempId,
+      skill_id: skillId,
       ...newTodoData,
       date: new Date().toISOString(),
       duration: 0,
@@ -43,25 +50,31 @@ export default function SkillTodoList({
     setIsAddingTodo(false);
 
     //calling server action and use Transition
-    startTransition(async ()=> {
-      try{
+    startTransition(async () => {
+      try {
+        const dataToSend: newSkillTodo = {
+          ...newTodoData,
+          skillId: skillId,
+        };
         //call the addskillTask server action with the form data
-        const result = await addSkillTasks(newTodoData);
-        if(result.success && result.newTask){
-          setSkillTodos((prev)=> prev.map((t)=> (t.id === tempId ? result.newTask! : t)));
-        }else{
+        const result = await addSkillTasks(dataToSend);
+        if (result.success && result.newTask) {
+          setSkillTodos((prev) =>
+            prev.map((t) => (t.id === tempId ? result.newTask! : t))
+          );
+        } else {
           console.error("Failed to add skillTodo:", result.error);
-          setSkillTodos((prev)=> prev.filter((t)=> t.id !== tempId))
+          setSkillTodos((prev) => prev.filter((t) => t.id !== tempId));
           setIsAddingTodo(true);
         }
-      }catch(error){
+      } catch (error) {
         console.error("Error calling addTask:", error);
-        setSkillTodos((prev)=> prev.filter((t)=> t.id !== tempId));
+        setSkillTodos((prev) => prev.filter((t) => t.id !== tempId));
         setIsAddingTodo(true);
-      }finally {
+      } finally {
         setIsSubmittingForm(false);
       }
-    })
+    });
   };
   // handles update time from the task card
   const handleUpdateTime = async (todoId: string, minutes: number) => {
@@ -79,20 +92,20 @@ export default function SkillTodoList({
       )
     );
     //server actions and useTransitions
-    startTransition(async()=> {
-      try{
-        const result = await updateskillTaskTime(todoId, minutes);
-        if(!result.success){
-          console.error("Failed to update skillTodo time:", result.error)
+    startTransition(async () => {
+      try {
+        const result = await updateskillTaskTime(todoId, minutes, skillId);
+        if (!result.success) {
+          console.error("Failed to update skillTodo time:", result.error);
           setSkillTodos(originalTodos);
         }
-      }catch(error){
-        console.error("Error calling updateSkillTaskTime:", error)
+      } catch (error) {
+        console.error("Error calling updateSkillTaskTime:", error);
         setSkillTodos(originalTodos);
-      }finally{
+      } finally {
         setUpdatingTodoId(null);
       }
-    })
+    });
   };
 
   // handles saving task details from todoCard edit
@@ -118,30 +131,33 @@ export default function SkillTodoList({
     // data sending for the editTask server action and only allowed fields are send
     const dataToSend = {
       title: updatedFields.title || "",
-      description: updatedFields.description !== undefined ? updatedFields.description : null,
+      description:
+        updatedFields.description !== undefined
+          ? updatedFields.description
+          : null,
       tag: updatedFields.tag !== undefined ? updatedFields.tag : null,
-    }
+    };
     //client side validation
-    if(!dataToSend.title.trim()){
+    if (!dataToSend.title.trim()) {
       console.error("title cannot be empty.");
       setSkillTodos(originalTodos);
       setUpdatingTodoId(null);
       return;
     }
     //calling server action and usetransition
-    startTransition(async ()=> {
-      try{
+    startTransition(async () => {
+      try {
         const result = await editSkillTask(todoId, dataToSend);
-        if(!result.success){
-          console.error("Failed to edit skill Todo:", result.error)
+        if (!result.success) {
+          console.error("Failed to edit skill Todo:", result.error);
         }
-      }catch(error){
+      } catch (error) {
         console.error("Error calling editTask:", error);
         setSkillTodos(originalTodos);
-      }finally{
+      } finally {
         setUpdatingTodoId(null);
       }
-    })
+    });
   };
   // handles deleting a task
   const handleDeleteTodo = async (todoId: string) => {
@@ -154,19 +170,19 @@ export default function SkillTodoList({
       prev.filter((skillTodo) => skillTodo.id !== todoId)
     );
     //calling server action and use transition
-    startTransition(async ()=> {
-      try{
-        const result = await deleteSkillTask(todoId);
-        if(!result.success){
-          console.error("Failed to delete todo:", result.error)
-          setSkillTodos(originalTodos)
+    startTransition(async () => {
+      try {
+        const result = await deleteSkillTask(todoId, skillId);
+        if (!result.success) {
+          console.error("Failed to delete todo:", result.error);
+          setSkillTodos(originalTodos);
         }
-      }catch(error){
-        console.error("Error calling deleteSkillTask:", error)
-      }finally{
-        setDeletingTodoId(null)
+      } catch (error) {
+        console.error("Error calling deleteSkillTask:", error);
+      } finally {
+        setDeletingTodoId(null);
       }
-    })
+    });
   };
 
   const isLoading = isPending || !!updatingTodoId || !!deletingTodoId;
@@ -177,6 +193,7 @@ export default function SkillTodoList({
           <h2 className="text-2xl font-semibold text-gray-800">
             My Skill Todos
           </h2>
+          <span>{skillSlug}</span>
           <button
             onClick={() => setIsAddingTodo(true)}
             disabled={isLoading}

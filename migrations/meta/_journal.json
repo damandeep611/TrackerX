@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1745407826917,
-      "tag": "0000_confused_wendell_rand",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1745666586478,
-      "tag": "0001_lumpy_star_brand",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1745915516222,
-      "tag": "0002_dizzy_pestilence",
+      "when": 1745984675198,
+      "tag": "0000_friendly_grey_gargoyle",
       "breakpoints": true
     }
   ]
