@@ -15,7 +15,7 @@ export interface Skill {
 //this skillTodo type is what the todo card will contain 
 export interface skillTodo {
   id: string;
-  skill_id: string;
+  skill_id: string; //foreign key linking to the skillCard
   title: string;
   tag: string | null;
   description: string | null;

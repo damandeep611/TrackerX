@@ -19,25 +19,29 @@ export async function getUserId(): Promise<string> {
   return session.user.id;
 }
 
-// --- to update the parent' skillcard current hours
+// --- Helper functionto update the parent' skillcard current hours
+//to calculate the total duration in hours for skill's tasks and update the current hours field on the parent skillCard
 export async function updateSkillCardHours(skillId: string): Promise<void> {
   const userId = await getUserId();
   //calculate the sum of durations for this skill's tasks
   try {
+    //calculate the sum of durations in minutes for this skill's tasks
     const result = await db
       .select({
+        // using sql helper for aggregation , to ensure type is number
         totalDuration: sql<number>`sum(${skillTask.duration})`.mapWith(Number),
       })
       .from(skillTask)
       .where(
-        and(eq(skillTask.skill_id, skillId), eq(skillTask.user_id, userId))
+        and(eq(skillTask.skill_id, skillId), eq(skillTask.user_id, userId)) //ensure we only sum user's tasks
       );
 
     const totalMinutes = result[0]?.totalDuration || 0;
+    //convert total minutes to hours. using float for precision
     const totalHours = totalMinutes / 60.0;
     await db
       .update(skillCard)
-      .set({ currentHours: totalHours.toString() })
+      .set({ currentHours: totalHours.toString() })//ensure currentHours column in skillCard schema can store floats
       .where(and(eq(skillCard.id, skillId), eq(skillCard.userId, userId)));
     console.log(`Updated currentHours for skill ${skillId} to ${totalHours}`);
   } catch (error) {
@@ -45,9 +49,9 @@ export async function updateSkillCardHours(skillId: string): Promise<void> {
   }
 }
 
-// now the server action CRUD operations
+//----------- now the server action CRUD operations
 
-// fetch all the tasks by the user id
+//ACTION: Get tasks for a specific skill-----------
 export async function getSkillTasksForSkill(
   skillId: string
 ): Promise<skillTodo[]> {
@@ -76,7 +80,7 @@ export async function getSkillTasksForSkill(
   }));
 }
 
-//----2. Adding task
+//ACTION: Add skill Task
 
 export async function addSkillTasks(
   newTodo: newSkillTodo
@@ -167,7 +171,7 @@ export async function updateskillTaskTime(
         and(
           eq(skillTask.id, taskId),
           eq(skillTask.user_id, userId),
-          eq(skillTask.skill_id, skillId)
+          eq(skillTask.skill_id, skillId) //ensuring task belongs to the specified skill
         )
       );
     if (result.rowCount === 0) {
@@ -176,7 +180,7 @@ export async function updateskillTaskTime(
         error: "Task not found or you don't have permission to update it",
       };
     }
-    await updateSkillCardHours(skillId);
+    await updateSkillCardHours(skillId);//update parent skillCard hours After successful update
     //revalidate
     const parentSkill = await db
       .select({ slug: skillCard.slug })
@@ -197,7 +201,7 @@ export async function updateskillTaskTime(
   }
 }
 
-// Editing the skill card task
+//ACTION: Editing the skill card task
 export async function editSkillTask(
   taskId: string,
   updatedFields: {
@@ -253,7 +257,7 @@ export async function editSkillTask(
   }
 }
 
-// Delete skill Task
+//ACTION:  Delete skill Task
 
 export async function deleteSkillTask(
   taskId: string,
@@ -272,7 +276,7 @@ export async function deleteSkillTask(
         and(
           eq(skillTask.id, taskId),
           eq(skillTask.user_id, userId),
-          eq(skillTask.skill_id, skillId)
+          eq(skillTask.skill_id, skillId) //ensure task belongs to the specified skillcard
         )
       );
     //check if any rows were actually deleted

@@ -15,10 +15,11 @@ export default async function SkillOverview({
   const userId = await getUserId();
 
   if (!userId) {
-    return <div>Authentication required..</div>;
+    return <div>Authentication required..</div>; //handling not authenticated case,
   }
 
   try {
+    //fetch the specific skill card for the current user using the slug
     const skill = await db
       .select({
         id: skillCard.id,
@@ -33,7 +34,7 @@ export default async function SkillOverview({
 
     const currentSkill = skill[0];
     const skillId = currentSkill.id;
-    const currentSkillSlug = currentSkill.slug;
+    const currentSkillSlug = currentSkill.slug; //slug for revalidation
     const skillTodoData = await getSkillTasksForSkill(skillId);
     return (
       // the skilloverview tasks to show here

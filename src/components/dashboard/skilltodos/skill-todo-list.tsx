@@ -12,8 +12,8 @@ interface SkillTodoListProps {
   skillSlug: string;
 }
 
+// !use uuid instead of this temporary id
 const generateTempId = (): string => {
-  // [cite: 109]
   return `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; // [cite: 109]
 };
 
@@ -52,6 +52,7 @@ export default function SkillTodoList({
     //calling server action and use Transition
     startTransition(async () => {
       try {
+        // prepare data with SkillId for the server action
         const dataToSend: newSkillTodo = {
           ...newTodoData,
           skillId: skillId,
@@ -68,18 +69,20 @@ export default function SkillTodoList({
           setIsAddingTodo(true);
         }
       } catch (error) {
-        console.error("Error calling addTask:", error);
+        console.error("Error calling addskillTask:", error);
         setSkillTodos((prev) => prev.filter((t) => t.id !== tempId));
         setIsAddingTodo(true);
+        // !show toast here after adding todo
       } finally {
         setIsSubmittingForm(false);
       }
     });
   };
-  // handles update time from the task card
+  //--------- handles update time from the task card----
   const handleUpdateTime = async (todoId: string, minutes: number) => {
     const originalTodos = skillTodos;
     setUpdatingTodoId(todoId);
+    // optimistic ui update
     setSkillTodos((prev) =>
       prev.map((skillTodo) =>
         skillTodo.id === todoId
@@ -94,6 +97,7 @@ export default function SkillTodoList({
     //server actions and useTransitions
     startTransition(async () => {
       try {
+        // passs skillId to update action
         const result = await updateskillTaskTime(todoId, minutes, skillId);
         if (!result.success) {
           console.error("Failed to update skillTodo time:", result.error);
@@ -108,7 +112,7 @@ export default function SkillTodoList({
     });
   };
 
-  // handles saving task details from todoCard edit
+  //------------------- handles saving task details from todoCard edit
   const handleEditTodo = async (
     todoId: string,
     updatedFields: Partial<
@@ -117,6 +121,7 @@ export default function SkillTodoList({
   ) => {
     const originalTodos = skillTodos;
     setUpdatingTodoId(todoId);
+    // optimistic update
     setSkillTodos((prev) =>
       prev.map((skillTodo) =>
         skillTodo.id === todoId
@@ -147,6 +152,8 @@ export default function SkillTodoList({
     //calling server action and usetransition
     startTransition(async () => {
       try {
+        //asuuming editSkilltask doesn't directly impact total hours
+        
         const result = await editSkillTask(todoId, dataToSend);
         if (!result.success) {
           console.error("Failed to edit skill Todo:", result.error);
@@ -159,7 +166,7 @@ export default function SkillTodoList({
       }
     });
   };
-  // handles deleting a task
+  //---------------- handles deleting a task
   const handleDeleteTodo = async (todoId: string) => {
     if (!window.confirm("Are you sure you want to delete this task")) {
       return;
@@ -185,6 +192,7 @@ export default function SkillTodoList({
     });
   };
 
+  // combined loading state
   const isLoading = isPending || !!updatingTodoId || !!deletingTodoId;
   return (
     <div className="container mx-auto p-4 max-w-4xl">
