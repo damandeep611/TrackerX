@@ -1,4 +1,5 @@
 import { getSkillTasksForSkill, getUserId } from "@/actions/skillTaskAction";
+import ActivityTimeline from "@/components/dashboard/skilltodos/ActivityTimeline";
 import SkillTodoList from "@/components/dashboard/skilltodos/skill-todo-list";
 import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
@@ -37,17 +38,38 @@ export default async function SkillOverview({
     const currentSkillSlug = currentSkill.slug; //slug for revalidation
     const skillTodoData = await getSkillTasksForSkill(skillId);
     return (
-      // the skilloverview tasks to show here
-      <div className=" relative min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden">
-        <div className=" absolute top-2 left-1 px-8 pb-2 border-b border-gray-500 w-full">
-          <h2 className="text-2xl font-bold">{currentSkill.skillName}</h2>
+      <div className="flex flex-col h-screen overflow-hidden">
+        {" "}
+        {/* Prevent overall page scroll */}
+        {/* Sticky Header */}
+        <div className="flex-shrink-0 w-full px-4 sm:px-8 py-3 border-b dark:border-gray-700 bg-background/95 dark:bg-black/90 backdrop-blur-sm z-10">
+          <h2 className="text-2xl font-bold text-center">
+            {currentSkill.skillName}
+          </h2>
         </div>
-        <div>
-          <SkillTodoList
-            initialSkillTodos={skillTodoData}
-            skillId={skillId}
-            skillSlug={currentSkillSlug}
-          />
+        {/* Main Content Area (Scrollable) */}
+        <div className="flex-grow overflow-hidden p-4 md:p-6">
+          {/* Layout: Grid for larger screens, stack on smaller */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+            {/* Task List Column (Takes more space) */}
+            <div className="lg:col-span-2 h-full overflow-y-auto pr-2">
+              {" "}
+              {/* Allow scrolling within this column */}
+              <SkillTodoList
+                initialSkillTodos={skillTodoData}
+                skillId={skillId}
+                skillSlug={currentSkillSlug}
+              />
+            </div>
+
+            {/* Activity Timeline Column (Takes less space) */}
+            <div className="lg:col-span-1 h-full hidden lg:block">
+              {" "}
+              {/* Hide on small screens, adjust breakpoint as needed */}
+              {/* ActivityTimeline fetches its own data */}
+              <ActivityTimeline skillId={skillId} />
+            </div>
+          </div>
         </div>
       </div>
     );
