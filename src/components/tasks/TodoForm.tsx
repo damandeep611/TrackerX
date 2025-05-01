@@ -3,10 +3,12 @@ import { NewTodo } from "@/types/todoTypes";
 import React, { useState } from "react";
 
 interface TodoFormProps {
-  onAddTodo: (todo: NewTodo) => void;
-  onCancel: () => void;
-  isSubmitting?: boolean;
+  onAddTodo: (todo: NewTodo) => void; // fn to call when the form is submitting
+  onCancel: () => void; //when cancel button is clicked
+  isSubmitting?: boolean; //to indicate loading when task is being submitted
 }
+
+// and below the TodoFormprops are being destructed and isSubmtiting is given default value
 
 export default function TodoForm({
   onAddTodo,
@@ -16,26 +18,28 @@ export default function TodoForm({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tag, setTag] = useState("");
-  const [validationError, setValidationError] = useState("");
+  const [validationError, setValidationError] = useState(""); //state to manage and display the validation errors for the form
 
-  const handleSubmit = (e:React.FormEvent)=> {
+  // Event handling of form submission
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    //validate input
-    if(!title.trim()){
+    //validate input to avoid empty input and whitespaces
+    if (!title.trim()) {
       setValidationError("Title is required");
       return;
     }
+
     onAddTodo({
       title: title.trim(),
       description: description.trim() || null,
-      tag: tag.trim() || null
-    })
-    //reset form 
+      tag: tag.trim() || null,
+    });
+    //reset form after successful submission
     setTitle("");
     setDescription("");
     setTag("");
-    setValidationError("")
-  }
+    setValidationError("");
+  };
   return (
     <div className="p-6">
       <form onSubmit={handleSubmit} className="space-y-4">

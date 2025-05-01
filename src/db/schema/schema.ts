@@ -34,17 +34,23 @@ export const skillCard = pgTable("skillcard", {
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
+// the schema for the simple Task added in the standalone task management
+//first define the 'task' table in the db using pdTable and then 
+//defining columns and their types/consraints
 export const task = pgTable("task", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  user_id: text("user_id").references(() => user.id),
+  id: uuid("id").primaryKey().defaultRandom(), //column name 'id' type  uuid and marking it as primary key for the table
+  user_id: text("user_id").references(() => user.id), //column name 'user_id' and type text to reference the foreign key string ID's
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   tag: varchar("tag", { length: 50 }),
   duration: integer("duration").default(0).notNull(),
   date: timestamp("date").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(), //database Triggers: ORM hooks i.e default now to automatically update the timestamp whenever the row is modified
 });
+
+  //!UPDATES: to make in the 'task' table 
+  // make the user_id notNull() as every task must have a userID
 
 export const skillTask = pgTable("skillTask", {
   id: uuid("id").primaryKey().defaultRandom(),

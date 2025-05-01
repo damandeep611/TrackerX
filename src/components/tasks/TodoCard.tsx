@@ -4,11 +4,12 @@ import { Check, Pencil, Trash, X } from "lucide-react";
 import React, { useState } from "react";
 
 interface TodoCardProps {
-  todo: Todo;
-  onUpdateTime: (todoId: string, minutes: number) => void;
-  onEditTodo: (todoId: string, updatedTodo: Partial<Todo>) => void;
-  onDeleteTodo: (todoId: string) => void;
-  isUpdating?: boolean;
+  todo: Todo; //the task data to display
+  onUpdateTime: (todoId: string, minutes: number) => void; //function to call when the time is updated
+  onEditTodo: (todoId: string, updatedTodo: Partial<Todo>) => void; // to call when the task is saved after editing
+  onDeleteTodo: (todoId: string) => void; //when deleting the task
+  //props to manage ui changes and show the loading states
+  isUpdating?: boolean; // is an update/edit operation in progress for the task
   isDeleting?: boolean;
 }
 
@@ -20,76 +21,101 @@ export default function TodoCard({
   isUpdating = false,
   isDeleting = false,
 }: TodoCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(todo.title);
-  const [editedDescription, setEditedDescription] = useState(todo.description || "");
+  const [isEditing, setIsEditing] = useState(false); // to control whether the card shows the display view or the edit task form
+  //state variables to hold the edited values  while the form is active and holding initial todo values
+  const [editedTitle, setEditedTitle] = useState(todo.title); //
+  const [editedDescription, setEditedDescription] = useState(
+    todo.description || ""
+  );
   const [editedTag, setEditedTag] = useState(todo.tag || "");
-  const [validationError, setValidationError]  = useState("");
+  const [validationError, setValidationError] = useState(""); // to show validation errors within the edit form
 
-  const handleTimeBlockClick = (blockIndex: number)=> {
+  // -----------event handling
+  //function trigger when the time block button is clicked
+  const handleTimeBlockClick = (blockIndex: number) => {
+    //calculate the duration in minutes based on the clicked block
     const targetMinutes = (blockIndex + 1) * 30;
 
-    //only updating if clicking or next block or restting 
-    if(targetMinutes === todo.duration  + 30 || (targetMinutes < todo.duration && targetMinutes + 30 > todo.duration)){
+    //update time, if clicking next unfillled block or already filled block to "reset" back to that point, logic needs refinement
+    if (
+      targetMinutes === todo.duration + 30 ||
+      (targetMinutes < todo.duration && targetMinutes + 30 > todo.duration)
+    ) {
+      //call the callback prop passed from TodoList to handle the actual update logic
       onUpdateTime(todo.id, targetMinutes);
     }
-  }
+  };
 
-  const handleEdit = ()=> {
-    setIsEditing(true);
-    setEditedTitle(todo.title);
+  //function triggered when the "Edit button is clicked"
+  const handleEdit = () => {
+    setIsEditing(true); //set the component state to switch to edit mode
+    setEditedTitle(todo.title); //intiate the edit with current task form data
     setEditedDescription(todo.description || "");
     setEditedTag(todo.tag || "");
-  }
+    setValidationError(""); //clear any previous validation errors
+  };
 
-  const handleCancelEdit = ()=> {
+  //triggered when the "cancel" button in the edit form is clicked
+  const handleCancelEdit = () => {
+    //set the component state back to display mode
     setIsEditing(false);
-    setValidationError("")
-  }
+    setValidationError(""); //clear validation errors
+  };
 
-  const handleSaveEdit = ()=> {
-    if(!editedTitle.trim()){
+  // edited input validation  and saving the edited data
+  const handleSaveEdit = () => {
+    if (!editedTitle.trim()) {
       setValidationError("Title is required");
-      return;
+      return; // stop saving if validation fails
     }
+    // todoList will handle the server action by drilling onEditTodo function
     onEditTodo(todo.id, {
       title: editedTitle.trim(),
       description: editedDescription.trim() || null,
       tag: editedTag.trim() || null,
-    })
+    });
+    //switch back to dispaly card mode after saving
     setIsEditing(false);
-    setValidationError("")
-  }
+    setValidationError("");
+  };
 
+  // --------------time duration Format helper function into readable format i.e "1h 30 min"
   const formatDuration = (minutes: number): string => {
-    if(minutes === 0) return "0m";
-    if(minutes < 60) return `${minutes}m`;
+    if (minutes === 0) return "0m";
+    if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
-  }
+    return remainingMinutes > 0
+      ? `${hours}h ${remainingMinutes}m`
+      : `${hours}h`;
+  };
 
-  //formatted date for display
+  //format and ISO date string into a locale-specific short date format e.g wed apr 27
   const formatDate = (dateString: string): string => {
-    try{
+    try {
       const date = new Date(dateString);
+      //using browser's inbuild date formatting
       return date.toLocaleDateString("en-US", {
         weekday: "short",
         month: "short",
         day: "numeric",
-      })
-    }catch(error){
+      });
+    } catch (error) {
       const dateError = String(error);
-      return dateError
+      return dateError;
     }
   };
 
-  if(isEditing){
+  // if 'isEditing' state is true, render the edit form
+  if (isEditing) {
     return (
       <div className=" rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <div className="space-y-3">
           <div>
-            <label htmlFor={`edit-title-${todo.id}`} className="block text-sm font-medium  mb-1">
+            <label
+              htmlFor={`edit-title-${todo.id}`}
+              className="block text-sm font-medium  mb-1"
+            >
               Task Title<span className="text-red-500">*</span>
             </label>
             <input
@@ -110,9 +136,12 @@ export default function TodoCard({
               <p className="text-red-500 text-xs mt-1">{validationError}</p>
             )}
           </div>
-          
+
           <div>
-            <label htmlFor={`edit-tag-${todo.id}`} className="block text-sm font-medium  mb-1">
+            <label
+              htmlFor={`edit-tag-${todo.id}`}
+              className="block text-sm font-medium  mb-1"
+            >
               Tag (optional)
             </label>
             <input
@@ -124,9 +153,12 @@ export default function TodoCard({
               disabled={isUpdating}
             />
           </div>
-          
+
           <div>
-            <label htmlFor={`edit-description-${todo.id}`} className="block text-sm font-medium  mb-1">
+            <label
+              htmlFor={`edit-description-${todo.id}`}
+              className="block text-sm font-medium  mb-1"
+            >
               Description (optional)
             </label>
             <textarea
@@ -137,7 +169,7 @@ export default function TodoCard({
               disabled={isUpdating}
             />
           </div>
-          
+
           <div className="flex justify-end space-x-2">
             <button
               onClick={handleCancelEdit}
@@ -158,7 +190,7 @@ export default function TodoCard({
           </div>
         </div>
       </div>
-    )
+    );
   }
   return (
     <div className=" rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
@@ -245,5 +277,4 @@ export default function TodoCard({
       </div>
     </div>
   );
-  
 }
