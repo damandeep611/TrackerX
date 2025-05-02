@@ -4,7 +4,8 @@ import { Pencil, Trash } from "lucide-react";
 import React, { useState } from "react";
 
 interface SkillTodoCardProps {
-  todo: skillTodo;
+  todo: skillTodo; //the task data
+  //Callbacks to the parent list component
   onUpdateTime: (todoId: string, minutes: number) => void;
   onEditTodo: (todoId: string, updatedTodo: Partial<skillTodo>) => void;
   onDeleteTodo: (todoId: string) => void;

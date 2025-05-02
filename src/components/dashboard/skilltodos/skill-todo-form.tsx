@@ -1,6 +1,6 @@
 "use client";
 import { newSkillTodo } from "@/types/skillDashboardTypes";
-import React, { useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 
 //defining the props expected by the skilltodoform component
 //these are the callback props as they will be passed functions from parent component of TodoList
@@ -32,32 +32,40 @@ export default function SkillTodoForm({
       setValidationError("Task name is required");
       return; //stop submission if validation fails
     }
+    // --call parent handler to pass the collected data up to the parent component
+    //so that parent component can add the skillId before calling the server action
     onAddSkillTodo({
       title: title.trim(),
       description: description.trim() || null,
       tag: tag.trim() || null,
     });
+    // reset form after submission
     setTitle("");
     setDescription("");
     setTag("");
     setValidationError("");
   };
+
+  //handle input change and clear validation error on typing
+  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+    if (validationError) {
+      setValidationError("");
+    }
+  };
   return (
-    <div className="p-6">
+    <div className="p-1">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* task title input field */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium">
+          <label htmlFor="title" className="block text-sm font-medium mb-1">
             Task Title
           </label>
           <input
             type="text"
             id="title"
             value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              if (validationError) setValidationError("");
-            }}
+            onChange={handleTitleChange}
             className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               validationError ? "border-red-500" : ""
             }`}
