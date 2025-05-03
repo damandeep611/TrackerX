@@ -1,20 +1,30 @@
 "use client"
-import React, { useEffect, useRef } from "react";
-import { ModeToggle } from "./mode-toggle";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import AnimatedLeafLogo from "./animated-leaf-logo";
+import LoginModal from "./landingPage/LoginModal";
 
 export default function Navigation() {
-  const navRef = useRef<HTMLDivElement>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  // modal open and close functions
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+  const navRef = useRef<HTMLDivElement>(null);
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/blog", label: "Blog" },
-    { href: "/tools", label: "Tools" },
+    { href: "/feedback", label: "Feeback" },
   ];
 
   useEffect(() => {
+    // Store current ref value inside the effect
+    const navElement = navRef.current;
+    const navItems = document.querySelectorAll(".nav-item");
+    // clearing existing animations before remounting
+    gsap.killTweensOf(navElement);
+    gsap.killTweensOf(navItems);
     gsap.from(navRef.current, {
       y: -50,
       opacity: 0,
@@ -29,6 +39,11 @@ export default function Navigation() {
       delay: 0.5,
       ease: "power2.out",
     });
+    //cleanup function
+    return () => {
+      gsap.killTweensOf(navElement);
+      gsap.killTweensOf(navItems);
+    };
   }, []);
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 py-4">
@@ -53,12 +68,15 @@ export default function Navigation() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <ModeToggle />
-          <button className="nav-item hidden md:block px-6 py-2 bg-white text-black rounded-full font-medium hover:bg-orange-300 transition-colors">
+          <button
+            onClick={openModal}
+            className="nav-item hidden md:block px-6 py-2 bg-white text-black rounded-full font-medium hover:bg-orange-300 transition-colors"
+          >
             Login
           </button>
         </div>
       </div>
+      <LoginModal isOpen={isModalOpen} onClose={closeModal} />
     </header>
   );
 }

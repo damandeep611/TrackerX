@@ -1,6 +1,5 @@
 "use client";
 
-import SignIn from "../auth/sign-in";
 
 export default function HeroSection() {
   return (
@@ -24,7 +23,6 @@ export default function HeroSection() {
               <button className="px-8 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors">
                 Get Started
               </button>
-              <SignIn />
             </div>
           </div>
         </div>

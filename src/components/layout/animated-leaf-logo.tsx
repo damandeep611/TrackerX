@@ -7,18 +7,19 @@ export default function AnimatedLeafLogo() {
   const logoRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
-    if (!logoRef.current) return
+    const logoElement = logoRef.current;
+    if (!logoElement) return;
 
-    const leaves = logoRef.current.querySelectorAll(".leaf")
+    const leaves = logoElement.querySelectorAll(".leaf");
 
     // Set initial positions
     gsap.set(leaves, {
       transformOrigin: "center bottom",
       rotation: (i) => i * 10 - 10, // Slightly different angles
-    })
+    });
 
     // Create the main animation timeline
-    const tl = gsap.timeline({ repeat: -1, yoyo: true })
+    const tl = gsap.timeline({ repeat: -1, yoyo: true });
 
     // Animate each leaf
     leaves.forEach((leaf, i) => {
@@ -31,30 +32,40 @@ export default function AnimatedLeafLogo() {
           ease: "sine.inOut",
           delay: i * 0.2,
         },
-        0,
-      )
-    })
+        0
+      );
+    });
 
     // Hover animation
-    const hoverTl = gsap.timeline({ paused: true })
+    const hoverTl = gsap.timeline({ paused: true });
     hoverTl.to(leaves, {
       scale: 1.1,
       fill: "#4ADE80",
       stagger: 0.1,
       duration: 0.1,
       ease: "power2.out",
-    })
+    });
 
+    // Define the exact handler functions so we can properly remove them
+    const handleMouseEnter = () => hoverTl.play();
+    const handleMouseLeave = () => hoverTl.reverse();
     // Add hover event listeners
-    logoRef.current.addEventListener("mouseenter", () => hoverTl.play())
-    logoRef.current.addEventListener("mouseleave", () => hoverTl.reverse())
 
+    logoElement.addEventListener("mouseenter", handleMouseEnter);
+    logoElement.addEventListener("mouseleave", handleMouseLeave);
+
+    // Proper cleanup function with captured variables
     return () => {
-      if (logoRef.current) {
-        logoRef.current.removeEventListener("mouseenter", () => hoverTl.play())
-        logoRef.current.removeEventListener("mouseleave", () => hoverTl.reverse())
+      // Kill any active animations
+      tl.kill();
+      hoverTl.kill();
+
+      // Remove event listeners using the same function references
+      if (logoElement) {
+        logoElement.removeEventListener("mouseenter", handleMouseEnter);
+        logoElement.removeEventListener("mouseleave", handleMouseLeave);
       }
-    }
+    };
   }, [])
 
   return (
