@@ -5,6 +5,7 @@ import gsap from "gsap";
 import AnimatedLeafLogo from "./animated-leaf-logo";
 import LoginModal from "./landingPage/LoginModal";
 
+
 export default function Navigation() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // modal open and close functions

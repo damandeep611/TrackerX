@@ -55,19 +55,28 @@ export default function LoginModal({isOpen, onClose}:LoginModalProps) {
 
   if(!isOpen) return null;
   return (
-    <div ref={modalRef} onClick={handleBackdropClick} className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
-      <div ref={modalContentRef} className='relative flex w-full max-w-6xl overflow-hidden rounded-lg shadow-xl'>
+    <div
+      ref={modalRef}
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    >
+      <div
+        ref={modalContentRef}
+        className="relative flex w-full max-w-6xl overflow-hidden rounded-lg shadow-xl"
+      >
         {/* left side  */}
         <div className="w-2/3 bg-white p-8">
           <div className="flex h-full flex-col items-center justify-center">
             <div className="w-full max-w-md space-y-8">
               <div className="text-center">
-                <h2 className="text-4xl font-bold tracking-tight text-gray-900">Let&apos;s get started</h2>
+                <h2 className="text-4xl font-bold tracking-tight text-gray-900">
+                  Let&apos;s get started
+                </h2>
                 <p className="mt-2 text-gray-600">Sign in/Sign up</p>
               </div>
 
-              <div className="mt-8 space-y-6">
-               <SignIn/>
+              <div className="mt-8 space-y-6   ">
+                <SignIn />
 
                 <div className="relative flex items-center">
                   <div className="flex-grow border-t border-gray-300"></div>
@@ -95,7 +104,10 @@ export default function LoginModal({isOpen, onClose}:LoginModalProps) {
               </div>
 
               <div className="mt-8 text-center text-sm text-gray-500">
-                <p>By signing up, you confirm that you agree to our terms, license agreement and privacy policy.</p>
+                <p>
+                  By signing up, you confirm that you agree to our terms,
+                  license agreement and privacy policy.
+                </p>
                 <div className="mt-2 flex justify-center space-x-2">
                   <a href="#" className="hover:text-gray-700">
                     License
@@ -114,22 +126,28 @@ export default function LoginModal({isOpen, onClose}:LoginModalProps) {
           </div>
         </div>
         {/* dashboard demo image */}
-        <div className='relative w-1/3'>
-          <div className='absolute inset-0 bg-blue-200'>
-            <div className='h-full w-full grid grid-cols-10'>
-              {Array.from({length: 100}).map((_, i)=> (
-                <div key={i} className='border border-blue-300'></div>
+        <div className="relative w-1/3">
+          <div className="absolute inset-0 bg-blue-200">
+            <div className="h-full w-full grid grid-cols-10">
+              {Array.from({ length: 100 }).map((_, i) => (
+                <div key={i} className="border border-blue-300"></div>
               ))}
             </div>
           </div>
-          <div className='absolute bottom-0 left-0 right-0 bg-black p-6 text-white'>
-              <h3 className='text-2xl font-bold'>Bookmarking Resources Feature for Skills Coming soon...</h3>
-              <p className='mt-2 text-sm text-gray-300'>This Project is in Beta so Changes may be seen frequently, for any feedback or new Feature suggestion just drop a message with email by clicking This Feedback </p>
+          <div className="absolute bottom-0 left-0 right-0 bg-black p-6 text-white">
+            <h3 className="text-2xl font-bold">
+              Bookmarking Resources Feature for Skills Coming soon...
+            </h3>
+            <p className="mt-2 text-sm text-gray-300">
+              This Project is in Beta so Changes may be seen frequently, for any
+              feedback or new Feature suggestion just drop a message with email
+              by clicking This Feedback{" "}
+            </p>
           </div>
         </div>
-      
-      {/* close button */}
-      <button
+
+        {/* close button */}
+        <button
           onClick={onClose}
           className="absolute right-2 top-2 rounded-full p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
         >
@@ -140,10 +158,15 @@ export default function LoginModal({isOpen, onClose}:LoginModalProps) {
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
-        </div>
+      </div>
     </div>
-  )
+  );
 }
