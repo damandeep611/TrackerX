@@ -2,18 +2,18 @@
 export default function HeroSection() {
   return (
     <section className="w-full h-screen ">
-      <div className=" sm:px-6 lg:px-8">
+      <div className=" ">
         <div className="relative px-4 pt-20 pb-24 md:pt-32 md:pb-24 overflow-hidden">
           {/* bg pattern */}
-          <div className="absolute  inset-0 bg-[#f9f9f9] bg-[radial-gradient(#d0d0d0_1.5px,transparent_1.5px)] [background-size:16px_16px] opacity-40"></div>
+          <div className="absolute  inset-0 bg-[#f9f9f9] bg-[radial-gradient(#d0d0d0_1.5px,transparent_1.5px)] [background-size:16px_16px] opacity-40 dark:hidden"></div>
           <StickyNote />
           {/* skillCard showcase */}
           <HeroSkillCard />
           <HeroActivityCard />
 
           {/* main hero section Content */}
-          <div className=" relative z-50 mt-20 mb-20 container mx-auto max-w-5xl">
-            <div className="text-center text-black dark:text-white">
+          <div className=" relative z-0 mt-20 mb-20 container mx-auto max-w-5xl">
+            <div className="text-center">
               <p className="inline-block uppercase px-4 py-1 mb-4 font-medium tracking-wide bg-white/30 dark:bg-white/10 backdrop-blur-sm rounded-full">
                 Track your skill learning easily
               </p>
@@ -27,7 +27,7 @@ export default function HeroSection() {
               </p>
 
               <div className="flex items-center justify-center gap-4">
-                <button className="px-8 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors">
+                <button className="px-8 py-3 bg-black text-white border dark:border-gray-100 rounded-full font-medium hover:bg-gray-800 transition-colors">
                   Get Started
                 </button>
               </div>
@@ -53,13 +53,13 @@ const StickyNote = () => {
 
 const HeroSkillCard = () => {
   return (
-    <div className="absolute -right-[25%] top-[5%] lg:right-[2%] lg:top-[15%] w-64 bg-white shadow-xl rounded-xl p-4 transform rotate-3 z-10">
+    <div className="absolute -right-[25%] top-[5%] lg:right-[2%] lg:top-[15%] w-64 bg-white dark:bg-black  shadow-xl rounded-xl p-4 transform rotate-3 z-10">
       <h3 className="font-medium text-lg mb-2">Skill Tracker</h3>
       <div className="flex items-start gap-3 mt-4">
         <div className="mt-1">
           <div className="w-10 h-10 rounded-full border-2 border-gray-800 flex items-center justify-center">
-            <div className="w-1 h-3 bg-gray-800 absolute transform translate-y-[-2px]"></div>
-            <div className="w-1 h-4 bg-gray-800 absolute transform rotate-90 translate-x-[3px]"></div>
+            <div className="w-1 h-3 bg-gray-800 dark:bg-white absolute transform translate-y-[-2px]"></div>
+            <div className="w-1 h-4 bg-gray-800 dark:bg-white absolute transform rotate-90 translate-x-[3px]"></div>
           </div>
         </div>
         <div>
@@ -82,7 +82,7 @@ const HeroSkillCard = () => {
 
 const HeroActivityCard = () => {
   return (
-    <div className="absolute -right-[10%] -bottom-[5%] lg:left-[10%] lg:bottom-[5%] w-64 bg-white shadow-xl rounded-xl p-4 transform -rotate-2 z-10 overflow-hidden">
+    <div className="absolute -right-[10%] -bottom-[5%] lg:left-[10%] lg:bottom-[5%] w-64 bg-white dark:bg-black shadow-xl rounded-xl p-4 transform -rotate-2 z-10 overflow-hidden">
       <h3 className="font-medium text-lg mb-3">Today&apos;s tasks</h3>
 
       <div className="space-y-4">
