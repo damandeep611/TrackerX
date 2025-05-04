@@ -1,10 +1,15 @@
 "use client"
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
-import { PlusCircle, XCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import React, { useState, useTransition } from "react";
 import SkillTodoForm from "./skill-todo-form";
 import SkillTodoCard from "./skill-todo-card";
-import { addSkillTasks, deleteSkillTask, editSkillTask, updateskillTaskTime } from "@/actions/skillTaskAction";
+import {
+  addSkillTasks,
+  deleteSkillTask,
+  editSkillTask,
+  updateskillTaskTime,
+} from "@/actions/skillTaskAction";
 
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
@@ -153,7 +158,7 @@ export default function SkillTodoList({
     startTransition(async () => {
       try {
         //asuuming editSkilltask doesn't directly impact total hours
-        
+
         const result = await editSkillTask(todoId, dataToSend);
         if (!result.success) {
           console.error("Failed to edit skill Todo:", result.error);
@@ -212,22 +217,14 @@ export default function SkillTodoList({
           </button>
         </div>
         {/* show todo form only when isAdding state is true */}
-        {isAddingTodo && (
-          <div className="relative rounded-lg shadow-md p-4 border border-gray-300">
-            <button
-              onClick={() => setIsAddingTodo(false)}
-              className="absolute top-2 right-2"
-              disabled={isSubmittingForm}
-            >
-              <XCircle size={20} />
-            </button>
-            <SkillTodoForm
-              onAddSkillTodo={handleAddTodo}
-              onCancel={() => setIsAddingTodo(false)}
-              isSubmitting={isSubmittingForm}
-            />
-          </div>
-        )}
+
+        <div className={`relative   ${isAddingTodo ? "border-green-600" : ""}`}>
+          <SkillTodoForm
+            onAddSkillTodo={handleAddTodo}
+            onCancel={() => setIsAddingTodo(false)}
+            isSubmitting={isSubmittingForm}
+          />
+        </div>
       </div>
       {isPending && (
         <div className="text-center text-gray-400 py-2">Processing....</div>

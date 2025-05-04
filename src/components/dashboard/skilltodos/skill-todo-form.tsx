@@ -1,6 +1,8 @@
 "use client";
 import { newSkillTodo } from "@/types/skillDashboardTypes";
-import React, { ChangeEvent, useState } from "react";
+import gsap from "gsap";
+import { ChevronUp, PlusIcon, X } from "lucide-react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 
 //defining the props expected by the skilltodoform component
 //these are the callback props as they will be passed functions from parent component of TodoList
@@ -16,6 +18,8 @@ export default function SkillTodoForm({
   onCancel,
   isSubmitting = false,
 }: SkillTodoFormProps) {
+  // expanding the form
+  const [isExpanded, setIsExpanded] = useState(false);
   // use of react hooks and using local state to define the value of form inputs
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("");
@@ -23,6 +27,101 @@ export default function SkillTodoForm({
   //and local state to manage and display the validation error for the form
   const [validationError, setValidationError] = useState("");
 
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const formFieldsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // handling Expanded state
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  // Animation for expanding /collapsing
+  useEffect(() => {
+    if (!drawerRef.current || !formFieldsRef.current) return;
+
+    const drawer = drawerRef.current;
+    const formFields = formFieldsRef.current;
+    const formElements = Array.from(formFields.children);
+
+    if (isExpanded) {
+      //first the initial state of the form will be
+      gsap.set(drawer, { height: 0 });
+      gsap.set(formFields, { opacity: 0, y: 20 });
+      gsap.set(formElements, { opacity: 0, y: 15 });
+
+      //animation timeline
+      const tl = gsap.timeline();
+
+      //expand the drawer first
+      tl.to(drawer, {
+        height: "auto",
+        duration: 0.3,
+        ease: "power2.out",
+      })
+
+        //fade in the form container
+        .to(
+          formFields,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.25,
+            ease: "power2.out",
+          },
+          "-=0.1"
+        )
+        //stagger reveal form elements
+        .to(
+          formElements,
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.05,
+            duration: 0.2,
+            ease: "power2.out",
+            onComplete: () => {
+              ///focus on the title input when expanded
+              inputRef.current?.focus();
+            },
+          },
+          "-=0.15"
+        );
+    } else {
+      //collapse animation
+      const tl = gsap.timeline();
+
+      //hide the form elements first
+      tl.to(formElements, {
+        opacity: 0,
+        y: 10,
+        stagger: 0.03,
+        duration: 0.15,
+        ease: "power2.in",
+      })
+        //then fade out container
+        .to(
+          formFields,
+          {
+            opacity: 0,
+            y: 15,
+            duration: 0.2,
+            ease: "power2.in",
+          },
+          "-=0.1"
+        )
+        //finally collapse the drawer
+        .to(
+          drawer,
+          {
+            height: 0,
+            duration: 0.25,
+            ease: "power2.in",
+          },
+          "-=0.15"
+        );
+    }
+  }, [isExpanded]);
   // event handlers and calling this function when the submit button is clicked
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -54,75 +153,94 @@ export default function SkillTodoForm({
     }
   };
   return (
-    <div className="p-1">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* task title input field */}
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            Task Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            value={title}
-            onChange={handleTitleChange}
-            className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              validationError ? "border-red-500" : ""
-            }`}
-            placeholder="Add task for the skill"
-            aria-required="true"
-            aria-invalid={!!validationError}
-            disabled={isSubmitting}
-            autoFocus
-          />
-          {validationError && (
-            <span className="text-red-500 text-xs mt-1">{validationError}</span>
-          )}
-        </div>
-        {/* tag input field */}
-        <div>
-          <label htmlFor="tag" className="block text-sm font-medium">
-            Tag (optional)
-          </label>
-          <input
-            type="text"
-            id="tag"
-            value={tag}
-            placeholder="Tags are optional to identify sorting of tasks"
-            onChange={(e) => setTag(e.target.value)}
-            className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isSubmitting}
-          />
-        </div>
-        {/* description input field */}
-        <div>
-          <label htmlFor="description">Description (optional)</label>
-          <textarea
-            id="description"
-            className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Optional"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
-        {/* form buttons */}
-        <div>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="py-2 px-4 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="py-2 px-4 text-sm bg-blue-500 text-white hover:bg-blue-800 rounded-lg"
-          >
-            {isSubmitting ? "adding..." : "Add Task"}
-          </button>
-        </div>
-      </form>
+    <div className="fixed bottom-4 left-0 right-0 flex justify-center items-end z-10">
+      <div className="w-full max-w-lg mx-auto">
+        <form
+          onSubmit={handleSubmit}
+          className=" relative  flex flex-col shadow-md border border-gray-200 overflow-hidden rounded-xl"
+        >
+          {/* main input bar - visible always */}
+          <div className="relative z-20 flex items-center">
+            <button
+              onClick={toggleExpand}
+              type="button"
+              className={`p-3 ${isExpanded ? "text-blue-600" : ""}`}
+            >
+              <ChevronUp
+                size={20}
+                className={`transition-transform duration-300 ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {/* task title input field */}
+            <div>
+              <input
+                ref={inputRef}
+                type="text"
+                id="title"
+                value={title}
+                onChange={handleTitleChange}
+                className={`flex-1  p-3  rounded-lg focus:outline-none  ${
+                  validationError ? "border-red-500" : ""
+                }`}
+                placeholder="Add task for the skill"
+                aria-required="true"
+                aria-invalid={!!validationError}
+                disabled={isSubmitting}
+                autoFocus
+              />
+              {validationError && (
+                <span className="text-red-500 text-xs mt-1">
+                  {validationError}
+                </span>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="py-2 px-4 text-sm bg-blue-500 text-white hover:bg-blue-800 rounded-lg"
+            >
+              {isSubmitting ? "adding..." : <PlusIcon />}
+            </button>
+            <button onClick={onCancel}>
+              <X />
+            </button>
+          </div>
+
+          {/* Expandable drawer containing tag and description field */}
+          <div ref={drawerRef} className=" relative z-10 overflow-hidden h-0 ">
+            <div ref={formFieldsRef}>
+              {/* tag input field */}
+              <div>
+                <label htmlFor="tag" className="block text-sm font-medium">
+                  Tag (optional)
+                </label>
+                <input
+                  type="text"
+                  id="tag"
+                  value={tag}
+                  placeholder="Tags are optional to identify sorting of tasks"
+                  onChange={(e) => setTag(e.target.value)}
+                  className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSubmitting}
+                />
+              </div>
+              {/* description input field */}
+              <div>
+                <label htmlFor="description">Description (optional)</label>
+                <textarea
+                  id="description"
+                  className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Optional"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
