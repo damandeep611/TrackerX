@@ -1,7 +1,7 @@
 "use client";
 import { newSkillTodo } from "@/types/skillDashboardTypes";
 import gsap from "gsap";
-import { ChevronUp, PlusIcon, X } from "lucide-react";
+import { ChevronUp, Ellipsis, PlusIcon } from "lucide-react";
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 
 //defining the props expected by the skilltodoform component
@@ -27,6 +27,7 @@ export default function SkillTodoForm({
   //and local state to manage and display the validation error for the form
   const [validationError, setValidationError] = useState("");
 
+  const formRef = useRef<HTMLFormElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const formFieldsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,27 +39,43 @@ export default function SkillTodoForm({
 
   // Animation for expanding /collapsing
   useEffect(() => {
-    if (!drawerRef.current || !formFieldsRef.current) return;
+    if (!drawerRef.current || !formFieldsRef.current || !formRef.current)
+      return;
 
     const drawer = drawerRef.current;
     const formFields = formFieldsRef.current;
     const formElements = Array.from(formFields.children);
+    const form = formRef.current;
 
     if (isExpanded) {
       //first the initial state of the form will be
-      gsap.set(drawer, { height: 0 });
+      gsap.set(drawer, { height: 0, boxShadow: "0 0 0 rgba(0,0,0,0)" });
       gsap.set(formFields, { opacity: 0, y: 20 });
-      gsap.set(formElements, { opacity: 0, y: 15 });
+      gsap.set(formElements, { opacity: 0, y: 15, scale: 0.98 });
 
       //animation timeline
       const tl = gsap.timeline();
 
       //expand the drawer first
-      tl.to(drawer, {
-        height: "auto",
-        duration: 0.3,
+      tl.to(form, {
+        scale: 1.01,
+        duration: 0.2,
         ease: "power2.out",
       })
+        .to(drawer, {
+          height: "auto",
+          duration: 0.35,
+          ease: "back.out(1.1)",
+        })
+        .to(
+          drawer,
+          {
+            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+            duration: 0.3,
+            ease: "power2.out",
+          },
+          "-=0.25"
+        )
 
         //fade in the form container
         .to(
@@ -77,8 +94,9 @@ export default function SkillTodoForm({
           {
             opacity: 1,
             y: 0,
-            stagger: 0.05,
-            duration: 0.2,
+            scale: 1,
+            stagger: 0.06,
+            duration: 0.25,
             ease: "power2.out",
             onComplete: () => {
               ///focus on the title input when expanded
@@ -86,6 +104,15 @@ export default function SkillTodoForm({
             },
           },
           "-=0.15"
+        )
+        .to(
+          form,
+          {
+            scale: 1,
+            duration: 0.2,
+            ease: "power2.out",
+          },
+          "-=0.2"
         );
     } else {
       //collapse animation
@@ -154,27 +181,30 @@ export default function SkillTodoForm({
   };
   return (
     <div className="fixed bottom-4 left-0 right-0 flex justify-center items-end z-10">
-      <div className="w-full max-w-lg mx-auto">
+      <div className="w-full max-w-3xl mx-auto ">
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
-          className=" relative  flex flex-col shadow-md border border-gray-200 overflow-hidden rounded-xl"
+          className=" relative  flex flex-col  shadow-md border border-gray-200 overflow-hidden rounded-xl"
         >
           {/* main input bar - visible always */}
-          <div className="relative z-20 flex items-center">
+          <div className="relative z-20 flex items-center justify-between">
             <button
               onClick={toggleExpand}
               type="button"
-              className={`p-3 ${isExpanded ? "text-blue-600" : ""}`}
+              className={`p-3 transition-colors ${
+                isExpanded ? "text-blue-600" : ""
+              }`}
             >
               <ChevronUp
                 size={20}
-                className={`transition-transform duration-300 ${
+                className={` transition-transform duration-300 ${
                   isExpanded ? "rotate-180" : ""
                 }`}
               />
             </button>
             {/* task title input field */}
-            <div>
+            <div className=" relative w-full ">
               <input
                 ref={inputRef}
                 type="text"
@@ -191,28 +221,31 @@ export default function SkillTodoForm({
                 autoFocus
               />
               {validationError && (
-                <span className="text-red-500 text-xs mt-1">
+                <span className="  text-red-500 text-xs mt-1">
                   {validationError}
                 </span>
               )}
             </div>
             <button
               type="submit"
-              className="py-2 px-4 text-sm bg-blue-500 text-white hover:bg-blue-800 rounded-lg"
+              className="p-3  text-blue-600 hover:bg-blue-800 hover:text-white rounded-lg"
             >
-              {isSubmitting ? "adding..." : <PlusIcon />}
+              {isSubmitting ? "adding..." : <PlusIcon size={20} />}
             </button>
-            <button onClick={onCancel}>
-              <X />
+            <button onClick={onCancel} className="p-2">
+              <Ellipsis />
             </button>
           </div>
 
           {/* Expandable drawer containing tag and description field */}
-          <div ref={drawerRef} className=" relative z-10 overflow-hidden h-0 ">
-            <div ref={formFieldsRef}>
+          <div
+            ref={drawerRef}
+            className=" relative z-10 overflow-hidden h-0 bg-gradient-to-b from-white/95 to-white/98 backdrop-blur-sm border-t border-gray-100 "
+          >
+            <div ref={formFieldsRef} className="p-4 space-y-4 opacity-0">
               {/* tag input field */}
               <div>
-                <label htmlFor="tag" className="block text-sm font-medium">
+                <label htmlFor="tag" className="block text-sm font-medium mb-1">
                   Tag (optional)
                 </label>
                 <input
@@ -221,16 +254,21 @@ export default function SkillTodoForm({
                   value={tag}
                   placeholder="Tags are optional to identify sorting of tasks"
                   onChange={(e) => setTag(e.target.value)}
-                  className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2  border focus:outline-none "
                   disabled={isSubmitting}
                 />
               </div>
               {/* description input field */}
               <div>
-                <label htmlFor="description">Description (optional)</label>
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Description (optional)
+                </label>
                 <textarea
                   id="description"
-                  className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2  border focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Optional"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
