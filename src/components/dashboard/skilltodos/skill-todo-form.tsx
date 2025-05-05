@@ -240,7 +240,7 @@ export default function SkillTodoForm({
           {/* Expandable drawer containing tag and description field */}
           <div
             ref={drawerRef}
-            className=" relative z-10 overflow-hidden h-0 bg-gradient-to-b from-white/95 to-white/98 backdrop-blur-sm border-t border-gray-100 "
+            className=" relative z-10 overflow-hidden h-0 bg-gradient-to-b  border-t border-gray-100 "
           >
             <div ref={formFieldsRef} className="p-4 space-y-4 opacity-0">
               {/* tag input field */}
