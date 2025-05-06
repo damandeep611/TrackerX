@@ -1,6 +1,7 @@
 "use client";
 import { skillTodo } from "@/types/skillDashboardTypes";
-import { Pencil, Trash } from "lucide-react";
+import { formatUrl } from "@/utils/format-url";
+import { Link, Pencil, Trash } from "lucide-react";
 import React, { useState } from "react";
 
 interface SkillTodoCardProps {
@@ -27,8 +28,8 @@ export default function SkillTodoCard({
   //state variables to hold the edited values while the form is active
   // initialize with current todo values when editing starts
   const [editedTitle, setEditedTitle] = useState(todo.title);
-  const [editedDescription, setEditedDescription] = useState(
-    todo.description || ""
+  const [editedResourceLink, setEditedResourceLink] = useState(
+    todo.resourceLink || ""
   );
   const [editedTag, setEditedTag] = useState(todo.tag || "");
   //state for displaying validation error within the editing form
@@ -49,15 +50,15 @@ export default function SkillTodoCard({
   const handleEdit = () => {
     setIsEditing(true);
     setEditedTitle(todo.title);
-    setEditedDescription(todo.description || "");
+    setEditedResourceLink(todo.resourceLink || "");
     setEditedTag(todo.tag || "");
     setValidationError("");
   };
 
-  const handleCancelEdit = ()=> {
+  const handleCancelEdit = () => {
     setIsEditing(false);
-    setValidationError("")
-  }
+    setValidationError("");
+  };
 
   const handleSaveEdit = () => {
     if (!editedTitle.trim()) {
@@ -66,7 +67,7 @@ export default function SkillTodoCard({
     }
     onEditTodo(todo.id, {
       title: editedTitle.trim(),
-      description: editedDescription.trim() || null,
+      resourceLink: editedResourceLink.trim() || null,
       tag: editedTag.trim() || null,
     });
     setIsEditing(false);
@@ -157,8 +158,8 @@ export default function SkillTodoCard({
             <input
               type="text"
               id={`edit-description-${todo.id}`}
-              value={editedDescription}
-              onChange={(e) => setEditedDescription(e.target.value)}
+              value={editedResourceLink}
+              onChange={(e) => setEditedResourceLink(e.target.value)}
               className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-green-500"
               disabled={isUpdating}
             />
@@ -224,10 +225,18 @@ export default function SkillTodoCard({
         {/* main content title and description */}
         <div>
           <h3 className="text-lg font-semibold">{todo.title}</h3>
-          {todo.description && (
-            <p className="text-sm mt-1 break-words whitespace-pre-line">
-              {todo.description}
-            </p>
+          {todo.resourceLink && (
+            <div className="mt-2">
+              <a
+                href={todo.resourceLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center"
+              >
+                <Link />
+                {formatUrl(todo.resourceLink)}
+              </a>
+            </div>
           )}
         </div>
         {/* time tracking section */}

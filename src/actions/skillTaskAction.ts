@@ -71,7 +71,7 @@ export async function getSkillTasksForSkill(
     skill_id: t.skill_id || "",
     title: t.title,
     tag: t.tag,
-    description: t.description,
+    resourceLink: t.resourceLink,
     //converting date objects to ISO strings
     date: t.date.toISOString(),
     duration: t.duration,
@@ -105,7 +105,7 @@ export async function addSkillTasks(
         user_id: userId,
         skill_id: newTodo.skillId,
         title: newTodo.title.trim(),
-        description: newTodo.description?.trim() || null,
+        resourceLink: newTodo.resourceLink?.trim() || null,
         tag: newTodo.tag?.trim() || null,
       })
       .returning(); //ask the database to return the newly inserted row
@@ -134,7 +134,7 @@ export async function addSkillTasks(
       skill_id: createdSkillTask.skill_id || "",
       title: createdSkillTask.title,
       tag: createdSkillTask.tag,
-      description: createdSkillTask.description,
+      resourceLink: createdSkillTask.resourceLink,
       date: createdSkillTask.date.toISOString(),
       duration: createdSkillTask.duration,
       createdAt: createdSkillTask.createdAt.toISOString(),
@@ -180,7 +180,7 @@ export async function updateskillTaskTime(
         error: "Task not found or you don't have permission to update it",
       };
     }
-    await updateSkillCardHours(skillId);//update parent skillCard hours After successful update
+    await updateSkillCardHours(skillId); //update parent skillCard hours After successful update
     //revalidate
     const parentSkill = await db
       .select({ slug: skillCard.slug })
@@ -206,7 +206,7 @@ export async function editSkillTask(
   taskId: string,
   updatedFields: {
     title: string;
-    description: string | null;
+    resourceLink: string | null;
     tag: string | null;
   }
 ): Promise<{ success: boolean; error?: string }> {
@@ -223,7 +223,7 @@ export async function editSkillTask(
       .update(skillTask)
       .set({
         title: updatedFields.title.trim(),
-        description: updatedFields.description?.trim() || null,
+        resourceLink: updatedFields.resourceLink?.trim() || null,
         tag: updatedFields.tag?.trim() || null,
         updatedAt: new Date(),
       })

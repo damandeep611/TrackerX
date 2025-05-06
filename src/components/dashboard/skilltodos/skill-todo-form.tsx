@@ -23,7 +23,7 @@ export default function SkillTodoForm({
   // use of react hooks and using local state to define the value of form inputs
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("");
-  const [description, setDescription] = useState("");
+  const [resourceLink, setResourceLink] = useState("");
   //and local state to manage and display the validation error for the form
   const [validationError, setValidationError] = useState("");
 
@@ -162,12 +162,12 @@ export default function SkillTodoForm({
     //so that parent component can add the skillId before calling the server action
     onAddSkillTodo({
       title: title.trim(),
-      description: description.trim() || null,
+      resourceLink: resourceLink.trim() || null,
       tag: tag.trim() || null,
     });
     // reset form after submission
     setTitle("");
-    setDescription("");
+    setResourceLink("");
     setTag("");
     setValidationError("");
   };
@@ -261,17 +261,17 @@ export default function SkillTodoForm({
               {/* description input field */}
               <div>
                 <label
-                  htmlFor="description"
+                  htmlFor="resourceLink"
                   className="block text-sm font-medium mb-1"
                 >
-                  Description (optional)
+                  ResourceLink (optional)
                 </label>
-                <textarea
-                  id="description"
+                <input
+                  id="resourceLink"
                   className="w-full px-3 py-2  border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Optional"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="https://example.com/resource"
+                  value={resourceLink}
+                  onChange={(e) => setResourceLink(e.target.value)}
                   disabled={isSubmitting}
                 />
               </div>

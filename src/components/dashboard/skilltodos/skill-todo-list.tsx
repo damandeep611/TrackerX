@@ -141,9 +141,9 @@ export default function SkillTodoList({
     // data sending for the editTask server action and only allowed fields are send
     const dataToSend = {
       title: updatedFields.title || "",
-      description:
-        updatedFields.description !== undefined
-          ? updatedFields.description
+      resourceLink:
+        updatedFields.resourceLink !== undefined
+          ? updatedFields.resourceLink
           : null,
       tag: updatedFields.tag !== undefined ? updatedFields.tag : null,
     };
