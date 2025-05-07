@@ -4,8 +4,10 @@
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { useTheme } from "next-themes";
 
 export function SignOutButton() {
+  const { setTheme } = useTheme();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -13,6 +15,7 @@ export function SignOutButton() {
       fetchOptions: {
         onSuccess: () => {
           router.push("/"); // Redirect to login page after sign-out
+          setTheme("light");
         },
       },
     });
