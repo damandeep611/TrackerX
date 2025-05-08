@@ -29,13 +29,13 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
       {/* button to open side panel */}
       <motion.button
         onClick={openDrawer}
-        animate={{ x: isOpen ? -320 : 0 }}
+        animate={{ x: isOpen ? -384 : 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed right-0 top-20 z-40 flex h-12 w-8 items-center justify-center rounded-l-md bg-indigo-600 text-white shadow-lg"
+        className="fixed right-0 top-20 z-40 flex h-12 w-12 items-center justify-center rounded-l-md bg-indigo-600 text-white shadow-lg"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6"
+          className="h-6 w-10"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -58,17 +58,17 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
       </motion.button>
       {/* drawer  */}
       <motion.div
-        className="fixed right-0 top-0 z-30 h-full w-80 shadow-lg border-l border-gray-500"
+        className="fixed right-0 top-0 z-30 h-full w-96  shadow-lg border border-gray-500 bg-white dark:bg-black"
         initial={{ x: "100%" }}
         animate={{ x: isOpen ? 0 : "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="py-12">
+        <div className="py-12 pl-6">
           {/* modal header and closer */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Add New Skill</h2>
           </div>
-          <div className="p-2 border border-gray-400">
+          <div className="p-2 ">
             {/* skill form */}
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
@@ -151,7 +151,6 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
                 </div>
                 {/* form buttons */}
                 <div className="mt-3 flex justify-end space-x-3">
-                  <Button variant={"outline"}>Cancel</Button>
                   <Button variant={"default"} type="submit">
                     Add Skill
                   </Button>
