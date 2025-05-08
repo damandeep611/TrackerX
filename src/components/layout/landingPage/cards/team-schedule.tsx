@@ -39,7 +39,7 @@ export default function WorkspaceCard() {
 
   return (
     <motion.div
-      className="relative w-full max-w-md aspect-[4/5] bg-gray-50 rounded-3xl p-6 border-2 border-dashed border-gray-300"
+      className="relative w-full max-w-md aspect-[4/5] bg-gray-50 rounded-3xl p-6 border-2 border-dashed border-gray-500"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -50,20 +50,35 @@ export default function WorkspaceCard() {
         <TasksCard />
       </div>
 
-      <motion.h2 className="text-center text-2xl font-bold text-gray-800 mb-8" variants={titleVariants}>
+      <motion.h2
+        className="text-center text-2xl font-bold text-gray-800 mb-8"
+        variants={titleVariants}
+      >
         Customizable
         <br />
         Workspaces
       </motion.h2>
 
       <div className="grid grid-cols-3 gap-3 h-1/4">
-        <motion.div className="bg-white rounded-xl shadow-sm" variants={placeholderVariants}></motion.div>
-        <motion.div className="bg-white rounded-xl shadow-sm col-span-2" variants={placeholderVariants}></motion.div>
-        <motion.div className="bg-white rounded-xl shadow-sm col-span-2" variants={placeholderVariants}></motion.div>
-        <motion.div className="bg-white rounded-xl shadow-sm" variants={placeholderVariants}></motion.div>
+        <motion.div
+          className="bg-white rounded-xl shadow-sm"
+          variants={placeholderVariants}
+        ></motion.div>
+        <motion.div
+          className="bg-white rounded-xl shadow-sm col-span-2"
+          variants={placeholderVariants}
+        ></motion.div>
+        <motion.div
+          className="bg-white rounded-xl shadow-sm col-span-2"
+          variants={placeholderVariants}
+        ></motion.div>
+        <motion.div
+          className="bg-white rounded-xl shadow-sm"
+          variants={placeholderVariants}
+        ></motion.div>
       </div>
     </motion.div>
-  )
+  );
 }
 
 
