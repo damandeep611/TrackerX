@@ -14,7 +14,6 @@ export default function Home() {
       <Solutions />
       <FeaturesPage />
       <TestimonialSection />
-
       <Footer />
     </div>
   );
