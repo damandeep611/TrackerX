@@ -204,14 +204,14 @@ export default function SkillTodoForm({
               />
             </button>
             {/* task title input field */}
-            <div className=" relative w-full ">
+            <div className=" relative w-full  ">
               <input
                 ref={inputRef}
                 type="text"
                 id="title"
                 value={title}
                 onChange={handleTitleChange}
-                className={`flex-1  p-3  rounded-lg focus:outline-none  ${
+                className={`flex-1  p-3  rounded-lg focus:outline-none  w-full  ${
                   validationError ? "border-red-500" : ""
                 }`}
                 placeholder="Add task for the skill"
