@@ -70,7 +70,7 @@ export async function getSkillTasksForSkill(
     id: t.id,
     skill_id: t.skill_id || "",
     title: t.title,
-    tag: t.tag,
+    tags: t.tags || [],
     resourceLink: t.resourceLink,
     //converting date objects to ISO strings
     date: t.date.toISOString(),
@@ -106,7 +106,7 @@ export async function addSkillTasks(
         skill_id: newTodo.skillId,
         title: newTodo.title.trim(),
         resourceLink: newTodo.resourceLink?.trim() || null,
-        tag: newTodo.tag?.trim() || null,
+        tags: newTodo.tags || [],
       })
       .returning(); //ask the database to return the newly inserted row
 
@@ -133,7 +133,7 @@ export async function addSkillTasks(
       id: createdSkillTask.id,
       skill_id: createdSkillTask.skill_id || "",
       title: createdSkillTask.title,
-      tag: createdSkillTask.tag,
+      tags: createdSkillTask.tags || [],
       resourceLink: createdSkillTask.resourceLink,
       date: createdSkillTask.date.toISOString(),
       duration: createdSkillTask.duration,
@@ -207,7 +207,7 @@ export async function editSkillTask(
   updatedFields: {
     title: string;
     resourceLink: string | null;
-    tag: string | null;
+    tags: string[];
   }
 ): Promise<{ success: boolean; error?: string }> {
   //ensure user id authenticated
@@ -224,7 +224,7 @@ export async function editSkillTask(
       .set({
         title: updatedFields.title.trim(),
         resourceLink: updatedFields.resourceLink?.trim() || null,
-        tag: updatedFields.tag?.trim() || null,
+        tags: updatedFields.tags || [],
         updatedAt: new Date(),
       })
       .where(and(eq(skillTask.id, taskId), eq(skillTask.user_id, userId)));

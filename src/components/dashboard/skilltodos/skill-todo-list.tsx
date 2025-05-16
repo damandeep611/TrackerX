@@ -145,7 +145,7 @@ export default function SkillTodoList({
         updatedFields.resourceLink !== undefined
           ? updatedFields.resourceLink
           : null,
-      tag: updatedFields.tag !== undefined ? updatedFields.tag : null,
+      tags: updatedFields.tags || [],
     };
     //client side validation
     if (!dataToSend.title.trim()) {

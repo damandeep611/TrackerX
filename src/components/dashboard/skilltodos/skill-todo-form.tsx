@@ -3,6 +3,7 @@ import { newSkillTodo } from "@/types/skillDashboardTypes";
 import gsap from "gsap";
 import { ChevronUp, Ellipsis, PlusIcon } from "lucide-react";
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import TagInput from "./tag-input";
 
 //defining the props expected by the skilltodoform component
 //these are the callback props as they will be passed functions from parent component of TodoList
@@ -22,7 +23,7 @@ export default function SkillTodoForm({
   const [isExpanded, setIsExpanded] = useState(false);
   // use of react hooks and using local state to define the value of form inputs
   const [title, setTitle] = useState("");
-  const [tag, setTag] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [resourceLink, setResourceLink] = useState("");
   //and local state to manage and display the validation error for the form
   const [validationError, setValidationError] = useState("");
@@ -163,12 +164,12 @@ export default function SkillTodoForm({
     onAddSkillTodo({
       title: title.trim(),
       resourceLink: resourceLink.trim() || null,
-      tag: tag.trim() || null,
+      tags: tags,
     });
     // reset form after submission
     setTitle("");
     setResourceLink("");
-    setTag("");
+    setTags([]);
     setValidationError("");
   };
 
@@ -245,18 +246,13 @@ export default function SkillTodoForm({
             <div ref={formFieldsRef} className="p-4 space-y-4 opacity-0">
               {/* tag input field */}
               <div>
-                <label htmlFor="tag" className="block text-sm font-medium mb-1">
-                  Tag (optional)
+                <label
+                  htmlFor="tags"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Tags (optional)
                 </label>
-                <input
-                  type="text"
-                  id="tag"
-                  value={tag}
-                  placeholder="Tags are optional to identify sorting of tasks"
-                  onChange={(e) => setTag(e.target.value)}
-                  className="w-full px-3 py-2  border focus:outline-none "
-                  disabled={isSubmitting}
-                />
+                <TagInput tags={tags} setTags={setTags} />
               </div>
               {/* description input field */}
               <div>

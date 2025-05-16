@@ -3,6 +3,7 @@ import { skillTodo } from "@/types/skillDashboardTypes";
 import { formatUrl } from "@/utils/format-url";
 import { Link, Pencil, Trash } from "lucide-react";
 import React, { useState } from "react";
+import TagInput from "./tag-input";
 
 interface SkillTodoCardProps {
   todo: skillTodo; //the task data
@@ -31,7 +32,7 @@ export default function SkillTodoCard({
   const [editedResourceLink, setEditedResourceLink] = useState(
     todo.resourceLink || ""
   );
-  const [editedTag, setEditedTag] = useState(todo.tag || "");
+  const [editedTags, setEditedTags] = useState<string[]>(todo.tags || []);
   //state for displaying validation error within the editing form
   const [validationError, setValidationError] = useState("");
 
@@ -51,7 +52,7 @@ export default function SkillTodoCard({
     setIsEditing(true);
     setEditedTitle(todo.title);
     setEditedResourceLink(todo.resourceLink || "");
-    setEditedTag(todo.tag || "");
+    setEditedTags(todo.tags || []);
     setValidationError("");
   };
 
@@ -68,7 +69,7 @@ export default function SkillTodoCard({
     onEditTodo(todo.id, {
       title: editedTitle.trim(),
       resourceLink: editedResourceLink.trim() || null,
-      tag: editedTag.trim() || null,
+      tags: editedTags,
     });
     setIsEditing(false);
     setValidationError("");
@@ -133,19 +134,12 @@ export default function SkillTodoCard({
           {/* editing the optinal tag */}
           <div>
             <label
-              htmlFor={`edit-tag-${todo.id}`}
+              htmlFor={`edit-tags-${todo.id}`}
               className="block text-sm mb-1"
             >
-              Tag (optional)
+              Tags (optional)
             </label>
-            <input
-              type="text"
-              id={`edit-tag-${todo.id}`}
-              value={editedTag}
-              onChange={(e) => setEditedTag(e.target.value)}
-              disabled={isUpdating}
-              className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+            <TagInput tags={editedTags} setTags={setEditedTags} />
           </div>
           {/* editing the descritpion field */}
           <div>
@@ -193,10 +187,17 @@ export default function SkillTodoCard({
         <div className="flex justify-between items-start">
           {/* left side of the top section  */}
           <div className="flex items-center space-x-2">
-            {todo.tag && (
-              <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-md capitalize">
-                {todo.tag}
-              </span>
+            {todo.tags && todo.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {todo.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-md capitalize"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             )}
             <span className="text-xs text-gray-500">
               {formatDate(todo.date)}

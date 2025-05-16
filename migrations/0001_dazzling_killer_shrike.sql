@@ -1,0 +1,1 @@
+ALTER TABLE "skillTask" RENAME COLUMN "tag" TO "tags";
