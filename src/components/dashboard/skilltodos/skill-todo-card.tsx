@@ -1,9 +1,10 @@
 "use client";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { formatUrl } from "@/utils/format-url";
-import { Link, Pencil, Trash } from "lucide-react";
+import { Link, Pencil, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import TagInput from "./tag-input";
+import Image from "next/image";
 
 interface SkillTodoCardProps {
   todo: skillTodo; //the task data
@@ -103,8 +104,8 @@ export default function SkillTodoCard({
   // rendering the form when the form is being edited
   if (isEditing) {
     return (
-      <div className="rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-        <div className="space-y-3">
+      <div className="   rounded-md p-6 shadow-sm hover:shadow-md border border-border transition-shadow">
+        <div className="space-y-3 ">
           {/* title of todo being edited */}
           <div className="">
             <label
@@ -181,100 +182,112 @@ export default function SkillTodoCard({
   }
   // return the display card when the todocard is not in editing state
   return (
-    <div className="rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="space-y-4">
-        {/* top section of edit delete and tag  */}
-        <div className="flex justify-between items-start">
-          {/* left side of the top section  */}
-          <div className="flex items-center space-x-2">
-            {todo.tags && todo.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {todo.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-md capitalize"
-                  >
-                    {tag}
-                  </span>
-                ))}
+    <>
+      <Image
+        src="/calendar.png"
+        alt="calender"
+        width={20}
+        height={20}
+        className="absolute -left-2 mt-4"
+      />
+
+      <div className=" relative ml-4 rounded-lg p-4 shadow-sm hover:shadow-md border-border transition-shadow">
+        <div className="space-y-4">
+          {/* top section of edit delete and tag  */}
+          <div className="flex justify-between items-start">
+            {/* left side of the top section  */}
+            <div className="flex items-center space-x-2">
+              {todo.tags && todo.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {todo.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-500 text-xs rounded-md capitalize"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <span className="text-xs text-gray-500">
+                {formatDate(todo.date)}
+              </span>
+            </div>
+            {/* right side of edit and delete button */}
+            <div className="flex space-x-2">
+              <button
+                onClick={handleEdit}
+                className="p-1 hover:text-blue-500"
+                aria-label="Edit task"
+                disabled={isUpdating}
+              >
+                <Pencil size={16} color="gray" />
+              </button>
+              <button
+                onClick={() => onDeleteTodo(todo.id)}
+                className="p-1 hover:text-red-500"
+                aria-label="Delete task"
+                disabled={isUpdating || isDeleting}
+              >
+                <Trash2 size={16} color="red" />
+              </button>
+            </div>
+          </div>
+          {/* main content title and description */}
+          <div>
+            <h3 className=" font-medium">{todo.title}</h3>
+            {todo.resourceLink && (
+              <div className="mt-2">
+                <a
+                  href={todo.resourceLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center"
+                >
+                  <Link />
+                  {formatUrl(todo.resourceLink)}
+                </a>
               </div>
             )}
-            <span className="text-xs text-gray-500">
-              {formatDate(todo.date)}
-            </span>
           </div>
-          {/* right side of edit and delete button */}
-          <div className="flex space-x-2">
-            <button
-              onClick={handleEdit}
-              className="p-1 hover:text-blue-500"
-              aria-label="Edit task"
-              disabled={isUpdating}
-            >
-              <Pencil size={16} />
-            </button>
-            <button
-              onClick={() => onDeleteTodo(todo.id)}
-              className="p-1 hover:text-red-500"
-              aria-label="Delete task"
-              disabled={isUpdating || isDeleting}
-            >
-              <Trash size={16} />
-            </button>
-          </div>
-        </div>
-        {/* main content title and description */}
-        <div>
-          <h3 className="text-lg font-semibold">{todo.title}</h3>
-          {todo.resourceLink && (
-            <div className="mt-2">
-              <a
-                href={todo.resourceLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center"
-              >
-                <Link />
-                {formatUrl(todo.resourceLink)}
-              </a>
+          {/* time tracking section */}
+          <div className="space-y-3">
+            {/* display format duration */}
+            <div>
+              <p className="text-sm">
+                Tracked Time:{" "}
+                <span className="font-medium">
+                  {formatDuration(todo.duration)}
+                </span>
+              </p>
             </div>
-          )}
-        </div>
-        {/* time tracking section */}
-        <div className="space-y-3">
-          {/* display format duration */}
-          <div>
-            <p className="text-sm">
-              Tracked Time:{" "}
-              <span className="font-medium">
-                {formatDuration(todo.duration)}
-              </span>
-            </p>
-          </div>
-          {/* time block list of array cirlces */}
-          <div className="flex items-center space-x-2 ">
-            {[...Array(5)].map((_, index) => {
-              const isActive = todo.duration >= (index + 1) * 30;
-              const isNext = todo.duration === index * 30;
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleTimeBlockClick(index)}
-                  disabled={isUpdating || isDeleting || (!isActive && !isNext)}
-                  className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                    isActive
-                      ? "bg-green-500 border-green-500 shadow-sm"
-                      : isNext
-                      ? "border-green-300 hover:border-green-500"
-                      : "border-gray-400 opacity-50 cursor-not-allowed"
-                  }`}
-                  aria-label={`${(index + 1) * 30} minute block`}
-                />
-              );
-            })}
+            {/* time block list of array cirlces */}
+            <div className="flex items-center space-x-2 ">
+              {[...Array(5)].map((_, index) => {
+                const isActive = todo.duration >= (index + 1) * 30;
+                const isNext = todo.duration === index * 30;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleTimeBlockClick(index)}
+                    disabled={
+                      isUpdating || isDeleting || (!isActive && !isNext)
+                    }
+                    className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
+                      isActive
+                        ? "bg-green-500 border-green-500 shadow-sm"
+                        : isNext
+                        ? "border-green-300 hover:border-green-500"
+                        : "border-gray-400 opacity-50 cursor-not-allowed"
+                    }`}
+                    aria-label={`${(index + 1) * 30} minute block`}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
