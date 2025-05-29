@@ -1,6 +1,5 @@
 "use client"
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
-import { PlusCircle } from "lucide-react";
 import React, { useState, useTransition } from "react";
 import SkillTodoForm from "./skill-todo-form";
 import SkillTodoCard from "./skill-todo-card";
@@ -198,23 +197,11 @@ export default function SkillTodoList({
   };
 
   // combined loading state
-  const isLoading = isPending || !!updatingTodoId || !!deletingTodoId;
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
+    <div className="container mx-auto p-4 ">
       <div>
         <div className="flex  justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            My Skill Todos
-          </h2>
           <span>{skillSlug}</span>
-          <button
-            onClick={() => setIsAddingTodo(true)}
-            disabled={isLoading}
-            className="bg-green-600 text-white hover:text-green-800 py-2 px-4 rounded-md flex items-center disabled:opacity-50"
-          >
-            <PlusCircle size={18} />
-            Add Task
-          </button>
         </div>
         {/* show todo form only when isAdding state is true */}
 

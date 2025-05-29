@@ -45,7 +45,7 @@ export default function SkillActivityTimeline({
     <>
       <button
         onClick={togglePanel}
-        className="fixed top-15 right-6 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-md transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+        className=" bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-md transition-colors duration-200 flex items-center gap-2 cursor-pointer"
       >
         <Clock size={18} />
         Activity Timeline

@@ -266,7 +266,7 @@ export default function SkillTodoCard({
                       ? "bg-green-500 border-green-500 shadow-sm"
                       : isNext
                       ? "border-green-300 hover:border-green-500"
-                      : "border-gray-200 opacity-50 cursor-not-allowed"
+                      : "border-gray-400 opacity-50 cursor-not-allowed"
                   }`}
                   aria-label={`${(index + 1) * 30} minute block`}
                 />

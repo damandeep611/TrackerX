@@ -181,7 +181,7 @@ export default function SkillTodoForm({
     }
   };
   return (
-    <div className="fixed bottom-4 left-0 right-0 flex justify-center items-end z-10">
+    <div className=" flex justify-center items-end z-50">
       <div className="w-full max-w-3xl mx-auto ">
         <form
           ref={formRef}
