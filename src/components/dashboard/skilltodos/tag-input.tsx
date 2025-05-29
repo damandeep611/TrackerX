@@ -54,7 +54,7 @@ export default function TagInput({ tags, setTags }: TagInputProps) {
       : `Maximum ${MAX_TAGS} tags reached`;
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 my-2">
       <div
         className={`flex flex-wrap items-center gap-2 p-2 border rounded-md focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-transparent ${
           error ? "border-red-500" : "border-gray-300"

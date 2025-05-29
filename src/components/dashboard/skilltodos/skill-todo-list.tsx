@@ -226,7 +226,7 @@ export default function SkillTodoList({
         <div className="relative ">
           {/* timeline line */}
           <div className="absolute   top-0 bottom-0 w-0.5 bg-gray-200"></div>
-          <div className="space-y-8 ">
+          <div className="space-y-8 my-6 ">
             {skillTodos.map((skillTodo) => (
               <SkillTodoCard
                 key={skillTodo.id}

@@ -191,7 +191,7 @@ export default function SkillTodoCard({
         className="absolute -left-2 mt-4"
       />
 
-      <div className=" relative ml-4 rounded-lg p-4 shadow-sm hover:shadow-md border-border transition-shadow">
+      <div className=" relative ml-4 rounded-lg p-4 shadow-sm hover:shadow-md border border-border transition-shadow">
         <div className="space-y-4">
           {/* top section of edit delete and tag  */}
           <div className="flex justify-between items-start">
@@ -235,7 +235,7 @@ export default function SkillTodoCard({
           </div>
           {/* main content title and description */}
           <div>
-            <h3 className=" font-medium">{todo.title}</h3>
+            <h3 className=" text-lg">{todo.title}</h3>
             {todo.resourceLink && (
               <div className="mt-2">
                 <a
