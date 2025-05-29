@@ -1,5 +1,4 @@
 import { getSkillTasksForSkill, getUserId } from "@/actions/skillTaskAction";
-import ActivityTimeline from "@/components/dashboard/skilltodos/ActivityTimeline";
 import SkillTodoList from "@/components/dashboard/skilltodos/skill-todo-list";
 import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
@@ -42,9 +41,6 @@ export default async function SkillOverview({
         <div className="flex items-center justify-between w-full px-4 sm:px-8 py-3 border-b dark:border-gray-700 bg-background/95 dark:bg-black/90 backdrop-blur-sm ">
           <div>
             <h2 className="text-2xl ">{currentSkill.skillName}</h2>
-          </div>
-          <div>
-            <ActivityTimeline skillId={skillId} />
           </div>
         </div>
         {/* Main Content Area (Scrollable) */}

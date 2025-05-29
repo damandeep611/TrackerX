@@ -63,7 +63,7 @@ export default function SkillActivityTimeline({
           isOpen ? "translate-x-0" : "translate-x-full"
         } `}
       >
-        <div className="p-4">
+        <div className="p-4 ">
           <button
             onClick={togglePanel}
             className="absolute cursor-pointer top-4 right-4 text-gray-500 z-50"
