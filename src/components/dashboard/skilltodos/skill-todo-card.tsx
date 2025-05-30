@@ -1,10 +1,11 @@
 "use client";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { formatUrl } from "@/utils/format-url";
-import { Link, Pencil, Trash2 } from "lucide-react";
+import { ChevronRight, Link, LinkIcon, Pencil, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import TagInput from "./tag-input";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 interface SkillTodoCardProps {
   todo: skillTodo; //the task data
@@ -197,7 +198,8 @@ export default function SkillTodoCard({
       </div>
     );
   }
-  // return the display card when the todocard is not in editing state
+  //?-------------------------------------- return the display card when the todocard is not in editing state-==========
+  // ! fix this layout and refactor this ui card to be more compact and also use react query to move the db fn
   return (
     <>
       <Image
@@ -231,24 +233,6 @@ export default function SkillTodoCard({
               </span>
             </div>
             {/* right side of edit and delete button */}
-            <div className="flex space-x-2">
-              <button
-                onClick={handleEdit}
-                className="p-1 hover:text-blue-500"
-                aria-label="Edit task"
-                disabled={isUpdating}
-              >
-                <Pencil size={16} color="gray" />
-              </button>
-              <button
-                onClick={() => onDeleteTodo(todo.id)}
-                className="p-1 hover:text-red-500"
-                aria-label="Delete task"
-                disabled={isUpdating || isDeleting}
-              >
-                <Trash2 size={16} color="red" />
-              </button>
-            </div>
           </div>
           {/* main content title and description */}
           <div>
@@ -273,39 +257,85 @@ export default function SkillTodoCard({
             )}
           </div>
           {/* time tracking section */}
-          <div className="space-y-3">
+          <div className="flex items-center justify-between">
             {/* display format duration */}
-            <div>
-              <p className="text-sm">
-                Tracked Time:{" "}
-                <span className="font-medium">
-                  {formatDuration(todo.duration)}
-                </span>
-              </p>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm ">
+                  Time Spent:
+                  <span className="font-medium px-2 text-green-800">
+                    {formatDuration(todo.duration)}
+                  </span>
+                </p>
+              </div>
+              {/* time block list of array cirlces */}
+              <div className="flex items-center space-x-2 ">
+                {[...Array(5)].map((_, index) => {
+                  const isActive = todo.duration >= (index + 1) * 30;
+                  const isNext = todo.duration === index * 30;
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleTimeBlockClick(index)}
+                      disabled={
+                        isUpdating || isDeleting || (!isActive && !isNext)
+                      }
+                      className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
+                        isActive
+                          ? "bg-green-500 border-green-500 shadow-sm"
+                          : isNext
+                          ? "border-green-300 hover:border-green-500"
+                          : "border-gray-400 opacity-50 cursor-not-allowed"
+                      }`}
+                      aria-label={`${(index + 1) * 30} minute block`}
+                    />
+                  );
+                })}
+              </div>
             </div>
-            {/* time block list of array cirlces */}
-            <div className="flex items-center space-x-2 ">
-              {[...Array(5)].map((_, index) => {
-                const isActive = todo.duration >= (index + 1) * 30;
-                const isNext = todo.duration === index * 30;
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleTimeBlockClick(index)}
-                    disabled={
-                      isUpdating || isDeleting || (!isActive && !isNext)
-                    }
-                    className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
-                      isActive
-                        ? "bg-green-500 border-green-500 shadow-sm"
-                        : isNext
-                        ? "border-green-300 hover:border-green-500"
-                        : "border-gray-400 opacity-50 cursor-not-allowed"
-                    }`}
-                    aria-label={`${(index + 1) * 30} minute block`}
+            <div className="flex items-center justify-between space-x-2">
+              <motion.button
+                whileHover={{ scale: 1.3 }}
+                whileTap={{ scale: 0.98 }}
+                className="cursor-pointer bg-gray-200 dark:bg-gray-800 p-2 rounded-md"
+                title="click to add resources"
+              >
+                <LinkIcon size={18} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.3 }}
+                whileTap={{ scale: 0.98 }}
+                className="cursor-pointer bg-gray-200 dark:bg-gray-800 p-2 rounded-md"
+                title="Open added links"
+              >
+                <ChevronRight size={18} />
+              </motion.button>
+              <div className="flex space-x-2">
+                <motion.button
+                  whileHover={{ scale: 1.3 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleEdit}
+                  className="p-1 hover:text-blue-500"
+                  aria-label="Edit task"
+                  disabled={isUpdating}
+                  title="Edit Task details"
+                >
+                  <Pencil size={16} color="gray" className="cursor-pointer" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.3 }}
+                  onClick={() => onDeleteTodo(todo.id)}
+                  className=" cursor-pointer  bg-red-200 dark:bg-red-300 hover:bg-red-600   p-2 rounded-md"
+                  aria-label="Delete task"
+                  disabled={isUpdating || isDeleting}
+                  title="Delete Task"
+                >
+                  <Trash2
+                    size={16}
+                    className="text-red-500 hover:text-red-200 transition-colors "
                   />
-                );
-              })}
+                </motion.button>
+              </div>
             </div>
           </div>
         </div>
