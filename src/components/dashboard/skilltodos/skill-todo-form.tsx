@@ -26,7 +26,6 @@ export default function SkillTodoForm({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [resourceLink, setResourceLink] = useState("");
   //and local state to manage and display the validation error for the form
   const [validationError, setValidationError] = useState("");
 
@@ -41,7 +40,6 @@ export default function SkillTodoForm({
     setIsExpanded(false);
     setTitle("");
     setDescription("");
-    setResourceLink("");
     setTags([]);
     setValidationError("");
     onCancel();
@@ -58,7 +56,7 @@ export default function SkillTodoForm({
     onAddSkillTodo({
       title: title.trim(),
       description: description.trim() || null,
-      resourceLink: resourceLink.trim() || null,
+      resourceLink: null,
       tags: tags,
     });
     // reset form after submission
@@ -118,17 +116,6 @@ export default function SkillTodoForm({
               {/* tag input field */}
               <div>
                 <TagInput tags={tags} setTags={setTags} />
-              </div>
-              {/* resource input field */}
-              <div>
-                <input
-                  id="resourceLink"
-                  className="w-full px-3 py-2  border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://example.com/resource add link here "
-                  value={resourceLink}
-                  onChange={(e) => setResourceLink(e.target.value)}
-                  disabled={isSubmitting}
-                />
               </div>
               {/* description input field */}
               <div>

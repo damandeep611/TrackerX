@@ -29,7 +29,8 @@ export default function SkillTodoCard({
   isDeleting = false,
 }: SkillTodoCardProps) {
   // state management for local states
-  const [isEditing, setIsEditing] = useState(false); //isEditing controls whether the card shows the display view or editing form
+  const [isEditing, setIsEditing] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   //state variables to hold the edited values while the form is active
   // initialize with current todo values when editing starts
   const [editedTitle, setEditedTitle] = useState(todo.title);
@@ -202,7 +203,6 @@ export default function SkillTodoCard({
     );
   }
   //?-------------------------------------- return the display card when the todocard is not in editing state-==========
-  // ! fix this layout and refactor this ui card to be more compact and also use react query to move the db fn's separately
   return (
     <>
       <Image
@@ -213,7 +213,7 @@ export default function SkillTodoCard({
         className="absolute -left-2 mt-4"
       />
 
-      <div className=" relative ml-4 rounded-lg p-4 shadow-sm hover:shadow-md border border-border transition-shadow">
+      <div className="relative ml-4 rounded-lg p-4 shadow-sm hover:shadow-md border border-border transition-shadow">
         <div className="space-y-4">
           {/* top section of edit delete and tag  */}
           <div className="flex justify-between items-start">
@@ -235,28 +235,14 @@ export default function SkillTodoCard({
                 {formatDate(todo.date)}
               </span>
             </div>
-            {/* right side of edit and delete button */}
           </div>
           {/* main content title and description */}
           <div>
-            <h3 className=" text-lg dark:text-gray-400">{todo.title}</h3>
+            <h3 className="text-lg dark:text-gray-400">{todo.title}</h3>
             {todo.description && (
-              <p className="text-sm  mt-1 break-words whitespace-pre-line">
+              <p className="text-sm mt-1 break-words whitespace-pre-line">
                 {todo.description}
               </p>
-            )}
-            {todo.resourceLink && (
-              <div className="mt-2">
-                <a
-                  href={todo.resourceLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center"
-                >
-                  <Link />
-                  {formatUrl(todo.resourceLink)}
-                </a>
-              </div>
             )}
           </div>
           {/* time tracking section */}
@@ -264,7 +250,7 @@ export default function SkillTodoCard({
             {/* display format duration */}
             <div className="space-y-3">
               <div>
-                <p className="text-sm ">
+                <p className="text-sm">
                   Time Spent:
                   <span className="font-medium px-2 text-green-800">
                     {formatDuration(todo.duration)}
@@ -272,7 +258,7 @@ export default function SkillTodoCard({
                 </p>
               </div>
               {/* time block list of array cirlces */}
-              <div className="flex items-center space-x-2 ">
+              <div className="flex items-center space-x-2">
                 {[...Array(5)].map((_, index) => {
                   const isActive = todo.duration >= (index + 1) * 30;
                   const isNext = todo.duration === index * 30;
@@ -309,8 +295,11 @@ export default function SkillTodoCard({
               <motion.button
                 whileHover={{ scale: 0.8 }}
                 whileTap={{ scale: 1 }}
-                className="cursor-pointer bg-gray-200 dark:bg-gray-800 p-2 rounded-md"
-                title="Open added links"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={`cursor-pointer bg-gray-200 dark:bg-gray-800 p-2 rounded-md transition-transform ${
+                  isExpanded ? "rotate-90" : ""
+                }`}
+                title="Toggle resources"
               >
                 <ChevronRight size={18} />
               </motion.button>
@@ -329,19 +318,46 @@ export default function SkillTodoCard({
                 <motion.button
                   whileHover={{ scale: 1.3 }}
                   onClick={() => onDeleteTodo(todo.id)}
-                  className=" cursor-pointer  bg-red-200 dark:bg-red-300   p-2 rounded-md"
+                  className="cursor-pointer bg-red-200 dark:bg-red-300 p-2 rounded-md"
                   aria-label="Delete task"
                   disabled={isUpdating || isDeleting}
                   title="Delete Task"
                 >
                   <Trash2
                     size={16}
-                    className="text-red-500  transition-colors "
+                    className="text-red-500 transition-colors"
                   />
                 </motion.button>
               </div>
             </div>
           </div>
+          {/* Expandable resources section */}
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mt-4 pt-4 border-t border-gray-200"
+            >
+              <h4 className="text-sm font-medium mb-2">Resources</h4>
+              {todo.resourceLink ? (
+                <a
+                  href={todo.resourceLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center"
+                >
+                  <Link className="mr-2" size={16} />
+                  {formatUrl(todo.resourceLink)}
+                </a>
+              ) : (
+                <p className="text-sm text-gray-500 italic">
+                  No resources added yet
+                </p>
+              )}
+            </motion.div>
+          )}
         </div>
       </div>
     </>

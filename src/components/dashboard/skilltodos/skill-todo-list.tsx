@@ -34,6 +34,8 @@ export default function SkillTodoList({
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
   const [showResourceModal, setShowResourceModal] = useState(false);
+  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
+  const [isAddingResource, setIsAddingResource] = useState(false);
 
   // event handlers
 
@@ -202,6 +204,52 @@ export default function SkillTodoList({
     });
   };
 
+  const handleAddResource = async (resourceTitle: string, url: string) => {
+    if (!selectedTodoId) return;
+
+    setIsAddingResource(true);
+    const originalTodos = skillTodos;
+
+    // Optimistic update
+    setSkillTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === selectedTodoId
+          ? {
+              ...todo,
+              resourceLink: url,
+              updatedAt: new Date().toISOString(),
+            }
+          : todo
+      )
+    );
+
+    startTransition(async () => {
+      try {
+        const result = await editSkillTask(selectedTodoId, {
+          title: skillTodos.find((t) => t.id === selectedTodoId)?.title || "",
+          resourceLink: url,
+          tags: skillTodos.find((t) => t.id === selectedTodoId)?.tags || [],
+        });
+
+        if (!result.success) {
+          console.error("Failed to add resource:", result.error);
+          setSkillTodos(originalTodos);
+        }
+      } catch (error) {
+        console.error("Error adding resource:", error);
+        setSkillTodos(originalTodos);
+      } finally {
+        setIsAddingResource(false);
+        setSelectedTodoId(null);
+      }
+    });
+  };
+
+  const handleOpenResourceModal = (todoId: string) => {
+    setSelectedTodoId(todoId);
+    setShowResourceModal(true);
+  };
+
   // combined loading state
   return (
     <div className="container mx-auto max-w-4xl p-4 ">
@@ -240,13 +288,20 @@ export default function SkillTodoList({
                 onUpdateTime={handleUpdateTime}
                 onEditTodo={handleEditTodo}
                 onDeleteTodo={handleDeleteTodo}
-                onOpenModal={() => setShowResourceModal(true)}
+                onOpenModal={() => handleOpenResourceModal(skillTodo.id)}
                 isUpdating={updatingTodoId === skillTodo.id}
                 isDeleting={deletingTodoId === skillTodo.id}
               />
             ))}
             {showResourceModal && (
-              <ResourceModal onClose={() => setShowResourceModal(false)} />
+              <ResourceModal
+                onClose={() => {
+                  setShowResourceModal(false);
+                  setSelectedTodoId(null);
+                }}
+                onAddResource={handleAddResource}
+                isSubmitting={isAddingResource}
+              />
             )}
           </div>
         </div>

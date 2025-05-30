@@ -3,9 +3,37 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 
-export default function ResourceModal({ onClose }: { onClose: () => void }) {
+interface ResourceModalProps {
+  onClose: () => void;
+  onAddResource: (resourceTitle: string, url: string) => Promise<void>;
+  isSubmitting?: boolean;
+}
+
+export default function ResourceModal({
+  onClose,
+  onAddResource,
+  isSubmitting = false,
+}: ResourceModalProps) {
   const [resourceTitle, setResourceTitle] = useState("");
   const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!url.trim()) {
+      setError("URL is required");
+      return;
+    }
+
+    try {
+      await onAddResource(resourceTitle.trim(), url.trim());
+      onClose();
+    } catch (error) {
+      console.error("Error adding resource:", error);
+      setError("Failed to add resource");
+    }
+  };
 
   return (
     <motion.div
@@ -41,7 +69,7 @@ export default function ResourceModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Resource Title */}
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-foreground">
@@ -65,10 +93,16 @@ export default function ResourceModal({ onClose }: { onClose: () => void }) {
             <input
               type="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="w-full px-3 py-2.5 border border-border rounded-lg focus:border-ring focus:ring-1 focus:ring-ring outline-none transition-colors duration-150 bg-background text-foreground placeholder-muted-foreground"
+              onChange={(e) => {
+                setUrl(e.target.value);
+                if (error) setError("");
+              }}
+              className={`w-full px-3 py-2.5 border ${
+                error ? "border-red-500" : "border-border"
+              } rounded-lg focus:border-ring focus:ring-1 focus:ring-ring outline-none transition-colors duration-150 bg-background text-foreground placeholder-muted-foreground`}
               placeholder="https://example.com"
             />
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
 
           {/* Buttons */}
@@ -82,9 +116,10 @@ export default function ResourceModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              disabled={isSubmitting}
+              className="flex-1 py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add Resource
+              {isSubmitting ? "Adding..." : "Add Resource"}
             </button>
           </div>
         </form>
