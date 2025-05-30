@@ -9,6 +9,7 @@ import {
   editSkillTask,
   updateskillTaskTime,
 } from "@/actions/skillTaskAction";
+import ResourceModal from "./resource-modal";
 
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
@@ -32,6 +33,7 @@ export default function SkillTodoList({
   const [updatingTodoId, setUpdatingTodoId] = useState<string | null>(null);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+  const [showResourceModal, setShowResourceModal] = useState(false);
 
   // event handlers
 
@@ -238,10 +240,14 @@ export default function SkillTodoList({
                 onUpdateTime={handleUpdateTime}
                 onEditTodo={handleEditTodo}
                 onDeleteTodo={handleDeleteTodo}
+                onOpenModal={() => setShowResourceModal(true)}
                 isUpdating={updatingTodoId === skillTodo.id}
                 isDeleting={deletingTodoId === skillTodo.id}
               />
             ))}
+            {showResourceModal && (
+              <ResourceModal onClose={() => setShowResourceModal(false)} />
+            )}
           </div>
         </div>
       )}

@@ -16,6 +16,7 @@ interface SkillTodoCardProps {
   //optional props to indicate loading states controlled by the parent component
   isUpdating?: boolean;
   isDeleting?: boolean;
+  onOpenModal: () => void;
 }
 
 export default function SkillTodoCard({
@@ -23,6 +24,7 @@ export default function SkillTodoCard({
   onUpdateTime,
   onEditTodo,
   onDeleteTodo,
+  onOpenModal,
   isUpdating = false,
   isDeleting = false,
 }: SkillTodoCardProps) {
@@ -34,6 +36,7 @@ export default function SkillTodoCard({
   const [editedResourceLink, setEditedResourceLink] = useState(
     todo.resourceLink || ""
   );
+  // to show the resource modal to add links to tasks
   const [editedDescription, setEditedDescription] = useState(
     todo.description || ""
   );
@@ -297,14 +300,15 @@ export default function SkillTodoCard({
               <motion.button
                 whileHover={{ scale: 1.3 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={onOpenModal}
                 className="cursor-pointer bg-gray-200 dark:bg-gray-800 p-2 rounded-md"
                 title="click to add resources"
               >
                 <LinkIcon size={18} />
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.3 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 0.8 }}
+                whileTap={{ scale: 1 }}
                 className="cursor-pointer bg-gray-200 dark:bg-gray-800 p-2 rounded-md"
                 title="Open added links"
               >
@@ -325,14 +329,14 @@ export default function SkillTodoCard({
                 <motion.button
                   whileHover={{ scale: 1.3 }}
                   onClick={() => onDeleteTodo(todo.id)}
-                  className=" cursor-pointer  bg-red-200 dark:bg-red-300 hover:bg-red-600   p-2 rounded-md"
+                  className=" cursor-pointer  bg-red-200 dark:bg-red-300   p-2 rounded-md"
                   aria-label="Delete task"
                   disabled={isUpdating || isDeleting}
                   title="Delete Task"
                 >
                   <Trash2
                     size={16}
-                    className="text-red-500 hover:text-red-200 transition-colors "
+                    className="text-red-500  transition-colors "
                   />
                 </motion.button>
               </div>
