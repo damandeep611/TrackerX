@@ -1,0 +1,1 @@
+ALTER TABLE "skillTask" ADD COLUMN "description_task" varchar(700);

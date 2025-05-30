@@ -33,6 +33,9 @@ export default function SkillTodoCard({
   const [editedResourceLink, setEditedResourceLink] = useState(
     todo.resourceLink || ""
   );
+  const [editedDescription, setEditedDescription] = useState(
+    todo.description || ""
+  );
   const [editedTags, setEditedTags] = useState<string[]>(todo.tags || []);
   //state for displaying validation error within the editing form
   const [validationError, setValidationError] = useState("");
@@ -53,6 +56,7 @@ export default function SkillTodoCard({
     setIsEditing(true);
     setEditedTitle(todo.title);
     setEditedResourceLink(todo.resourceLink || "");
+    setEditedDescription(todo.description || "");
     setEditedTags(todo.tags || []);
     setValidationError("");
   };
@@ -69,6 +73,7 @@ export default function SkillTodoCard({
     }
     onEditTodo(todo.id, {
       title: editedTitle.trim(),
+      description: editedDescription.trim() || null,
       resourceLink: editedResourceLink.trim() || null,
       tags: editedTags,
     });
@@ -145,17 +150,29 @@ export default function SkillTodoCard({
           {/* editing the descritpion field */}
           <div>
             <label
-              htmlFor={`edit-description-${todo.id}`}
+              htmlFor={`edit-resourcelink-${todo.id}`}
               className="block text-sm font-medium mb-1"
             >
-              Description (optional)
+              Resource Link (optional)
             </label>
             <input
               type="text"
-              id={`edit-description-${todo.id}`}
+              id={`edit-resourcelink-${todo.id}`}
               value={editedResourceLink}
               onChange={(e) => setEditedResourceLink(e.target.value)}
               className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-green-500"
+              disabled={isUpdating}
+            />
+          </div>
+          <div>
+            <label htmlFor={`edit-description-${todo.description}`}>
+              Description{" "}
+            </label>
+            <textarea
+              id={`edit-description-${todo.description}`}
+              value={editedDescription}
+              onChange={(e) => setEditedDescription(e.target.value)}
+              className="w-full p-2 border "
               disabled={isUpdating}
             />
           </div>
@@ -235,7 +252,12 @@ export default function SkillTodoCard({
           </div>
           {/* main content title and description */}
           <div>
-            <h3 className=" text-lg">{todo.title}</h3>
+            <h3 className=" text-lg dark:text-gray-400">{todo.title}</h3>
+            {todo.description && (
+              <p className="text-sm  mt-1 break-words whitespace-pre-line">
+                {todo.description}
+              </p>
+            )}
             {todo.resourceLink && (
               <div className="mt-2">
                 <a

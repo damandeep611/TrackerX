@@ -24,6 +24,7 @@ export default function SkillTodoForm({
   const titleInputRef = useRef<HTMLInputElement>(null);
   // use of react hooks and using local state to define the value of form inputs
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [resourceLink, setResourceLink] = useState("");
   //and local state to manage and display the validation error for the form
@@ -39,6 +40,7 @@ export default function SkillTodoForm({
   const handleTaskFormCollapse = () => {
     setIsExpanded(false);
     setTitle("");
+    setDescription("");
     setResourceLink("");
     setTags([]);
     setValidationError("");
@@ -55,6 +57,7 @@ export default function SkillTodoForm({
     //so that parent component can add the skillId before calling the server action
     onAddSkillTodo({
       title: title.trim(),
+      description: description.trim() || null,
       resourceLink: resourceLink.trim() || null,
       tags: tags,
     });
@@ -116,7 +119,7 @@ export default function SkillTodoForm({
               <div>
                 <TagInput tags={tags} setTags={setTags} />
               </div>
-              {/* description input field */}
+              {/* resource input field */}
               <div>
                 <input
                   id="resourceLink"
@@ -125,6 +128,15 @@ export default function SkillTodoForm({
                   value={resourceLink}
                   onChange={(e) => setResourceLink(e.target.value)}
                   disabled={isSubmitting}
+                />
+              </div>
+              {/* description input field */}
+              <div>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Add a description (optional)"
+                  className="w-full p-3 border border-border rounded-lg h-20 resize-none placeholder-gray-500"
                 />
               </div>
             </div>

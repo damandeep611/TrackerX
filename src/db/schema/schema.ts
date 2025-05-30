@@ -57,6 +57,7 @@ export const skillTask = pgTable("skillTask", {
   user_id: text("user_id").references(() => user.id),
   skill_id: uuid("skill_id").references(() => skillCard.id),
   title: varchar("title", { length: 255 }).notNull(),
+  description: varchar("description_task", { length: 700 }),
   resourceLink: text("description"),
   tags: text("tags").array().default([]),
   duration: integer("duration").default(0).notNull(),

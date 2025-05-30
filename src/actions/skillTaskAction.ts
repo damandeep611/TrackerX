@@ -70,6 +70,7 @@ export async function getSkillTasksForSkill(
     id: t.id,
     skill_id: t.skill_id || "",
     title: t.title,
+    description: t.description || "",
     tags: t.tags || [],
     resourceLink: t.resourceLink,
     //converting date objects to ISO strings
@@ -105,6 +106,7 @@ export async function addSkillTasks(
         user_id: userId,
         skill_id: newTodo.skillId,
         title: newTodo.title.trim(),
+        description: newTodo.description?.trim() || null,
         resourceLink: newTodo.resourceLink?.trim() || null,
         tags: newTodo.tags || [],
       })
@@ -133,6 +135,7 @@ export async function addSkillTasks(
       id: createdSkillTask.id,
       skill_id: createdSkillTask.skill_id || "",
       title: createdSkillTask.title,
+      description: createdSkillTask.description || "",
       tags: createdSkillTask.tags || [],
       resourceLink: createdSkillTask.resourceLink,
       date: createdSkillTask.date.toISOString(),

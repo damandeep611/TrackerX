@@ -140,6 +140,10 @@ export default function SkillTodoList({
     // data sending for the editTask server action and only allowed fields are send
     const dataToSend = {
       title: updatedFields.title || "",
+      description:
+        updatedFields.description !== undefined
+          ? updatedFields.description
+          : null,
       resourceLink:
         updatedFields.resourceLink !== undefined
           ? updatedFields.resourceLink
@@ -225,7 +229,7 @@ export default function SkillTodoList({
       ) : (
         <div className="relative ">
           {/* timeline line */}
-          <div className="absolute   top-0 bottom-0 w-0.5 bg-gray-200"></div>
+          <div className="absolute   top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-500"></div>
           <div className="space-y-8 my-6 ">
             {skillTodos.map((skillTodo) => (
               <SkillTodoCard

@@ -15,6 +15,13 @@
       "when": 1747376975758,
       "tag": "0001_dazzling_killer_shrike",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748573151313,
+      "tag": "0002_blushing_justice",
+      "breakpoints": true
     }
   ]
 }
