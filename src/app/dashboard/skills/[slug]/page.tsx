@@ -38,7 +38,7 @@ export default async function SkillOverview({
     const skillTodoData = await getSkillTasksForSkill(skillId);
     return (
       <div className="flex flex-col h-screen overflow-hidden">
-        <div className="flex items-center justify-between w-full px-4 sm:px-8 py-3 border-b dark:border-gray-700 bg-background/95 dark:bg-black/90 backdrop-blur-sm ">
+        <div className="flex items-center justify-between w-full px-4 sm:px-8 py-3 border-b  ">
           <div>
             <h2 className="text-2xl ">{currentSkill.skillName}</h2>
           </div>

@@ -202,7 +202,7 @@ export default function SkillTodoCard({
     );
   }
   //?-------------------------------------- return the display card when the todocard is not in editing state-==========
-  // ! fix this layout and refactor this ui card to be more compact and also use react query to move the db fn
+  // ! fix this layout and refactor this ui card to be more compact and also use react query to move the db fn's separately
   return (
     <>
       <Image
