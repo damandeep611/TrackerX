@@ -337,12 +337,13 @@ export default function SkillTodoCard({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
               className="mt-4 pt-4 border-t border-gray-200"
             >
               <h4 className="text-sm font-medium mb-2">Resources</h4>
               {todo.resourceLink ? (
-                <a
+                <motion.a
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
                   href={todo.resourceLink}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -350,7 +351,7 @@ export default function SkillTodoCard({
                 >
                   <Link className="mr-2" size={16} />
                   {formatUrl(todo.resourceLink)}
-                </a>
+                </motion.a>
               ) : (
                 <p className="text-sm text-gray-500 italic">
                   No resources added yet

@@ -107,7 +107,6 @@ export async function addSkillTasks(
         skill_id: newTodo.skillId,
         title: newTodo.title.trim(),
         description: newTodo.description?.trim() || null,
-        resourceLink: newTodo.resourceLink?.trim() || null,
         tags: newTodo.tags || [],
       })
       .returning(); //ask the database to return the newly inserted row

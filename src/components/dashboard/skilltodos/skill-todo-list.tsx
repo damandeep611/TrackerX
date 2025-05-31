@@ -49,6 +49,7 @@ export default function SkillTodoList({
       id: tempId,
       skill_id: skillId,
       ...newTodoData,
+      resourceLink: null,
       date: new Date().toISOString(),
       duration: 0,
       createdAt: new Date().toISOString(),
@@ -203,7 +204,7 @@ export default function SkillTodoList({
       }
     });
   };
-
+  // adding resources link on the task card
   const handleAddResource = async (resourceTitle: string, url: string) => {
     if (!selectedTodoId) return;
 

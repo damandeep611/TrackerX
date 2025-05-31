@@ -30,7 +30,6 @@ export interface skillTodo {
 export type newSkillTodo = {
   title: string;
   description: string | null;
-  resourceLink: string | null;
   tags: string[];
   skillId: string;
 };
