@@ -56,7 +56,6 @@ export default function SkillTodoForm({
     onAddSkillTodo({
       title: title.trim(),
       description: description.trim() || null,
-
       tags: tags,
     });
     // reset form after submission

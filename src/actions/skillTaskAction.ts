@@ -71,8 +71,10 @@ export async function getSkillTasksForSkill(
     skill_id: t.skill_id || "",
     title: t.title,
     description: t.description || "",
+
     tags: t.tags || [],
     resourceLink: t.resourceLink,
+    resourceLinkTitle: t.resource_link_title || null,
     //converting date objects to ISO strings
     date: t.date.toISOString(),
     duration: t.duration,
@@ -137,6 +139,7 @@ export async function addSkillTasks(
       description: createdSkillTask.description || "",
       tags: createdSkillTask.tags || [],
       resourceLink: createdSkillTask.resourceLink,
+      resourceLinkTitle: createdSkillTask.resource_link_title || null,
       date: createdSkillTask.date.toISOString(),
       duration: createdSkillTask.duration,
       createdAt: createdSkillTask.createdAt.toISOString(),
@@ -272,15 +275,13 @@ export async function deleteSkillTask(
   }
   try {
     //delete rows from the 'skillTask' table
-    const result = await db
-      .delete(skillTask)
-      .where(
-        and(
-          eq(skillTask.id, taskId),
-          eq(skillTask.user_id, userId),
-          eq(skillTask.skill_id, skillId) //ensure task belongs to the specified skillcard
-        )
-      );
+    const result = await db.delete(skillTask).where(
+      and(
+        eq(skillTask.id, taskId),
+        eq(skillTask.user_id, userId),
+        eq(skillTask.skill_id, skillId) //ensure task belongs to the specified skillcard
+      )
+    );
     //check if any rows were actually deleted
     if (result.rowCount === 0) {
       //if no rows deleted, the task didn't exist or didn't belong to theuser
@@ -306,6 +307,65 @@ export async function deleteSkillTask(
   } catch (error) {
     console.error("Failed to delete task:", error);
     return { success: false, error: "Failed to delete task. Please try again" };
+  }
+}
+
+//ACTION: Update task resource
+export async function updateTaskResource(
+  taskId: string,
+  resourceData: {
+    resourceLink: string;
+    resourceLinkTitle: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const userId = await getUserId();
+
+  if (!resourceData.resourceLink?.trim()) {
+    return { success: false, error: "Resource URL is required" };
+  }
+
+  try {
+    const result = await db
+      .update(skillTask)
+      .set({
+        resourceLink: resourceData.resourceLink.trim(),
+        resource_link_title: resourceData.resourceLinkTitle.trim() || null,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(skillTask.id, taskId), eq(skillTask.user_id, userId)));
+
+    if (result.rowCount === 0) {
+      return {
+        success: false,
+        error: "Task not found or you don't have permission to update it",
+      };
+    }
+
+    // Revalidate
+    const taskData = await db
+      .select({ skill_id: skillTask.skill_id })
+      .from(skillTask)
+      .where(eq(skillTask.id, taskId))
+      .limit(1);
+
+    if (taskData[0]?.skill_id) {
+      const parentSkill = await db
+        .select({ slug: skillCard.slug })
+        .from(skillCard)
+        .where(eq(skillCard.id, taskData[0].skill_id))
+        .limit(1);
+      if (parentSkill[0]?.slug) {
+        revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update task resource:", error);
+    return {
+      success: false,
+      error: "Failed to update resource. Please try again",
+    };
   }
 }
 

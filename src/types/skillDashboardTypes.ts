@@ -20,6 +20,7 @@ export interface skillTodo {
   description: string | null;
   tags: string[];
   resourceLink: string | null;
+  resourceLinkTitle: string | null;
   date: string;
   duration: number;
   createdAt: string;

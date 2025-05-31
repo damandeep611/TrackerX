@@ -1,0 +1,1 @@
+ALTER TABLE "skillTask" ADD COLUMN "resource_link_title" varchar(255);

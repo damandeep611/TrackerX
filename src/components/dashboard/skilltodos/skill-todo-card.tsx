@@ -350,7 +350,7 @@ export default function SkillTodoCard({
                   className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center"
                 >
                   <Link className="mr-2" size={16} />
-                  {formatUrl(todo.resourceLink)}
+                  {todo.resourceLinkTitle || formatUrl(todo.resourceLink)}
                 </motion.a>
               ) : (
                 <p className="text-sm text-gray-500 italic">

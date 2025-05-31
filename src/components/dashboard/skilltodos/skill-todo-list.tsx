@@ -8,6 +8,7 @@ import {
   deleteSkillTask,
   editSkillTask,
   updateskillTaskTime,
+  updateTaskResource,
 } from "@/actions/skillTaskAction";
 import ResourceModal from "./resource-modal";
 
@@ -50,6 +51,7 @@ export default function SkillTodoList({
       skill_id: skillId,
       ...newTodoData,
       resourceLink: null,
+      resourceLinkTitle: null,
       date: new Date().toISOString(),
       duration: 0,
       createdAt: new Date().toISOString(),
@@ -218,6 +220,7 @@ export default function SkillTodoList({
           ? {
               ...todo,
               resourceLink: url,
+              resourceLinkTitle: resourceTitle,
               updatedAt: new Date().toISOString(),
             }
           : todo
@@ -226,10 +229,9 @@ export default function SkillTodoList({
 
     startTransition(async () => {
       try {
-        const result = await editSkillTask(selectedTodoId, {
-          title: skillTodos.find((t) => t.id === selectedTodoId)?.title || "",
+        const result = await updateTaskResource(selectedTodoId, {
           resourceLink: url,
-          tags: skillTodos.find((t) => t.id === selectedTodoId)?.tags || [],
+          resourceLinkTitle: resourceTitle,
         });
 
         if (!result.success) {

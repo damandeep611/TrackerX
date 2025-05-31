@@ -59,6 +59,7 @@ export const skillTask = pgTable("skillTask", {
   title: varchar("title", { length: 255 }).notNull(),
   description: varchar("description_task", { length: 700 }),
   resourceLink: text("description"),
+  resource_link_title: varchar("resource_link_title", { length: 255 }),
   tags: text("tags").array().default([]),
   duration: integer("duration").default(0).notNull(),
   date: timestamp("date").defaultNow().notNull(),
