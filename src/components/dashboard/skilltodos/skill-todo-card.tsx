@@ -1,11 +1,12 @@
 "use client";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { formatUrl } from "@/utils/format-url";
-import { ChevronRight, Link, LinkIcon, Pencil, Trash2 } from "lucide-react";
+import { ChevronRight, Link, LinkIcon, Pencil } from "lucide-react";
 import React, { useState } from "react";
 import TagInput from "./tag-input";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import DeleteModal from "@/components/modals/DeleteModal";
 
 interface SkillTodoCardProps {
   todo: skillTodo; //the task data
@@ -315,19 +316,7 @@ export default function SkillTodoCard({
                 >
                   <Pencil size={16} color="gray" className="cursor-pointer" />
                 </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.3 }}
-                  onClick={() => onDeleteTodo(todo.id)}
-                  className="cursor-pointer bg-red-200 dark:bg-red-300 p-2 rounded-md"
-                  aria-label="Delete task"
-                  disabled={isUpdating || isDeleting}
-                  title="Delete Task"
-                >
-                  <Trash2
-                    size={16}
-                    className="text-red-500 transition-colors"
-                  />
-                </motion.button>
+                <DeleteModal onDelete={() => onDeleteTodo(todo.id)} />
               </div>
             </div>
           </div>

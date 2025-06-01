@@ -183,9 +183,6 @@ export default function SkillTodoList({
   };
   //---------------- handles deleting a task
   const handleDeleteTodo = async (todoId: string) => {
-    if (!window.confirm("Are you sure you want to delete this task")) {
-      return;
-    }
     const originalTodos = skillTodos;
     setDeletingTodoId(todoId);
     setSkillTodos((prev) =>
@@ -273,7 +270,6 @@ export default function SkillTodoList({
       {isPending && (
         <div className="text-center text-gray-400 py-2">Processing....</div>
       )}
-
       {/* to show the tasks if there are any and showing no tasks title if there are 0 tasks */}
       {skillTodos.length === 0 && !isPending ? (
         <div>

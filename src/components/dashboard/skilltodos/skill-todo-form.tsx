@@ -1,6 +1,6 @@
 "use client";
 import { newSkillTodo } from "@/types/skillDashboardTypes";
-import { Send } from "lucide-react";
+import { Plus, Send } from "lucide-react";
 import React, { ChangeEvent, useRef, useState } from "react";
 import TagInput from "./tag-input";
 import { motion } from "framer-motion";
@@ -91,15 +91,20 @@ export default function SkillTodoForm({
               value={title}
               onChange={handleTitleChange}
               onClick={!isExpanded ? handleTaskFormExpanded : undefined}
-              className={`flex-1 relative  p-3  rounded-lg focus:outline-none  w-full  ${
+              className={`w-full   p-4  rounded-lg focus:outline-none    ${
                 validationError ? "border-red-500" : ""
               }`}
-              placeholder="Add task for the skill"
+              placeholder="Add a new task...."
               aria-required="true"
               aria-invalid={!!validationError}
               disabled={isSubmitting}
               autoFocus
             />
+            {!isExpanded && (
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <Plus className="w-5 h-5" />
+              </div>
+            )}
           </div>
           {/* Expanded section */}
           <motion.div
