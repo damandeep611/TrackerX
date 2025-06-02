@@ -11,6 +11,7 @@ import {
   updateTaskResource,
 } from "@/actions/skillTaskAction";
 import ResourceModal from "./resource-modal";
+import { toast } from "react-hot-toast";
 
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
@@ -61,33 +62,37 @@ export default function SkillTodoList({
     setIsAddingTodo(false);
 
     //calling server action and use Transition
-    startTransition(async () => {
-      try {
-        // prepare data with SkillId for the server action
-        const dataToSend: newSkillTodo = {
-          ...newTodoData,
-          skillId: skillId,
-        };
-        //call the addskillTask server action with the form data
-        const result = await addSkillTasks(dataToSend);
-        if (result.success && result.newTask) {
-          setSkillTodos((prev) =>
-            prev.map((t) => (t.id === tempId ? result.newTask! : t))
-          );
-        } else {
-          console.error("Failed to add skillTodo:", result.error);
-          setSkillTodos((prev) => prev.filter((t) => t.id !== tempId));
-          setIsAddingTodo(true);
+
+    toast
+      .promise(
+        (async () => {
+          const dataToSend: newSkillTodo = {
+            ...newTodoData,
+            skillId: skillId,
+          };
+          const result = await addSkillTasks(dataToSend);
+          if (result.success && result.newTask) {
+            setSkillTodos((prev) =>
+              prev.map((t) => (t.id === tempId ? result.newTask! : t))
+            );
+          } else {
+            throw new Error(result.error || "Failed to add task");
+          }
+        })(),
+        {
+          loading: "Adding task...",
+          success: "Task added successfully",
+          error: "Something went wrong while adding task",
         }
-      } catch (error) {
-        console.error("Error calling addskillTask:", error);
+      )
+      .catch((err) => {
+        console.error(err);
         setSkillTodos((prev) => prev.filter((t) => t.id !== tempId));
         setIsAddingTodo(true);
-        // !show toast here after adding todo
-      } finally {
+      })
+      .finally(() => {
         setIsSubmittingForm(false);
-      }
-    });
+      });
   };
   //--------- handles update time from the task card----
   const handleUpdateTime = async (todoId: string, minutes: number) => {
@@ -105,22 +110,28 @@ export default function SkillTodoList({
           : skillTodo
       )
     );
-    //server actions and useTransitions
-    startTransition(async () => {
-      try {
-        // passs skillId to update action
-        const result = await updateskillTaskTime(todoId, minutes, skillId);
-        if (!result.success) {
-          console.error("Failed to update skillTodo time:", result.error);
-          setSkillTodos(originalTodos);
+    toast
+      .promise(
+        (async () => {
+          const result = await updateskillTaskTime(todoId, minutes, skillId);
+          if (!result.success) {
+            console.error("Failed to update skillTodo time:", result.error);
+            setSkillTodos(originalTodos);
+          }
+        })(),
+        {
+          loading: "Adding time to task...",
+          success: "Time added successfully",
+          error: "failed to add time to task",
         }
-      } catch (error) {
-        console.error("Error calling updateSkillTaskTime:", error);
+      )
+      .catch((err) => {
+        console.error("Error adding time:", err);
         setSkillTodos(originalTodos);
-      } finally {
+      })
+      .finally(() => {
         setUpdatingTodoId(null);
-      }
-    });
+      });
   };
 
   //------------------- handles saving task details from todoCard edit
@@ -164,22 +175,27 @@ export default function SkillTodoList({
       setUpdatingTodoId(null);
       return;
     }
-    //calling server action and usetransition
-    startTransition(async () => {
-      try {
-        //asuuming editSkilltask doesn't directly impact total hours
-
-        const result = await editSkillTask(todoId, dataToSend);
-        if (!result.success) {
-          console.error("Failed to edit skill Todo:", result.error);
+    toast
+      .promise(
+        (async () => {
+          const result = await editSkillTask(todoId, dataToSend);
+          if (!result.success) {
+            console.error("Failed to edit Todo details:", result.error);
+          }
+        })(),
+        {
+          loading: "Updating Todo details",
+          success: "Sucessfully updated todo details",
+          error: "Failed to update todo details",
         }
-      } catch (error) {
-        console.error("Error calling editTask:", error);
+      )
+      .catch((err) => {
+        console.error("Error updating task:", err);
         setSkillTodos(originalTodos);
-      } finally {
+      })
+      .finally(() => {
         setUpdatingTodoId(null);
-      }
-    });
+      });
   };
   //---------------- handles deleting a task
   const handleDeleteTodo = async (todoId: string) => {
@@ -189,19 +205,28 @@ export default function SkillTodoList({
       prev.filter((skillTodo) => skillTodo.id !== todoId)
     );
     //calling server action and use transition
-    startTransition(async () => {
-      try {
-        const result = await deleteSkillTask(todoId, skillId);
-        if (!result.success) {
-          console.error("Failed to delete todo:", result.error);
-          setSkillTodos(originalTodos);
+
+    toast
+      .promise(
+        (async () => {
+          const result = await deleteSkillTask(todoId, skillId);
+          if (!result.success) {
+            console.error("Failed to delete todo:", result.error);
+            setSkillTodos(originalTodos);
+          }
+        })(),
+        {
+          loading: "Deleting task....",
+          success: "Task deleted successfully!",
+          error: "Something went wrong while deleting task.",
         }
-      } catch (error) {
-        console.error("Error calling deleteSkillTask:", error);
-      } finally {
+      )
+      .catch((err) => {
+        console.error("Error deleting try again:", err);
+      })
+      .finally(() => {
         setDeletingTodoId(null);
-      }
-    });
+      });
   };
   // adding resources link on the task card
   const handleAddResource = async (resourceTitle: string, url: string) => {
