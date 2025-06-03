@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import TagInput from "./tag-input";
 import { motion } from "framer-motion";
 import DeleteModal from "@/components/modals/DeleteModal";
+import { formatDuration } from "@/utils/format-time";
 
 interface SkillTodoCardProps {
   todo: skillTodo; //the task data
@@ -87,15 +88,7 @@ export default function SkillTodoCard({
   };
 
   //utility function to format time
-  const formatDuration = (minutes: number): string => {
-    if (minutes < 60) return "0m";
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    const reamainingMinutes = minutes % 60;
-    return reamainingMinutes > 0
-      ? `${hours}h ${reamainingMinutes}m`
-      : `${hours}h`;
-  };
+
 
   const formatDate = (dateString: string): string => {
     try {

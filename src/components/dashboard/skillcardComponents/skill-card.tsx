@@ -21,18 +21,22 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
   const formatTime = (hours: number) => {
     const wholeHours = Math.floor(hours);
     const minutes = Math.round((hours - wholeHours) * 60);
-    if (wholeHours === 0) {
-      return `${minutes} m${minutes !== 1 ? "s" : ""}`;
+    if (wholeHours === 0 && minutes === 0) {
+      return `0 m`;
     }
-    return `${wholeHours} h${wholeHours !== 1 ? "s" : ""} ${minutes} m'${
-      minutes !== 1 ? "s" : ""
-    }`;
+    if (wholeHours === 0) {
+      return `${minutes}m`;
+    }
+    if (minutes === 0) {
+      return `${wholeHours}h`;
+    }
+    return `${wholeHours} h ${minutes}m`;
   };
 
   return (
     <motion.div
       onClick={() => navigate.push(`/dashboard/skills/${skill.slug}`)}
-      className="bg-white rounded-xl hover:shadow-lg cursor-pointer shadow-sm transition-all duration-300 border border-gray-100 overflow-hidden"
+      className=" rounded-xl hover:shadow-lg cursor-pointer shadow-sm transition-all duration-300 border border-gray-100 overflow-hidden"
       whileHover={{ y: -2 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -56,18 +60,18 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+            <div className="text-xs font-medium  mb-2 uppercase tracking-wide">
               Current Progress
             </div>
-            <div className="text-2xl font-bold text-gray-800">
+            <div className="text-2xl font-semibold">
               {formatTime(skill.currentHours)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+            <div className="text-xs font-medium  mb-2 uppercase tracking-wide">
               Target
             </div>
-            <div className="text-2xl font-bold text-gray-800">
+            <div className="text-2xl font-semibold">
               {formatTime(skill.targetHours)}
             </div>
           </div>
