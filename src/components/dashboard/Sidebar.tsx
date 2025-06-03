@@ -9,9 +9,6 @@ import { LiaTasksSolid } from "react-icons/lia";
 import SidebarSection from "./sidebar/sidebar-section";
 import SidebarItem from "./sidebar/sidebar-item";
 import { usePathname } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import UserProfile from "./sidebar/user-profile";
-import { ModeToggle } from "../layout/mode-toggle";
 
 const navigation = {
   quicklinks: [
@@ -53,7 +50,6 @@ const navigation = {
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
-  const { data } = authClient.useSession();
 
   //for path checking
   const isActive = (path: string) => {
@@ -77,7 +73,6 @@ export default function Sidebar() {
               <span className="ml-2 font-semibold text-white">Dashboard</span>
             </div>
           )}
-          <ModeToggle />
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -101,14 +96,7 @@ export default function Sidebar() {
         ))}
       </SidebarSection>
       {/* Sidebar Projects Section */}
-      <div className="p-4 bottom-0 fixed">
-        <UserProfile
-          name={data?.user.name || ""}
-          email={data?.user.email || ""}
-          avatarUrl={data?.user.image || ""}
-          isCollapsed={isCollapsed}
-        />
-      </div>
+      <div className="p-4 bottom-0 fixed"></div>
     </div>
   );
 }

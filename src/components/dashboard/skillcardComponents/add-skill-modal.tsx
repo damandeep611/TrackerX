@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Skill } from "@/types/skillDashboardTypes";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
@@ -52,20 +51,22 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
 
       {/* Modal form */}
       <motion.div
-        className="fixed left-1/2 -translate-x-1/2 bottom-0 z-50 w-full max-w-md bg-white dark:bg-black rounded-t-3xl shadow-lg border border-gray-500"
+        className="fixed left-1/2 -translate-x-1/2 bottom-0 z-50 w-full max-w-2xl bg-white dark:bg-black rounded-t-3xl shadow-2xl "
         initial={{ y: "100%" }}
         animate={{ y: isOpen ? 0 : "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <div className="p-6">
           {/* Modal header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">Add New Skill</h2>
+          <div className="flex items-center justify-between p-4 ">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-200">
+              Add New Skill
+            </h2>
             <button
               onClick={openDrawer}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             >
-              <X className="h-5 w-5" />
+              <X size={20} className="text-gray-500 dark:text-gray-200" />
             </button>
           </div>
 
@@ -76,7 +77,7 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
               <div>
                 <label
                   htmlFor="skillName"
-                  className="block text-sm font-medium"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-200"
                 >
                   Skill Name
                 </label>
@@ -147,11 +148,15 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
                 />
               </div>
               {/* form buttons */}
-              <div className="mt-6 flex justify-end space-x-3">
-                <Button variant={"default"} type="submit">
-                  Add Skill
-                </Button>
-              </div>
+              {/* Submit Button */}
+              <motion.button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-colors duration-150 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                Add Skill
+              </motion.button>
             </div>
           </form>
         </div>

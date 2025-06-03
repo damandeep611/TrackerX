@@ -5,6 +5,7 @@ import { useState } from "react";
 import SkillCard from "./skill-card";
 import { v4 as uuidv4 } from "uuid";
 import { addSkillCard, deleteSkillCard } from "@/actions/skillCardAction";
+import DashboardHeader from "../header/DashboardHeader";
 
 interface skillcardProps {
   skillcards: Skill[];
@@ -42,10 +43,7 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
   return (
     <div>
       {/* dashboard header and title */}
-      <div className=" border-b border-gray-500 py-2">
-        <h2 className="text-center text-lg font-semibold">Skill Dashboard</h2>
-      </div>
-
+      <DashboardHeader />
       {/* skill cards adding to dashbaord */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {skills.map((skill) => (

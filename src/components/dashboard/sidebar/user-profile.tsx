@@ -1,10 +1,9 @@
 "use client"
 
-import { ChevronDown, ChevronUp, Settings, User } from "lucide-react"
-import React, { useEffect, useRef, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
-import { SignOutButton } from "@/components/auth/sign-out"
-
+import { ChevronDown, Settings, User } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { SignOutButton } from "@/components/auth/sign-out";
 
 interface UserProfileProps {
   name: string;
@@ -41,12 +40,13 @@ export default function UserProfile({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   return (
     <div ref={dropdownRef} className="relative">
       <motion.div
         whileHover={{ y: -2 }}
         onClick={toggleDropdown}
-        className="flex items-center p-2 rounded-lg bg-gray-800/50 cursor-pointer"
+        className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-800/50 transition-colors"
       >
         <div
           className={`w-10 h-10 rounded-md overflow-hidden mr-3 ${
@@ -63,31 +63,45 @@ export default function UserProfile({
         </div>
         {!isCollapsed && (
           <div className="flex-grow">
-            <h4 className="text-sm font-medium">{name}</h4>
+            <h4 className="text-sm font-medium text-gray-100">{name}</h4>
             <p className="text-xs text-gray-400">{email}</p>
           </div>
         )}
-        <div className="text-gray-400">
-          {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </div>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-gray-400"
+        >
+          <ChevronDown size={16} />
+        </motion.div>
       </motion.div>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="absolute bottom-full left-0 right-0 mb-2 bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50"
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{
+              duration: 0.15,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+            className="absolute top-full left-0 right-0 mt-2 rounded-lg shadow-xl overflow-hidden z-50 border border-gray-700/50"
           >
-            <UserProfileMenuItem icon={<User size={16} />} label="Profile" />
-            <UserProfileMenuItem
-              icon={<Settings size={16} />}
-              label="Settings"
-            />
-            <div className="border-t border-gray-700 my-1"></div>
-            <SignOutButton />
+            <div className="py-1">
+              <UserProfileMenuItem
+                icon={<User size={16} />}
+                label="Profile"
+                href="/profile"
+              />
+              <UserProfileMenuItem
+                icon={<Settings size={16} />}
+                label="Settings"
+                href="/settings"
+              />
+              <div className="border-t border-gray-700/50 my-1"></div>
+              <SignOutButton />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -95,24 +109,33 @@ export default function UserProfile({
   );
 }
 
-
-
 interface UserProfileMenuItemProps {
-  icon: React.ReactNode
-  label: string
-  onClick?: ()=> void
-  className?: string
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+  className?: string;
+  href?: string;
 }
 
-const UserProfileMenuItem: React.FC<UserProfileMenuItemProps> = ({ icon, label, onClick, className = "" }) => {
+const UserProfileMenuItem: React.FC<UserProfileMenuItemProps> = ({
+  icon,
+  label,
+  onClick,
+  className = "",
+  href,
+}) => {
+  const Component = href ? "a" : "div";
+
   return (
     <motion.div
-      whileHover={{ backgroundColor: "rgba(75, 85, 99, 0.5)" }}
+      whileHover={{ backgroundColor: "rgba(75, 85, 99, 0.3)" }}
       onClick={onClick}
-      className={`flex items-center gap-2 px-3 py-2 cursor-pointer text-sm ${className}`}
+      className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer text-sm transition-colors ${className}`}
     >
-      <div className="text-gray-400">{icon}</div>
-      <span>{label}</span>
+      <Component href={href} className="flex items-center gap-2 w-full">
+        <div className="">{icon}</div>
+        <span>{label}</span>
+      </Component>
     </motion.div>
-  )
-}
+  );
+};
