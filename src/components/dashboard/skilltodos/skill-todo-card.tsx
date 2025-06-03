@@ -1,10 +1,9 @@
 "use client";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { formatUrl } from "@/utils/format-url";
-import { ChevronRight, Link, LinkIcon, Pencil } from "lucide-react";
+import { Calendar, ChevronRight, Link, LinkIcon, Pencil } from "lucide-react";
 import React, { useState } from "react";
 import TagInput from "./tag-input";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import DeleteModal from "@/components/modals/DeleteModal";
 
@@ -206,15 +205,17 @@ export default function SkillTodoCard({
   //?-------------------------------------- return the display card when the todocard is not in editing state-==========
   return (
     <>
-      <Image
-        src="/calendar.png"
-        alt="calender"
-        width={20}
-        height={20}
-        className="absolute -left-2 mt-4"
-      />
+      {/* Date indicator */}
+      <motion.div
+        className="absolute -left-5 flex items-center justify-center w-[40px] h-[40px] rounded-full bg-white dark:bg-black shadow-md border-2 border-blue-300 dark:border-gray-400"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Calendar size={20} className="text-blue-400 dark:text-gray-300" />
+      </motion.div>
 
-      <div className="relative ml-4 rounded-lg p-4 shadow-sm hover:shadow-md border border-border transition-shadow">
+      <div className="relative ml-6 rounded-lg p-4 shadow-sm hover:shadow-md border border-border transition-shadow">
         <div className="space-y-4">
           {/* top section of edit delete and tag  */}
           <div className="flex justify-between items-start">

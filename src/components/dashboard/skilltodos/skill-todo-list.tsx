@@ -292,9 +292,7 @@ export default function SkillTodoList({
           />
         </div>
       </div>
-      {isPending && (
-        <div className="text-center text-gray-400 py-2">Processing....</div>
-      )}
+
       {/* to show the tasks if there are any and showing no tasks title if there are 0 tasks */}
       {skillTodos.length === 0 && !isPending ? (
         <div>
@@ -303,7 +301,7 @@ export default function SkillTodoList({
       ) : (
         <div className="relative ">
           {/* timeline line */}
-          <div className="absolute   top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-500"></div>
+          <div className="absolute   top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-purple-500 dark:from-gray-500 dark:to-gray-500 rounded-full"></div>
           <div className="space-y-8 my-6 ">
             {skillTodos.map((skillTodo) => (
               <SkillTodoCard
