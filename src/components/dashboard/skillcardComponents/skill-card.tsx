@@ -60,18 +60,16 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <div className="text-xs font-medium  mb-2 uppercase tracking-wide">
+            <div className="text-xs   mb-2 uppercase tracking-wide">
               Current Progress
             </div>
-            <div className="text-2xl font-semibold">
+            <div className="text-xl font-semibold">
               {formatTime(skill.currentHours)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs font-medium  mb-2 uppercase tracking-wide">
-              Target
-            </div>
-            <div className="text-2xl font-semibold">
+            <div className="text-xs   mb-2 uppercase tracking-wide">Target</div>
+            <div className="text-xl font-semibold">
               {formatTime(skill.targetHours)}
             </div>
           </div>
@@ -79,7 +77,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
 
         {/* Progress Bar */}
         <div className="mb-3">
-          <div className="h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+          <div className="h-7 bg-gray-300 rounded-sm overflow-hidden shadow-inner">
             <motion.div
               className="h-full rounded-full shadow-sm"
               style={{ backgroundColor: skill.skillColor }}

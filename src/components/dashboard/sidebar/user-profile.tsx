@@ -46,7 +46,7 @@ export default function UserProfile({
       <motion.div
         whileHover={{ y: -2 }}
         onClick={toggleDropdown}
-        className="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-800/50 transition-colors"
+        className="flex items-center p-2 rounded-lg cursor-pointer  transition-colors"
       >
         <div
           className={`w-10 h-10 rounded-md overflow-hidden mr-3 ${
@@ -63,8 +63,8 @@ export default function UserProfile({
         </div>
         {!isCollapsed && (
           <div className="flex-grow">
-            <h4 className="text-sm font-medium text-gray-100">{name}</h4>
-            <p className="text-xs text-gray-400">{email}</p>
+            <h4 className="text-sm font-medium ">{name}</h4>
+            <p className="text-xs ">{email}</p>
           </div>
         )}
         <motion.div
@@ -128,7 +128,6 @@ const UserProfileMenuItem: React.FC<UserProfileMenuItemProps> = ({
 
   return (
     <motion.div
-      whileHover={{ backgroundColor: "rgba(75, 85, 99, 0.3)" }}
       onClick={onClick}
       className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer text-sm transition-colors ${className}`}
     >
