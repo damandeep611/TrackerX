@@ -6,9 +6,10 @@ import { FcIdea } from "react-icons/fc";
 import { MdDashboard } from "react-icons/md";
 import { LiaTasksSolid } from "react-icons/lia";
 
-import SidebarSection from "./sidebar/sidebar-section";
-import SidebarItem from "./sidebar/sidebar-item";
+import SidebarSection from "./sidebar-section";
+import SidebarItem from "./sidebar-item";
 import { usePathname } from "next/navigation";
+import { ModeToggle } from "../../layout/mode-toggle";
 
 const navigation = {
   quicklinks: [
@@ -96,7 +97,9 @@ export default function Sidebar() {
         ))}
       </SidebarSection>
       {/* Sidebar Projects Section */}
-      <div className="p-4 bottom-0 fixed"></div>
+      <div className="p-4 ">
+        <ModeToggle />
+      </div>
     </div>
   );
 }

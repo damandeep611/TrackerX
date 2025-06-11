@@ -1,4 +1,4 @@
-import Sidebar from "@/components/dashboard/Sidebar";
+import Sidebar from "@/components/dashboard/sidebar/Sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "react-hot-toast";
 
@@ -22,8 +22,3 @@ export default function DashboardLayout({
     </ThemeProvider>
   );
 }
-
-
-
-          
-        

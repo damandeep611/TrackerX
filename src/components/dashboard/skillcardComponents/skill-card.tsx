@@ -81,7 +81,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
     >
       <motion.div
         onClick={() => navigate.push(`/dashboard/skills/${skill.slug}`)}
-        className="relative bg-white rounded-2xl border border-gray-200/60 cursor-pointer overflow-hidden transition-all duration-300 hover:border-gray-300/80"
+        className="relative  rounded-2xl border border-gray-200/60 cursor-pointer overflow-hidden transition-all duration-300 hover:border-gray-300/80"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
         whileHover={{
@@ -110,20 +110,20 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
               >
                 {skill.category}
               </motion.span>
-              <h2 className="text-xl font-semibold text-gray-900 leading-tight mb-1 group-hover:text-gray-700 transition-colors">
+              <h2 className="text-xl font-semibold  leading-tight mb-1  transition-colors">
                 {skill.skillName}
               </h2>
             </div>
 
             <div className="text-right ml-4 flex-shrink-0">
               <motion.div
-                className="text-2xl font-bold text-gray-900 mb-1"
+                className="text-2xl font-bold  mb-1"
                 animate={{ scale: isHovered ? 1.05 : 1 }}
                 transition={{ duration: 0.2 }}
               >
                 {percentage.toFixed(0)}%
               </motion.div>
-              <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+              <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">
                 Complete
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
 
           {/* Progress Bar */}
           <div className="relative mb-4">
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2 bg-gray-100 dark:bg-gray-300 rounded-full overflow-hidden">
               <motion.div
                 className={`h-full bg-gradient-to-r ${getProgressColor(
                   percentage
@@ -160,35 +160,41 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-4 mb-2">
             <div className="text-center">
               <div className="flex items-center justify-center w-8 h-8 bg-blue-50 rounded-lg mx-auto mb-2">
                 <Clock className="w-4 h-4 text-blue-600" />
               </div>
-              <div className="text-sm font-semibold text-gray-900">
+              <div className="text-sm font-semibold ">
                 {formatTime(skill.currentHours)}
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">Current</div>
+              <div className="text-xs text-gray-500 dark:text-gray-300 mt-0.5">
+                Current
+              </div>
             </div>
 
             <div className="text-center">
               <div className="flex items-center justify-center w-8 h-8 bg-green-50 rounded-lg mx-auto mb-2">
                 <Target className="w-4 h-4 text-green-600" />
               </div>
-              <div className="text-sm font-semibold text-gray-900">
+              <div className="text-sm font-semibold">
                 {formatTime(skill.targetHours)}
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">Target</div>
+              <div className="text-xs text-gray-500 dark:text-gray-300 mt-0.5">
+                Target
+              </div>
             </div>
 
             <div className="text-center">
               <div className="flex items-center justify-center w-8 h-8 bg-orange-50 rounded-lg mx-auto mb-2">
                 <TrendingUp className="w-4 h-4 text-orange-600" />
               </div>
-              <div className="text-sm font-semibold text-gray-900">
+              <div className="text-sm font-semibold ">
                 {formatTime(remainingHours)}
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">Remaining</div>
+              <div className="text-xs text-gray-500 dark:text-gray-300 mt-0.5">
+                Remaining
+              </div>
             </div>
           </div>
 
