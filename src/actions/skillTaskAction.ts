@@ -71,6 +71,7 @@ export async function getSkillTasksForSkill(
     skill_id: t.skill_id || "",
     title: t.title,
     description: t.description || "",
+    done: t.done,
 
     tags: t.tags || [],
     resourceLink: t.resourceLink,
@@ -137,6 +138,7 @@ export async function addSkillTasks(
       skill_id: createdSkillTask.skill_id || "",
       title: createdSkillTask.title,
       description: createdSkillTask.description || "",
+      done: createdSkillTask.done,
       tags: createdSkillTask.tags || [],
       resourceLink: createdSkillTask.resourceLink,
       resourceLinkTitle: createdSkillTask.resource_link_title || null,
@@ -259,6 +261,44 @@ export async function editSkillTask(
   } catch (error) {
     console.error("failed to edit task", error);
     return { success: false, error: "Failed to edit task. Please try again" };
+  }
+}
+
+// ACTION : toggle skill task to check uncheck
+export async function toggleTaskDone(
+  taskId: string,
+  skillId: string,
+  done: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const userId = await getUserId();
+
+  if (!skillId) {
+    return { success: false, error: "Skill ID is missing for toggle" };
+  }
+
+  try {
+    const result = await db
+      .update(skillTask)
+      .set({ done })
+      .where(
+        and(
+          eq(skillTask.id, taskId),
+          eq(skillTask.skill_id, skillId),
+          eq(skillTask.user_id, userId)
+        )
+      );
+
+    if (result.rowCount === 0) {
+      return {
+        success: false,
+        error: "Task not found or you don't have permission to update it",
+      };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.log(err);
+    return { success: false, error: "Server error while toggling task" };
   }
 }
 

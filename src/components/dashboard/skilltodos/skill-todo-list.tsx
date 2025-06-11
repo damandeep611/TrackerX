@@ -7,6 +7,7 @@ import {
   addSkillTasks,
   deleteSkillTask,
   editSkillTask,
+  toggleTaskDone,
   updateskillTaskTime,
   updateTaskResource,
 } from "@/actions/skillTaskAction";
@@ -197,6 +198,37 @@ export default function SkillTodoList({
         setUpdatingTodoId(null);
       });
   };
+
+  // toggle todo card
+  const handleToggleTodo = async (todoId: string, newDone: boolean) => {
+    const originalTodos = skillTodos;
+
+    setSkillTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === todoId ? { ...todo, done: newDone } : todo
+      )
+    );
+
+    toast
+      .promise(
+        (async () => {
+          const result = await toggleTaskDone(todoId, skillId, newDone);
+          if (!result.success) {
+            console.error("Failed to toggle todo:", result.error);
+            setSkillTodos(originalTodos); // rollback
+          }
+        })(),
+        {
+          loading: newDone ? "Marking as done..." : "Unmarking...",
+          success: newDone ? "Marked as done ✅" : "Marked as not done ❌",
+          error: "Something went wrong while toggling task.",
+        }
+      )
+      .catch((err) => {
+        console.error("Error toggling task:", err);
+        setSkillTodos(originalTodos); // rollback again if needed
+      });
+  };
   //---------------- handles deleting a task
   const handleDeleteTodo = async (todoId: string) => {
     const originalTodos = skillTodos;
@@ -310,6 +342,7 @@ export default function SkillTodoList({
                 onUpdateTime={handleUpdateTime}
                 onEditTodo={handleEditTodo}
                 onDeleteTodo={handleDeleteTodo}
+                toggleIsdone={handleToggleTodo}
                 onOpenModal={() => handleOpenResourceModal(skillTodo.id)}
                 isUpdating={updatingTodoId === skillTodo.id}
                 isDeleting={deletingTodoId === skillTodo.id}

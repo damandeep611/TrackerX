@@ -18,6 +18,7 @@ export interface skillTodo {
   skill_id: string; //foreign key linking to the skillCard
   title: string;
   description: string | null;
+  done: boolean;
   tags: string[];
   resourceLink: string | null;
   resourceLinkTitle: string | null;
@@ -31,6 +32,7 @@ export interface skillTodo {
 export type newSkillTodo = {
   title: string;
   description: string | null;
+  done: boolean;
   tags: string[];
   skillId: string;
 };

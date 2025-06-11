@@ -1,0 +1,1 @@
+ALTER TABLE "skillTask" ADD COLUMN "done" boolean DEFAULT false NOT NULL;

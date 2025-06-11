@@ -41,6 +41,8 @@ export async function editTodo(id: string, newText: string) {
     .where(and(eq(todo.id, id), eq(todo.userId, session.user.id)));
 }
 
+
+// check uncheck toggle button
 export async function toggleTodo(id: string) {
   const session = await auth.api.getSession({
     headers: await headers(),

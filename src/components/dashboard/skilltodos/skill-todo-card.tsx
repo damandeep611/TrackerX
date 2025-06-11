@@ -13,6 +13,7 @@ interface SkillTodoCardProps {
   //Callbacks to the parent list component
   onUpdateTime: (todoId: string, minutes: number) => void;
   onEditTodo: (todoId: string, updatedTodo: Partial<skillTodo>) => void;
+  toggleIsdone: (todoId: string, done: boolean) => void;
   onDeleteTodo: (todoId: string) => void;
   //optional props to indicate loading states controlled by the parent component
   isUpdating?: boolean;
@@ -25,6 +26,7 @@ export default function SkillTodoCard({
   onUpdateTime,
   onEditTodo,
   onDeleteTodo,
+  toggleIsdone,
   onOpenModal,
   isUpdating = false,
   isDeleting = false,
@@ -88,7 +90,6 @@ export default function SkillTodoCard({
   };
 
   //utility function to format time
-
 
   const formatDate = (dateString: string): string => {
     try {
@@ -236,7 +237,11 @@ export default function SkillTodoCard({
           </div>
           {/* main content title and description */}
           <div className="space-y-3">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-400 leading-tight">
+            <h3
+              className={`${
+                todo.done ? "line-through " : ""
+              } text-xl font-semibold text-gray-900 dark:text-gray-400 leading-tight`}
+            >
               {todo.title}
             </h3>
             {todo.description && (
@@ -302,6 +307,15 @@ export default function SkillTodoCard({
             </div>
             {/* action buttons */}
             <div className="flex items-center gap-2">
+              {/* toggle check/uncheck task */}
+              <motion.input
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="checkbox"
+                checked={todo.done}
+                onChange={() => toggleIsdone(todo.id, !todo.done)}
+                className="h-5 w-5 rounded-sm"
+              />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
