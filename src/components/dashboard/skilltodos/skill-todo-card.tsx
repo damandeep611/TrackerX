@@ -201,7 +201,7 @@ export default function SkillTodoCard({
     <>
       {/* Date indicator */}
       <motion.div
-        className="absolute -left-5 flex items-center justify-center w-[40px] h-[40px] rounded-full bg-white dark:bg-black shadow-md border-2 border-blue-300 dark:border-gray-400"
+        className="absolute -left-5 flex items-center justify-center w-[40px] h-[40px] rounded-full bg-white dark:bg-black shadow-md border-2 border-blue-300 dark:border-gray-40 "
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2 }}
@@ -210,8 +210,10 @@ export default function SkillTodoCard({
       </motion.div>
 
       <div
-        className={` relative ml-6 rounded-xl p-4 shadow-sm  hover:shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 group ${
-          todo.done ? "bg-green-50 dark:bg-gray-800" : ""
+        className={` relative ml-6 rounded-xl p-4 shadow-sm  hover:shadow-lg  border border-gray-200 dark:border-gray-700 transition-all duration-300 group ${
+          todo.done
+            ? "bg-green-50 dark:bg-gray-800"
+            : "dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-900"
         }`}
       >
         <div className="space-y-4">
@@ -290,7 +292,7 @@ export default function SkillTodoCard({
 
           <div className=" flex items-center justify-between">
             {/* Time Tracking Section */}
-            <div className=" p-3  rounded-xl border bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100 dark:from-blue-900/30 dark:to-indigo-900/30 dark:border-blue-800">
+            <div className=" w-full mx-4 p-3  rounded-xl border bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100 dark:from-blue-900/30 dark:to-indigo-900/30 dark:border-blue-800">
               <div className="flex items-center justify-between ">
                 {/* Time Spent */}
                 <div className="flex items-center space-x-2">
