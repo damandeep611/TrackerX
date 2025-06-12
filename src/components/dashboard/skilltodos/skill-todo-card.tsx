@@ -4,7 +4,7 @@ import { formatUrl } from "@/utils/format-url";
 import { Calendar, ChevronRight, Link, LinkIcon, Pencil } from "lucide-react";
 import React, { useState } from "react";
 import TagInput from "./tag-input";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { formatDuration } from "@/utils/format-time";
 
@@ -209,104 +209,159 @@ export default function SkillTodoCard({
         <Calendar size={20} className="text-blue-400 dark:text-gray-300" />
       </motion.div>
 
-      <div className="relative ml-6 rounded-xl p-4 shadow-sm  hover:shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 group">
+      <div
+        className={` relative ml-6 rounded-xl p-4 shadow-sm  hover:shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 group ${
+          todo.done ? "bg-green-50 dark:bg-gray-800" : ""
+        }`}
+      >
         <div className="space-y-4">
           {/* top section of edit delete and tag  */}
           <div className="flex justify-between items-start gap-4">
             {/* left side of the top section  */}
-            <div className="flex items-center gap-3 flex-wrap">
-              {todo.tags && todo.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {todo.tags.map((tag, index) => (
-                    <motion.span
-                      key={index}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className=" inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs font-medium rounded-full capitalize border border-blue-200 dark:border-blue-700"
-                    >
-                      {tag}
-                    </motion.span>
-                  ))}
-                </div>
-              )}
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">
-                {formatDate(todo.date)}
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-wrap">
+                {todo.tags && todo.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {todo.tags.map((tag, index) => (
+                      <motion.span
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        className=" inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs font-medium rounded-full capitalize border border-blue-200 dark:border-blue-700"
+                      >
+                        {tag}
+                      </motion.span>
+                    ))}
+                  </div>
+                )}
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">
+                  {formatDate(todo.date)}
+                </span>
+              </div>
             </div>
+            <AnimatePresence>
+              {todo.done && (
+                <motion.div
+                  className="flex items-center space-x-1 text-green-600"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-xs font-medium">Done</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           {/* main content title and description */}
           <div className="space-y-3">
             <h3
               className={`${
-                todo.done ? "line-through " : ""
-              } text-xl font-semibold text-gray-900 dark:text-gray-400 leading-tight`}
+                todo.done
+                  ? "line-through text-gray-400 dark:text-gray-500 "
+                  : ""
+              } text-xl font-semibold leading-tight`}
             >
               {todo.title}
             </h3>
             {todo.description && (
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed  break-words whitespace-pre-line">
+              <p
+                className={` text-sm leading-relaxed  break-words whitespace-pre-line ${
+                  todo.done
+                    ? "text-gray-400 dark:text-gray-600"
+                    : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
                 {todo.description}
               </p>
             )}
           </div>
-          {/* time tracking section */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-3">
-              {/* time display */}
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Time Spent:
-                  <span className="font-semibold px-2 py-1 text-green-700 darktext-green-800 bg-green-50 dark:bg-green-900/30">
-                    {formatDuration(todo.duration)}
-                  </span>
-                </p>
-              </div>
-              {/* time block list of array cirlces */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400 mr-2">
-                  Progress:
-                </span>
-                {[...Array(5)].map((_, index) => {
-                  const isActive = todo.duration >= (index + 1) * 30;
-                  const isNext = todo.duration === index * 30;
-                  const minuteLabel = (index + 1) * 30;
 
-                  return (
-                    <motion.button
-                      key={index}
-                      onClick={() => handleTimeBlockClick(index)}
-                      disabled={
-                        isUpdating || isDeleting || (!isActive && !isNext)
-                      }
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`relative w-6 h-6 rounded-full border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 ${
-                        isActive
-                          ? "bg-green-500 border-green-500 shadow-md"
-                          : isNext
-                          ? "border-green-400 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"
-                          : "border-gray-300 dark:border-gray-600 opacity-40 cursor-not-allowed"
-                      }`}
-                      aria-label={`${minuteLabel} minute milestone ${
-                        isActive ? "completed" : isNext ? "available" : "locked"
-                      }`}
-                      title={`${minuteLabel} minutes`}
+          <div className=" flex items-center justify-between">
+            {/* Time Tracking Section */}
+            <div className=" p-3  rounded-xl border bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100 dark:from-blue-900/30 dark:to-indigo-900/30 dark:border-blue-800">
+              <div className="flex items-center justify-between ">
+                {/* Time Spent */}
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md flex items-center justify-center shadow-sm">
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
                     >
-                      {isActive && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute inset-1 bg-white rounded-full"
-                        />
-                      )}
-                    </motion.button>
-                  );
-                })}
+                      <path
+                        fillRule="evenodd"
+                        d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="mr-2">
+                    <p
+                      className={`text-xs font-medium text-blue-600 dark:text-blue-300 `}
+                    >
+                      Tracked: {formatDuration(todo.duration)}
+                    </p>
+                  </div>
+                </div>
+                {/* time block list of array cirlces */}
+                <div className="flex items-center gap-2 ">
+                  {[...Array(5)].map((_, index) => {
+                    const isActive = todo.duration >= (index + 1) * 30;
+                    const isNext = todo.duration === index * 30;
+                    const minuteLabel = (index + 1) * 30;
+
+                    return (
+                      <motion.button
+                        key={index}
+                        onClick={() => handleTimeBlockClick(index)}
+                        disabled={
+                          isUpdating || isDeleting || (!isActive && !isNext)
+                        }
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`relative w-6 h-6 rounded-md border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 ${
+                          isActive
+                            ? "bg-green-500 border-green-500 shadow-md"
+                            : isNext
+                            ? "border-green-400 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            : "border-gray-300 dark:border-gray-600 opacity-40 cursor-not-allowed"
+                        }`}
+                        aria-label={`${minuteLabel} minute milestone ${
+                          isActive
+                            ? "completed"
+                            : isNext
+                            ? "available"
+                            : "locked"
+                        }`}
+                        title={`${minuteLabel} minutes`}
+                      >
+                        {isActive && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute inset-1 bg-white rounded-full"
+                          />
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
             {/* action buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center space-x-2 p-2 rounded-lg border bg-gray-50 border-border dark:bg-gray-800/50">
               {/* toggle check/uncheck task */}
               <motion.input
                 whileHover={{ scale: 1.05 }}
@@ -314,7 +369,7 @@ export default function SkillTodoCard({
                 type="checkbox"
                 checked={todo.done}
                 onChange={() => toggleIsdone(todo.id, !todo.done)}
-                className="h-5 w-5 rounded-sm"
+                className="h-5 w-5 rounded-md border-2"
               />
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -323,8 +378,8 @@ export default function SkillTodoCard({
                 className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
                 title="Add resources"
               >
-                <LinkIcon size={16} />
-                <span className="text-xs font-medium hidden sm:inline">
+                <LinkIcon size={14} />
+                <span className="text-[10px] font-medium hidden sm:inline">
                   Resources
                 </span>
               </motion.button>
@@ -332,7 +387,7 @@ export default function SkillTodoCard({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                className="flex items-center  px-2 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
                 title={`${isExpanded ? "Hide" : "Show"} resources`}
                 aria-expanded={isExpanded}
               >
@@ -340,11 +395,8 @@ export default function SkillTodoCard({
                   animate={{ rotate: isExpanded ? 90 : 0 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
-                  <ChevronRight size={16} />
+                  <ChevronRight size={14} />
                 </motion.div>
-                <span className="text-xs font-medium hidden sm:inline">
-                  {isExpanded ? "Hide" : "Show"}
-                </span>
               </motion.button>
               {/* secondary action buttons */}
               <div className="flex space-x-2">
@@ -353,12 +405,11 @@ export default function SkillTodoCard({
                   whileTap={{ scale: 0.95 }}
                   onClick={handleEdit}
                   disabled={isUpdating}
-                  className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center  px-2 py-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Edit task"
                   title="Edit task details"
                 >
-                  <Pencil size={16} />
-                  <span className="text-xs font-medium">Edit</span>
+                  <Pencil size={14} />
                 </motion.button>
                 <DeleteModal onDelete={() => onDeleteTodo(todo.id)} />
               </div>

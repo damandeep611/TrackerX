@@ -24,7 +24,7 @@ export default function DeleteModal({ onDelete }: DeleteModalProps) {
         <motion.button
           ref={buttonRef}
           onClick={() => setIsOpen(true)}
-          className="p-3 text-red-500 hover:text-red-600 hover:bg-red-50  rounded-lg transition-colors duration-200 focus:outline-none focus-within:ring-1 focus:ring-red-500 "
+          className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50  rounded-lg transition-colors duration-200 focus:outline-none focus-within:ring-1 focus:ring-red-500 "
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           layout
