@@ -7,3 +7,18 @@ export const formatDuration = (minutes: number): string => {
       ? `${hours}h ${reamainingMinutes}m`
       : `${hours}h`;
   };
+//utility function to format time
+
+export const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Invalid Date";
+  }
+};

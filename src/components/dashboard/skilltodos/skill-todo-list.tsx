@@ -13,6 +13,8 @@ import {
 } from "@/actions/skillTaskAction";
 import ResourceModal from "./resource-modal";
 import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
+import { taskCardContainerVariants } from "@/components/animations/taskCardAnimations";
 
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
@@ -333,8 +335,18 @@ export default function SkillTodoList({
       ) : (
         <div className="relative ">
           {/* timeline line */}
-          <div className="absolute   top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-purple-500 dark:from-gray-500 dark:to-gray-500 rounded-full"></div>
-          <div className="space-y-8 my-6 ">
+          <motion.div
+            className="absolute   top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-purple-500 dark:from-gray-500 dark:to-gray-500 rounded-full "
+            initial={{ height: 0 }}
+            animate={{ height: "100%" }}
+            transition={{ duration: 0.5 }}
+          />
+          <motion.div
+            className="space-y-8 my-6 "
+            variants={taskCardContainerVariants}
+            initial="hidden"
+            animate="show"
+          >
             {skillTodos.map((skillTodo) => (
               <SkillTodoCard
                 key={skillTodo.id}
@@ -358,7 +370,7 @@ export default function SkillTodoList({
                 isSubmitting={isAddingResource}
               />
             )}
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

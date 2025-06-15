@@ -1,16 +1,27 @@
 "use client";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { formatUrl } from "@/utils/format-url";
-import { Calendar, ChevronRight, Link, LinkIcon, Pencil } from "lucide-react";
+import {
+  Calendar,
+  CheckCheck,
+  ChevronRight,
+  Hourglass,
+  Link,
+  LinkIcon,
+  Pencil,
+} from "lucide-react";
 import React, { useState } from "react";
 import TagInput from "./tag-input";
 import { AnimatePresence, motion } from "framer-motion";
 import DeleteModal from "@/components/modals/DeleteModal";
-import { formatDuration } from "@/utils/format-time";
+import { formatDate, formatDuration } from "@/utils/format-time";
+import {
+  dateIndicatorVariants,
+  taskCardVariants,
+} from "@/components/animations/taskCardAnimations";
 
 interface SkillTodoCardProps {
   todo: skillTodo; //the task data
-  //Callbacks to the parent list component
   onUpdateTime: (todoId: string, minutes: number) => void;
   onEditTodo: (todoId: string, updatedTodo: Partial<skillTodo>) => void;
   toggleIsdone: (todoId: string, done: boolean) => void;
@@ -31,7 +42,6 @@ export default function SkillTodoCard({
   isUpdating = false,
   isDeleting = false,
 }: SkillTodoCardProps) {
-  // state management for local states
   const [isEditing, setIsEditing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   //state variables to hold the edited values while the form is active
@@ -89,35 +99,13 @@ export default function SkillTodoCard({
     setValidationError("");
   };
 
-  //utility function to format time
-
-  const formatDate = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      });
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return "Invalid Date";
-    }
-  };
-
   // rendering the form when the form is being edited
   if (isEditing) {
     return (
-      <div className="   rounded-md p-6 shadow-sm hover:shadow-md border border-border transition-shadow">
+      <div className="   rounded-md p-4 shadow-sm hover:shadow-md border border-border transition-shadow">
         <div className="space-y-3 ">
           {/* title of todo being edited */}
           <div className="">
-            <label
-              htmlFor={`edit-title-${todo.id}`}
-              className="block text-sm font-medium mb-1"
-            >
-              Task title
-            </label>
             <input
               type="text"
               id={`edit-title${todo.id}`}
@@ -138,40 +126,25 @@ export default function SkillTodoCard({
           </div>
           {/* editing the optinal tag */}
           <div>
-            <label
-              htmlFor={`edit-tags-${todo.id}`}
-              className="block text-sm mb-1"
-            >
-              Tags (optional)
-            </label>
             <TagInput tags={editedTags} setTags={setEditedTags} />
           </div>
           {/* editing the descritpion field */}
           <div>
-            <label
-              htmlFor={`edit-resourcelink-${todo.id}`}
-              className="block text-sm font-medium mb-1"
-            >
-              Resource Link (optional)
-            </label>
             <input
               type="text"
               id={`edit-resourcelink-${todo.id}`}
               value={editedResourceLink}
               onChange={(e) => setEditedResourceLink(e.target.value)}
-              className="w-full p-2 border focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               disabled={isUpdating}
             />
           </div>
           <div>
-            <label htmlFor={`edit-description-${todo.description}`}>
-              Description{" "}
-            </label>
             <textarea
               id={`edit-description-${todo.description}`}
               value={editedDescription}
               onChange={(e) => setEditedDescription(e.target.value)}
-              className="w-full p-2 border "
+              className="w-full p-2 border rounded-lg "
               disabled={isUpdating}
             />
           </div>
@@ -179,14 +152,14 @@ export default function SkillTodoCard({
           <div className="flex  justify-end space-x-2">
             <button
               onClick={handleCancelEdit}
-              className="bg-red-700 text-white py-2 px-4 text-sm hover:bg-red-900"
+              className="bg-red-700 text-white rounded-md font-medium py-2 px-4 text-sm hover:bg-red-900"
               disabled={isUpdating}
             >
               Cancel
             </button>
             <button
               onClick={handleSaveEdit}
-              className="bg-green-600 text-white py-2 px-4 text-sm hover:bg-green-800"
+              className="bg-green-600 text-white rounded-md font-medium py-2 px-4 text-sm hover:bg-green-800"
               disabled={isUpdating}
             >
               {isUpdating ? "Saving..." : "Save"}
@@ -202,14 +175,13 @@ export default function SkillTodoCard({
       {/* Date indicator */}
       <motion.div
         className="absolute -left-5 flex items-center justify-center w-[40px] h-[40px] rounded-full bg-white dark:bg-black shadow-md border-2 border-blue-300 dark:border-gray-40 "
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.2 }}
+        variants={dateIndicatorVariants}
       >
         <Calendar size={20} className="text-blue-400 dark:text-gray-300" />
       </motion.div>
 
-      <div
+      <motion.div
+        variants={taskCardVariants}
         className={` relative ml-6 rounded-xl p-4 shadow-sm  hover:shadow-lg  border border-gray-200 dark:border-gray-700 transition-all duration-300 group ${
           todo.done
             ? "bg-green-50 dark:bg-gray-800"
@@ -250,17 +222,7 @@ export default function SkillTodoCard({
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
                 >
-                  <svg
-                    className="w-3 h-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <CheckCheck size={10} />
                   <span className="text-xs font-medium">Done</span>
                 </motion.div>
               )}
@@ -271,9 +233,9 @@ export default function SkillTodoCard({
             <h3
               className={`${
                 todo.done
-                  ? "line-through text-gray-400 dark:text-gray-500 "
-                  : ""
-              } text-xl font-semibold leading-tight`}
+                  ? "line-through text-gray-400 dark:text-gray-500 text-lg "
+                  : "text-xl font-semibold leading-tight"
+              } `}
             >
               {todo.title}
             </h3>
@@ -297,17 +259,7 @@ export default function SkillTodoCard({
                 {/* Time Spent */}
                 <div className="flex items-center space-x-2">
                   <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md flex items-center justify-center shadow-sm">
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <Hourglass size={10} />
                   </div>
                   <div className="mr-2">
                     <p
@@ -492,7 +444,7 @@ export default function SkillTodoCard({
             </div>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
