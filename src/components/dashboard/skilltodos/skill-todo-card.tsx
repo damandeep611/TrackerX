@@ -10,8 +10,8 @@ import {
   LinkIcon,
   Pencil,
 } from "lucide-react";
-import React, { useState } from "react";
-import TagInput from "./tag-input";
+import React from "react";
+
 import { AnimatePresence, motion } from "framer-motion";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { formatDate, formatDuration } from "@/utils/format-time";
@@ -20,6 +20,7 @@ import {
   taskCardVariants,
 } from "@/components/animations/taskCardAnimations";
 import { useSkillTodoCard } from "../TodoCard/useSkillTodoCard";
+import SkillTodoEditor from "../TodoCard/SkillTodoEditor";
 
 interface SkillTodoCardProps {
   todo: skillTodo; //the task data
@@ -54,17 +55,6 @@ export default function SkillTodoCard({
 
   //state variables to hold the edited values while the form is active
   // initialize with current todo values when editing starts
-  const [editedTitle, setEditedTitle] = useState(todo.title);
-  const [editedResourceLink, setEditedResourceLink] = useState(
-    todo.resourceLink || ""
-  );
-  // to show the resource modal to add links to tasks
-  const [editedDescription, setEditedDescription] = useState(
-    todo.description || ""
-  );
-  const [editedTags, setEditedTags] = useState<string[]>(todo.tags || []);
-  //state for displaying validation error within the editing form
-  const [validationError, setValidationError] = useState("");
 
   // event handlers
   const handleTimeBlockClick = (blockIndex: number) => {
@@ -80,101 +70,20 @@ export default function SkillTodoCard({
 
   const handleEdit = () => {
     startEdit();
-    setEditedTitle(todo.title);
-    setEditedResourceLink(todo.resourceLink || "");
-    setEditedDescription(todo.description || "");
-    setEditedTags(todo.tags || []);
-    setValidationError("");
-  };
-
-  const handleCancelEdit = () => {
-    cancelEdit();
-    setValidationError("");
-  };
-
-  const handleSaveEdit = () => {
-    if (!editedTitle.trim()) {
-      setValidationError("Title is required");
-      return;
-    }
-    onEditTodo(todo.id, {
-      title: editedTitle.trim(),
-      description: editedDescription.trim() || null,
-      resourceLink: editedResourceLink.trim() || null,
-      tags: editedTags,
-    });
-    finishEdit();
-    setValidationError("");
   };
 
   // rendering the form when the form is being edited
   if (isEditing) {
     return (
-      <div className="   rounded-md p-4 shadow-sm hover:shadow-md border border-border transition-shadow">
-        <div className="space-y-3 ">
-          {/* title of todo being edited */}
-          <div className="">
-            <input
-              type="text"
-              id={`edit-title${todo.id}`}
-              value={editedTitle}
-              onChange={(e) => {
-                setEditedTitle(e.target.value);
-                if (validationError) setValidationError("");
-              }}
-              className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                validationError ? "border-red-500" : ""
-              }`}
-              disabled={isUpdating}
-              autoFocus
-            />
-            {validationError && (
-              <p className="text-red-600">{validationError}</p>
-            )}
-          </div>
-          {/* editing the optinal tag */}
-          <div>
-            <TagInput tags={editedTags} setTags={setEditedTags} />
-          </div>
-          {/* editing the descritpion field */}
-          <div>
-            <input
-              type="text"
-              id={`edit-resourcelink-${todo.id}`}
-              value={editedResourceLink}
-              onChange={(e) => setEditedResourceLink(e.target.value)}
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              disabled={isUpdating}
-            />
-          </div>
-          <div>
-            <textarea
-              id={`edit-description-${todo.description}`}
-              value={editedDescription}
-              onChange={(e) => setEditedDescription(e.target.value)}
-              className="w-full p-2 border rounded-lg "
-              disabled={isUpdating}
-            />
-          </div>
-          {/* editing action buttons */}
-          <div className="flex  justify-end space-x-2">
-            <button
-              onClick={handleCancelEdit}
-              className="bg-red-700 text-white rounded-md font-medium py-2 px-4 text-sm hover:bg-red-900"
-              disabled={isUpdating}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveEdit}
-              className="bg-green-600 text-white rounded-md font-medium py-2 px-4 text-sm hover:bg-green-800"
-              disabled={isUpdating}
-            >
-              {isUpdating ? "Saving..." : "Save"}
-            </button>
-          </div>
-        </div>
-      </div>
+      <SkillTodoEditor
+        todo={todo}
+        onSave={(updatedTodo) => {
+          onEditTodo(todo.id, updatedTodo);
+          finishEdit();
+        }}
+        onCancel={cancelEdit}
+        isSaving={isUpdating}
+      />
     );
   }
   //?-------------------------------------- return the display card when the todocard is not in editing state-==========
