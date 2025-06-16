@@ -19,6 +19,7 @@ import {
   dateIndicatorVariants,
   taskCardVariants,
 } from "@/components/animations/taskCardAnimations";
+import { useSkillTodoCard } from "../TodoCard/useSkillTodoCard";
 
 interface SkillTodoCardProps {
   todo: skillTodo; //the task data
@@ -42,8 +43,15 @@ export default function SkillTodoCard({
   isUpdating = false,
   isDeleting = false,
 }: SkillTodoCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const {
+    isEditing,
+    isExpanded,
+    toggleExpand,
+    startEdit,
+    cancelEdit,
+    finishEdit,
+  } = useSkillTodoCard();
+
   //state variables to hold the edited values while the form is active
   // initialize with current todo values when editing starts
   const [editedTitle, setEditedTitle] = useState(todo.title);
@@ -71,7 +79,7 @@ export default function SkillTodoCard({
   };
 
   const handleEdit = () => {
-    setIsEditing(true);
+    startEdit();
     setEditedTitle(todo.title);
     setEditedResourceLink(todo.resourceLink || "");
     setEditedDescription(todo.description || "");
@@ -80,7 +88,7 @@ export default function SkillTodoCard({
   };
 
   const handleCancelEdit = () => {
-    setIsEditing(false);
+    cancelEdit();
     setValidationError("");
   };
 
@@ -95,7 +103,7 @@ export default function SkillTodoCard({
       resourceLink: editedResourceLink.trim() || null,
       tags: editedTags,
     });
-    setIsEditing(false);
+    finishEdit();
     setValidationError("");
   };
 
@@ -340,7 +348,7 @@ export default function SkillTodoCard({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={toggleExpand}
                 className="flex items-center  px-2 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
                 title={`${isExpanded ? "Hide" : "Show"} resources`}
                 aria-expanded={isExpanded}
