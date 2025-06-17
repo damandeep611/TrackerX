@@ -24,7 +24,7 @@ interface SkillTodoListProps {
 
 // !use uuid instead of this temporary id
 const generateTempId = (): string => {
-  return `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; // [cite: 109]
+  return `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 };
 
 export default function SkillTodoList({
