@@ -10,13 +10,11 @@ import { useSkillTodoManager } from "@/hooks/useSkillTodoManager";
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
   skillId: string;
-  skillSlug: string;
 }
 
 export default function SkillTodoList({
   initialSkillTodos = [],
   skillId,
-  skillSlug,
 }: SkillTodoListProps) {
   const {
     //states
@@ -43,9 +41,6 @@ export default function SkillTodoList({
   return (
     <div className="container mx-auto max-w-4xl p-4 ">
       <div>
-        <div className="flex  justify-between items-center mb-4">
-          <span>{skillSlug}</span>
-        </div>
         {/* show todo form only when isAdding state is true */}
 
         <div className={`relative   ${isAddingTodo ? "border-green-600" : ""}`}>

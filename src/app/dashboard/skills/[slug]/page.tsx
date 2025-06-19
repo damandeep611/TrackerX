@@ -1,9 +1,11 @@
 import { getSkillTasksForSkill, getUserId } from "@/actions/skillTaskAction";
 import SkillTodoList from "@/components/dashboard/skilltodos/skill-todo-list";
+
 import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
 import { and, eq } from "drizzle-orm";
 import React from "react";
+import SkillHeader from "../SkillHeader";
 
 export default async function SkillOverview({
   params,
@@ -38,13 +40,10 @@ export default async function SkillOverview({
     const skillTodoData = await getSkillTasksForSkill(skillId);
     return (
       <div className="flex flex-col h-screen overflow-hidden">
-        <div className="flex items-center justify-between w-full px-4 sm:px-8 py-3 border-b  ">
-          <div>
-            <h2 className="text-2xl ">{currentSkill.skillName}</h2>
-          </div>
-        </div>
         {/* Main Content Area (Scrollable) */}
         <div className="flex-grow overflow-hidden p-2  ">
+          <SkillHeader skillSlug={currentSkillSlug} />
+
           {/* Layout: Grid for larger screens, stack on smaller */}
           <div className="h-full">
             {/* Task List Column (Takes more space) */}
@@ -52,7 +51,6 @@ export default async function SkillOverview({
               <SkillTodoList
                 initialSkillTodos={skillTodoData}
                 skillId={skillId}
-                skillSlug={currentSkillSlug}
               />
             </div>
           </div>
