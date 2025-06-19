@@ -5,6 +5,7 @@ import {
   CheckCheck,
   ChevronRight,
   Hourglass,
+  Link2,
   LinkIcon,
   Pencil,
 } from "lucide-react";
@@ -253,6 +254,8 @@ export default function SkillTodoCard({
                   Resources
                 </span>
               </motion.button>
+
+              {/* resource expand button  */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -265,7 +268,32 @@ export default function SkillTodoCard({
                   animate={{ rotate: isExpanded ? 90 : 0 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
-                  <ChevronRight size={14} />
+                  {todo.resourceLink ? (
+                    <motion.div
+                      key="resource"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="relative"
+                    >
+                      <Link2 size={18} />
+
+                      <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[10px] leading-none font-semibold px-1.5 py-0.5 rounded-full">
+                        {Array.isArray(todo.resourceLink)
+                          ? todo.resourceLink.length
+                          : 1}
+                      </span>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="chevron"
+                      initial={{ opacity: 0, x: -5 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 5 }}
+                    >
+                      <ChevronRight size={16} />
+                    </motion.div>
+                  )}
                 </motion.div>
               </motion.button>
               {/* secondary action buttons */}
