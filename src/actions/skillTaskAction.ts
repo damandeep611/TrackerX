@@ -213,6 +213,7 @@ export async function editSkillTask(
   taskId: string,
   updatedFields: {
     title: string;
+    description: string | null;
     resourceLink: string | null;
     tags: string[];
   }
@@ -230,6 +231,7 @@ export async function editSkillTask(
       .update(skillTask)
       .set({
         title: updatedFields.title.trim(),
+        description: updatedFields.description?.trim() || null,
         resourceLink: updatedFields.resourceLink?.trim() || null,
         tags: updatedFields.tags || [],
         updatedAt: new Date(),
