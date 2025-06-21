@@ -1,48 +1,53 @@
 "use client";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import {
+  BookMarked,
+  ChartPie,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  House,
+  ListTodo,
+  Settings,
+} from "lucide-react";
 import { useState } from "react";
-import { IoDocumentAttachOutline } from "react-icons/io5";
-import { FcIdea } from "react-icons/fc";
-import { MdDashboard } from "react-icons/md";
-import { LiaTasksSolid } from "react-icons/lia";
 
 import SidebarSection from "./sidebar-section";
 import SidebarItem from "./sidebar-item";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "../../layout/mode-toggle";
+import HeaderLogo from "./header-logo";
 
 const navigation = {
   quicklinks: [
     {
-      id: "tech-docs",
-      title: "Technical Docs",
-      icon: IoDocumentAttachOutline,
-      path: "/docs",
+      id: "analytics",
+      title: "Analytics",
+      icon: ChartPie,
+      path: "/dashboard",
     },
     {
-      id: "ideas-snap",
-      title: "Idea Capture",
-      icon: FcIdea,
-      path: "/ideas",
+      id: "settings",
+      title: "Settings",
+      icon: Settings,
+      path: "/dashboard",
     },
   ],
   mainMenu: [
     {
       id: "dashboard-main",
       title: "Dashboard",
-      icon: MdDashboard,
+      icon: House,
       path: "/dashboard",
     },
     {
       id: "todo-manager",
       title: "Todos",
-      icon: LiaTasksSolid,
+      icon: ListTodo,
       path: "/dashboard/tasks",
     },
     {
       id: "bookmark",
       title: "BookMarks",
-      icon: LiaTasksSolid,
+      icon: BookMarked,
       path: "/dashboard/bookmarks",
     },
   ],
@@ -62,16 +67,21 @@ export default function Sidebar() {
   };
   return (
     <div
-      className={`relative h-screen text-white  bg-[#1a1a1a] border-r border-gray-800 transition-all duration-200 ease-in-out  ${
-        isCollapsed ? "w-20" : "w-64"
+      className={`relative h-screen flex flex-col border-r-2 border-border transition-all duration-200 ease-in-out  ${
+        isCollapsed ? "w-20" : "w-60"
       }`}
     >
       <div className="flex items-center justify-between  p-4">
         <div className={`flex items-center justify-between gap-2`}>
           {!isCollapsed && (
             <div className="flex items-center">
-              <div className="w-8 h-8 rounded-md bg-green-600" />
-              <span className="ml-2 font-semibold text-white">Dashboard</span>
+              <HeaderLogo />
+              <div className="flex flex-col items-center justify-start">
+                <span className="ml-2 font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent ">
+                  Dashboard
+                </span>
+                <span className="text-xs">Skill Management</span>
+              </div>
             </div>
           )}
         </div>
@@ -84,21 +94,38 @@ export default function Sidebar() {
       </div>
       {/* sidebar menu items */}
 
-      <SidebarSection title="Main Menu" isCollapsed={isCollapsed}>
-        {navigation.mainMenu.map((item) => (
-          <SidebarItem
-            href={item.path}
-            key={item.id}
-            label={item.title}
-            icon={<item.icon />}
-            isActive={isActive(item.path)}
-            isCollapsed={isCollapsed}
-          />
-        ))}
-      </SidebarSection>
+      <div className="flex-1">
+        <SidebarSection title="Main Menu" isCollapsed={isCollapsed}>
+          {navigation.mainMenu.map((item) => (
+            <SidebarItem
+              href={item.path}
+              key={item.id}
+              label={item.title}
+              icon={<item.icon size={16} />}
+              isActive={isActive(item.path)}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+        </SidebarSection>
+
+        <SidebarSection title="Quick Links" isCollapsed={isCollapsed}>
+          {navigation.quicklinks.map((item) => (
+            <SidebarItem
+              href={item.path}
+              key={item.id}
+              label={item.title}
+              icon={<item.icon size={16} />}
+              isActive={isActive(item.path)}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+        </SidebarSection>
+      </div>
       {/* Sidebar Projects Section */}
-      <div className="p-4 ">
-        <ModeToggle />
+      <div className="p-4 flex items-center justify-end ">
+        <span className="">
+          <ModeToggle />
+        </span>
       </div>
     </div>
   );

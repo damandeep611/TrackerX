@@ -39,7 +39,7 @@ export default async function SkillOverview({
     const currentSkillSlug = currentSkill.slug; //slug for revalidation
     const skillTodoData = await getSkillTasksForSkill(skillId);
     return (
-      <div className="flex flex-col h-screen overflow-hidden">
+      <div className="flex flex-col h-screen overflow-hidden p-4">
         {/* Main Content Area (Scrollable) */}
         <div className="flex-grow overflow-hidden p-2  ">
           <SkillHeader skillSlug={currentSkillSlug} />
