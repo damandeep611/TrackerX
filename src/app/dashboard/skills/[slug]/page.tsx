@@ -6,6 +6,8 @@ import { skillCard } from "@/db/schema/schema";
 import { and, eq } from "drizzle-orm";
 import React from "react";
 import SkillHeader from "../SkillHeader";
+import SkillTrackingCards from "../SkillTrackingCards";
+import SkillAnalytics from "../SkillAnalytics";
 
 export default async function SkillOverview({
   params,
@@ -39,19 +41,23 @@ export default async function SkillOverview({
     const currentSkillSlug = currentSkill.slug; //slug for revalidation
     const skillTodoData = await getSkillTasksForSkill(skillId);
     return (
-      <div className="flex flex-col h-screen overflow-hidden p-4">
+      <div className="flex flex-col  overflow-hidden">
         {/* Main Content Area (Scrollable) */}
-        <div className="flex-grow overflow-hidden p-2  ">
-          <SkillHeader skillSlug={currentSkillSlug} />
+        <div className="flex-grow overflow-hidden   ">
+          <div className="border-b border-border">
+            <SkillHeader skillSlug={currentSkillSlug} />
+            <SkillTrackingCards />
+          </div>
 
           {/* Layout: Grid for larger screens, stack on smaller */}
           <div className="h-full">
             {/* Task List Column (Takes more space) */}
-            <div className="lg:col-span-2 h-full overflow-y-auto pr-2">
+            <div className="flex">
               <SkillTodoList
                 initialSkillTodos={skillTodoData}
                 skillId={skillId}
               />
+              <SkillAnalytics />
             </div>
           </div>
         </div>

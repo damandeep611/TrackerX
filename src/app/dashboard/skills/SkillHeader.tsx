@@ -16,7 +16,7 @@ interface SkillHeaderProps {
 
 export default function SkillHeader({ skillSlug }: SkillHeaderProps) {
   return (
-    <div className="flex items-center justify-between gap-6">
+    <div className="flex items-center justify-between gap-6 p-4 px-6">
       <div>
         <Breadcrumb>
           <BreadcrumbList>
