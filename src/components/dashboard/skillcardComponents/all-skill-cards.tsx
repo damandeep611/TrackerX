@@ -1,5 +1,4 @@
 "use client";
-import AddSkillModal from "@/components/dashboard/skillcardComponents/add-skill-modal";
 import { Skill } from "@/types/skillDashboardTypes";
 import { useState } from "react";
 import SkillCard from "./skill-card";
@@ -43,7 +42,7 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
   return (
     <div>
       {/* dashboard header and title */}
-      <DashboardHeader />
+      <DashboardHeader onAddSkill={handleAddSkill} />
       {/* skill cards adding to dashbaord */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {skills.map((skill) => (
@@ -55,7 +54,6 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
           />
         ))}
       </div>
-      <AddSkillModal onAddSkill={handleAddSkill} />
     </div>
   );
 }

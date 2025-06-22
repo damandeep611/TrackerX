@@ -75,7 +75,7 @@ export default function SkillTodoForm({
       <div className="w-full  mx-auto ">
         <motion.form
           onSubmit={handleSubmit}
-          className=" mb-8 border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+          className=" mb-8 border-2 border-dashed border-border rounded-md shadow-sm hover:shadow-md transition-shadow overflow-hidden"
           animate={{
             boxShadow: isExpanded
               ? "0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)"
@@ -92,7 +92,7 @@ export default function SkillTodoForm({
               value={title}
               onChange={handleTitleChange}
               onClick={!isExpanded ? handleTaskFormExpanded : undefined}
-              className={`w-full   p-4  rounded-lg focus:outline-none    ${
+              className={`w-full   p-4  rounded-md focus:outline-none    ${
                 validationError ? "border-red-500" : ""
               }`}
               placeholder="Add a new task...."

@@ -1,43 +1,42 @@
 "use client";
-import { ModeToggle } from "@/components/layout/mode-toggle";
 import { authClient } from "@/lib/auth-client";
 import { Search } from "lucide-react";
 import React from "react";
-import { IoNotifications } from "react-icons/io5";
 import UserProfile from "../sidebar/user-profile";
+import AddSkillModal from "../skillcardComponents/add-skill-modal";
+import { Skill } from "@/types/skillDashboardTypes";
 
-export default function DashboardHeader() {
+interface DashboardHeaderProps {
+  onAddSkill: (skill: Omit<Skill, "id" | "currentHours" | "slug">) => void;
+}
+
+export default function DashboardHeader({ onAddSkill }: DashboardHeaderProps) {
   const { data } = authClient.useSession();
   return (
-    <div className="p-4">
+    <div className="border-b border-border bg-primary-foreground">
       {/* header container */}
-      <div className="flex items-center justify-between border-b-2 border-gray-200">
-        <div className="flex items-center justify-between ">
+      <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between gap-6 ">
           <div>
-            <h3 className="text-2xl font-bold">Dashboard</h3>
+            <h3 className="text-2xl font-bold">Skills Overview</h3>
             <span className="text-sm font-medium text-gray-500">
-              3 June 2025
+              Track your learning journey and master new skills
             </span>
           </div>
-          <div className=" relative flex items-center justify-center ml-16">
+          <div className=" hidden  md:flex items-center space-x-2 border border-border p-2 rounded-md ">
             <input
               type="text"
-              placeholder="Ask Ai"
-              className=" p-2  px-10 outline-1 outline-border rounded-2xl"
+              placeholder="Search Skills.."
+              className="bg-transparent text-sm w-32 "
             />
-            <span className=" absolute left-1 text-gray-400">
+            <span className=" text-gray-400">
               <Search />
             </span>
           </div>
         </div>
         {/* right header content */}
         <div className="flex items-center justify-between space-x-16">
-          <div>
-            <ModeToggle />
-          </div>
-          <div>
-            <IoNotifications />
-          </div>
+          <AddSkillModal onAddSkill={onAddSkill} />
           <div>
             <UserProfile
               name={data?.user.name || ""}

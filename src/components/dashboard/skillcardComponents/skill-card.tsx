@@ -81,7 +81,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
     >
       <motion.div
         onClick={() => navigate.push(`/dashboard/skills/${skill.slug}`)}
-        className="relative bg-white dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 cursor-pointer overflow-hidden transition-all duration-300 hover:border-gray-300/80 dark:hover:border-gray-600/60"
+        className="relative bg-white dark:bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-300/60 dark:border-gray-700/50 cursor-pointer overflow-hidden transition-all duration-300 hover:border-gray-300/80 dark:hover:border-gray-600/60"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
         whileHover={{
@@ -116,7 +116,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
         </motion.div>
 
         {/* Header Section */}
-        <div className="relative p-6 pb-4">
+        <div className="relative p-4 pb-4">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
               <motion.span
@@ -180,7 +180,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
           {/* Modern Stats Grid */}
           <div className="grid grid-cols-3 gap-3 mb-4">
             <motion.div
-              className="text-center p-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-100 dark:border-gray-700/50"
+              className="text-center p-2 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-100 dark:border-gray-700/50"
               whileHover={{ scale: 1.02, y: -2 }}
               transition={{ duration: 0.2 }}
             >
