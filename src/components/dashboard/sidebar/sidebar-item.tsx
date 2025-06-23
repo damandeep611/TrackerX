@@ -27,7 +27,7 @@ export default function SidebarItem({
         onClick={onClick}
         className={`flex items-center px-4 py-2 cursor-pointer transition-colors ${
           isActive
-            ? "bg-gray-900 text-white mx-2 rounded-md"
+            ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900 mx-2 rounded-md"
             : " dark:hover:bg-white dark:hover:text-gray-900  hover:bg-gray-800 rounded-md mx-2 hover:text-gray-300"
         } ${isCollapsed ? "justify-center" : ""}  `}
       >
