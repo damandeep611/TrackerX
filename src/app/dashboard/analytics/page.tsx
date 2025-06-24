@@ -1,9 +1,18 @@
-import React from 'react'
+import AnalyticsHeader from "@/components/dashboard/analytics-components/AnalyticsHeader";
+import DailyHoursChart from "@/components/dashboard/analytics-components/DailyHoursChart";
+import DonutChart from "@/components/dashboard/analytics-components/DonutChart";
+import React from "react";
 
 export default function Page() {
   return (
-    <div className='flex items-center justify-center'>
-      <h2 className='text-2xl'>This is the Analytics page</h2>
+    <div className="">
+      <div>
+        <AnalyticsHeader />
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <DailyHoursChart />
+        <DonutChart />
+      </div>
     </div>
-  )
+  );
 }
