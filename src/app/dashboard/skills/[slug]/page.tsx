@@ -8,6 +8,7 @@ import React from "react";
 import SkillHeader from "../SkillHeader";
 import SkillTrackingCards from "../SkillTrackingCards";
 import SkillAnalytics from "../SkillAnalytics";
+import { getCurrentHours } from "@/actions/skillCardAction";
 
 export default async function SkillOverview({
   params,
@@ -40,13 +41,15 @@ export default async function SkillOverview({
     const skillId = currentSkill.id;
     const currentSkillSlug = currentSkill.slug; //slug for revalidation
     const skillTodoData = await getSkillTasksForSkill(skillId);
+    const skillCurrentHours = await getCurrentHours(skillSlug);
+
     return (
       <div className="flex flex-col  overflow-hidden">
         {/* Main Content Area (Scrollable) */}
         <div className="flex-grow overflow-hidden   ">
           <div className="border-b border-border">
             <SkillHeader skillSlug={currentSkillSlug} />
-            <SkillTrackingCards />
+            <SkillTrackingCards skillCurrentHours={skillCurrentHours} />
           </div>
 
           {/* Layout: Grid for larger screens, stack on smaller */}

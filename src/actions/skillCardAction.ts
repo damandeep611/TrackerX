@@ -45,6 +45,21 @@ export async function getSkillCard() {
   }));
 }
 
+export async function getCurrentHours(slug: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Not authenticated");
+  const currentHours = await db
+    .select({ current_hours: skillCard.currentHours })
+    .from(skillCard)
+    .where(eq(skillCard.slug, slug));
+  const value = currentHours[0]?.current_hours ?? null;
+  return value !== undefined && value !== null
+    ? Number(value).toFixed(1)
+    : "0.0";
+}
+
 // Get skill by slug
 export async function getSkillBySlug(slug: string) {
   const session = await auth.api.getSession({
