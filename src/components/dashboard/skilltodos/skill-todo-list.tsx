@@ -10,11 +10,13 @@ import { useSkillTodoManager } from "@/hooks/useSkillTodoManager";
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
   skillId: string;
+  onTimeUpdate?: () => void; // Callback to refresh analytics data
 }
 
 export default function SkillTodoList({
   initialSkillTodos = [],
   skillId,
+  onTimeUpdate,
 }: SkillTodoListProps) {
   const {
     //states
@@ -37,7 +39,7 @@ export default function SkillTodoList({
     handleDeleteTodo,
     handleCloseResourceModal,
     handleOpenResourceModal,
-  } = useSkillTodoManager({ initialSkillTodos, skillId });
+  } = useSkillTodoManager({ initialSkillTodos, skillId, onTimeUpdate });
   return (
     <div className="container mx-auto max-w-4xl p-4 ">
       <div>

@@ -411,3 +411,38 @@ export async function updateTaskResource(
   }
 }
 
+// ACTION: Get today's total time spent across all skills
+export async function getTodayTotalTimeSpent(): Promise<number> {
+  const userId = await getUserId();
+  
+  try {
+    // Get today's date in YYYY-MM-DD format for date comparison
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    // Single query to get sum of all durations for today's tasks across all skills
+    // Using SQL aggregation for better performance
+    const result = await db
+      .select({
+        totalDuration: sql<number>`COALESCE(sum(${skillTask.duration}), 0)`.mapWith(Number),
+      })
+      .from(skillTask)
+      .where(
+        and(
+          eq(skillTask.user_id, userId),
+          sql`DATE(${skillTask.date}) = ${todayString}`
+        )
+      );
+
+    const totalMinutes = result[0]?.totalDuration || 0;
+    // Convert to hours and round to 1 decimal place
+    const totalHours = Math.round((totalMinutes / 60) * 10) / 10;
+    
+    console.log(`Today's total time spent: ${totalHours}h (${totalMinutes} minutes)`);
+    return totalHours;
+  } catch (error) {
+    console.error("Failed to get today's total time spent:", error);
+    return 0;
+  }
+}
+

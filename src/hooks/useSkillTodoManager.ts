@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 interface useSkillTodoManagerProps {
   initialSkillTodos: skillTodo[];
   skillId: string;
+  onTimeUpdate?: () => void; // Callback to refresh analytics data
 }
 
 //generating temp id for the todo
@@ -23,6 +24,7 @@ const generateTempId = (): string => {
 export const useSkillTodoManager = ({
   initialSkillTodos,
   skillId,
+  onTimeUpdate,
 }: useSkillTodoManagerProps) => {
   //all states - remove it and use state management for clean look
   const [skillTodos, setSkillTodos] = useState<skillTodo[]>(initialSkillTodos);
@@ -111,6 +113,9 @@ export const useSkillTodoManager = ({
           if (!result.success) {
             console.error("Failed to update skillTodo time:", result.error);
             setSkillTodos(originalTodos);
+          } else {
+            // Call the callback to refresh analytics data
+            onTimeUpdate?.();
           }
         })(),
         {
