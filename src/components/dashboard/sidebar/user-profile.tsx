@@ -86,7 +86,7 @@ export default function UserProfile({
               duration: 0.15,
               ease: [0.4, 0, 0.2, 1],
             }}
-            className="absolute top-full left-0 right-0 mt-2 rounded-lg shadow-xl overflow-hidden z-50 border border-gray-700/50"
+            className="absolute top-full left-0 right-0 mt-2 rounded-lg shadow-xl overflow-hidden z-50 border border-gray-700/50 bg-white dark:bg-black"
           >
             <div className="py-1">
               <UserProfileMenuItem

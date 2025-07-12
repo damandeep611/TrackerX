@@ -1,12 +1,9 @@
 export const formatDuration = (minutes: number): string => {
-    if (minutes < 60) return "0m";
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    const reamainingMinutes = minutes % 60;
-    return reamainingMinutes > 0
-      ? `${hours}h ${reamainingMinutes}m`
-      : `${hours}h`;
-  };
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+};
 //utility function to format time
 
 export const formatDate = (dateString: string): string => {
@@ -24,7 +21,10 @@ export const formatDate = (dateString: string): string => {
 };
 
 // Calculate remaining hours based on total available and time spent
-export function calculateRemainingHours(totalHours: number, timeSpent: number): number {
+export function calculateRemainingHours(
+  totalHours: number,
+  timeSpent: number
+): number {
   return Math.max(0, totalHours - timeSpent);
 }
 
@@ -37,12 +37,12 @@ export function formatTimeSpent(hours: number): string {
 
 // Get today's date in YYYY-MM-DD format
 export function getTodayDateString(): string {
-  return new Date().toISOString().split('T')[0];
+  return new Date().toISOString().split("T")[0];
 }
 
 // Check if a date is today
 export function isToday(dateString: string): boolean {
   const today = getTodayDateString();
-  const taskDate = new Date(dateString).toISOString().split('T')[0];
+  const taskDate = new Date(dateString).toISOString().split("T")[0];
   return today === taskDate;
 }

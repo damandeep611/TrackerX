@@ -2,10 +2,12 @@
 import { Skill } from "@/types/skillDashboardTypes";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X } from "lucide-react";
+import { Plus, PlusIcon, X } from "lucide-react";
 
 interface AddSkillModalProps {
-  onAddSkill: (skill: Omit<Skill, "id" | "currentHours" | "slug">) => void;
+  onAddSkill: (
+    skill: Omit<Skill, "id" | "currentHours" | "slug" | "createdAt">
+  ) => void;
 }
 
 export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
@@ -15,6 +17,7 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
     category: "",
     targetHours: 10000,
     skillColor: "#6366f1",
+    description: "",
   });
 
   const openDrawer = () => {
@@ -32,7 +35,7 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
       {/* Clean Add Button */}
       <button
         onClick={openDrawer}
-        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 border border-transparent rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-800 border border-transparent rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-colors"
       >
         <Plus size={16} />
         Add skill
@@ -47,7 +50,7 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/50"
+              className="fixed w-full inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity duration-200"
               onClick={openDrawer}
             />
 
@@ -57,18 +60,20 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md"
+              className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-xl "
             >
-              <div className="bg-white dark:bg-gray-900 rounded-t-xl shadow-xl border-t border-gray-200 dark:border-gray-700">
+              <div className=" bg-white dark:bg-zinc-900 rounded-t-xl shadow-lg border-t border-gray-200 dark:border-gray-700">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Add skill
-                  </h3>
-                  <button
-                    onClick={openDrawer}
-                    className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-                  >
+                  <div>
+                    <h3 className="text-2xl font-semibold capitalize">
+                      Add new skill
+                    </h3>
+                    <p className="text-sm text-zinc-800 dark:text-zinc-400 font-semibold">
+                      Track your learning journey
+                    </p>
+                  </div>
+                  <button onClick={openDrawer} className="">
                     <X size={20} />
                   </button>
                 </div>
@@ -77,12 +82,12 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
                 <form onSubmit={handleSubmit} className="px-6 pb-6">
                   <div className="space-y-4">
                     {/* Skill Name */}
-                    <div>
+                    <div className="space-y-2">
                       <label
                         htmlFor="skillName"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        className="block text-sm capitalize font-medium  mb-1"
                       >
-                        Name
+                        Skill / Project name *
                       </label>
                       <input
                         type="text"
@@ -94,19 +99,19 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
                             skillName: e.target.value,
                           })
                         }
-                        placeholder="e.g. React"
-                        className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 dark:focus:ring-gray-100 dark:focus:border-gray-100 dark:bg-gray-800 dark:text-white text-sm"
+                        placeholder="e.g. React, Spanish , Guitar"
+                        className="block w-full px-3 py-2 border rounded-sm shadow-sm  text-sm"
                         required
                       />
                     </div>
 
                     {/* Category */}
-                    <div>
+                    <div className="space-y-2">
                       <label
                         htmlFor="category"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        className="block text-sm font-medium  mb-1"
                       >
-                        Category
+                        Category *
                       </label>
                       <input
                         type="text"
@@ -115,19 +120,23 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
                         onChange={(e) =>
                           setFormData({ ...formData, category: e.target.value })
                         }
-                        placeholder="e.g. Programming"
-                        className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 dark:focus:ring-gray-100 dark:focus:border-gray-100 dark:bg-gray-800 dark:text-white text-sm"
+                        placeholder="e.g. Programming, Language, Music , Business"
+                        className="block w-full px-3 py-2 border rounded-sm text-sm"
                         required
                       />
+                      <p className="text-xs text-zinc-400">
+                        {" "}
+                        Add a category or label
+                      </p>
                     </div>
 
                     {/* Target Hours */}
-                    <div>
+                    <div className="space-y-2">
                       <label
                         htmlFor="targetHours"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        className="block text-sm font-medium  mb-1"
                       >
-                        Target hours
+                        Target hours *
                       </label>
                       <input
                         type="number"
@@ -139,14 +148,39 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
                             targetHours: Number(e.target.value),
                           })
                         }
-                        className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 dark:focus:ring-gray-100 dark:focus:border-gray-100 dark:bg-gray-800 dark:text-white text-sm"
+                        className="block w-full px-3 py-2 border rounded-sm shadow-sm  text-sm"
                         min="1"
                         required
+                      />
+                      <p className="text-xs text-zinc-400">
+                        How many hours do you want to invest?
+                      </p>
+                    </div>
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="description"
+                        className="block text-sm font-medium  mb-1"
+                      >
+                        Description
+                      </label>
+                      <textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
+                        placeholder="Add any overview note, Goals and extra Context"
+                        className="block w-full px-3 py-2 border rounded-sm shadow-sm text-sm"
+                        rows={3}
                       />
                     </div>
 
                     {/* Color */}
-                    <div>
+                    <div className="space-y-2">
                       <label
                         htmlFor="skillColor"
                         className="block text-sm font-medium"
@@ -163,8 +197,11 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
                             skillColor: e.target.value,
                           })
                         }
-                        className="block mt-1 w-32 h-8 rounded-md "
+                        className="block mt-1 w-full h-8 rounded-md  "
                       />
+                      <p className="text-xs text-zinc-400">
+                        Select color also for differentiating with others cards
+                      </p>
                     </div>
                   </div>
 
@@ -173,15 +210,16 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
                     <button
                       type="button"
                       onClick={openDrawer}
-                      className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                      className="flex-1 px-4 py-2 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-all duration-200 font-medium border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-4 py-2 text-sm font-medium text-white bg-gray-900 border border-transparent rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-colors"
+                      className="flex-1 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 dark:hover:text-zinc-800 rounded-lg transition-all duration-200 font-medium flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
                     >
-                      Add skill
+                      <PlusIcon className="w-4 h-4" />
+                      Save Skill
                     </button>
                   </div>
                 </form>

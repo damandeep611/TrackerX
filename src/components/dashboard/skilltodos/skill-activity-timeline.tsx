@@ -8,17 +8,7 @@ interface SkillActivityTimelineProps {
 }
 
 // Helper to format duration (minutes) into a readable string
-const formatDuration = (minutes: number): string => {
-  if (minutes <= 0) return "0m";
-  const totalMinutes = Math.round(minutes); // Ensure integer minutes
-  const hours = Math.floor(totalMinutes / 60);
-  const remainingMinutes = totalMinutes % 60;
-  let result = "";
-  if (hours > 0) result += `${hours}h`;
-  if (remainingMinutes > 0)
-    result += `${result ? " " : ""}${remainingMinutes}m`;
-  return result || "0m";
-};
+
 
 // Helper to format ISO date string
 const formatDate = (dateString: string): string => {
@@ -92,12 +82,7 @@ export default function SkillActivityTimeline({
                     Created on {formatDate(task.createdAt)}
                   </time>
                   {/* Duration Recorded */}
-                  {task.duration > 0 && ( // Only show duration if tracked
-                    <p className="text-sm font-normal text-gray-500 dark:text-gray-400 flex items-center">
-                      <Clock size={14} className="mr-1.5" />
-                      Duration logged: {formatDuration(task.duration)}
-                    </p>
-                  )}
+
                   {/* Optional: Add description or tag info */}
                   {/* {task.description && <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">{task.description}</p>} */}
                 </div>

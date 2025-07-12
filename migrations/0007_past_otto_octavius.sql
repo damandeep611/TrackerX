@@ -1,0 +1,1 @@
+ALTER TABLE "daily_routine" ADD CONSTRAINT "daily_routine_user_id_routine_date_unique" UNIQUE("user_id","routine_date");

@@ -1,28 +1,20 @@
 "use client";
 import { Skill } from "@/types/skillDashboardTypes";
-import {
-  ChevronDown,
-  Edit3,
-  Trash2,
-  Clock,
-  Target,
-  TrendingUp,
-} from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
+import { Clock } from "lucide-react";
 
 interface SkillCardProps {
   skill: Skill;
   onEdit: (skill: Skill) => void;
-  onDelete: (id: string) => void;
 }
 
-export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+export default function SkillCard({ skill }: SkillCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const percentage = (skill.currentHours / skill.targetHours) * 100;
-  const remainingHours = Math.max(0, skill.targetHours - skill.currentHours);
+  // const remainingHours = Math.max(0, skill.targetHours - skill.currentHours);
+  //use this remaining hours of skill in the skill overview with tasks list
 
   const navigate = useRouter();
 
@@ -42,11 +34,20 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
     return `${wholeHours} h ${minutes}m`;
   };
 
+  const getMotivationTags = (progress: number) => {
+    if (progress === 0) return "Not Started ";
+    if (progress < 5) return "Building Momentum";
+    if (progress < 20) return "Making Progress";
+    if (progress < 50) return "Halfway There!";
+    if (progress < 80) return "Almost There!";
+    return "On Fire 🔥";
+  };
+
   const getProgressColor = (percentage: number) => {
     if (percentage >= 90) return "from-emerald-500 to-green-600";
     if (percentage >= 70) return "from-blue-500 to-indigo-600";
     if (percentage >= 40) return "from-amber-500 to-orange-600";
-    return "from-slate-500 to-gray-600";
+    return "from-slate-500 to-gray-200";
   };
 
   // Dynamic category color generator with dark theme support
@@ -81,7 +82,7 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
     >
       <motion.div
         onClick={() => navigate.push(`/dashboard/skills/${skill.slug}`)}
-        className="relative bg-white dark:bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-300/60 dark:border-gray-700/50 cursor-pointer overflow-hidden transition-all duration-300 hover:border-gray-300/80 dark:hover:border-gray-600/60"
+        className="relative bg-white dark:bg-zinc-900 backdrop-blur-sm rounded-2xl p-6  cursor-pointer overflow-hidden transition-all duration-300"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
         whileHover={{
@@ -116,40 +117,47 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
         </motion.div>
 
         {/* Header Section */}
-        <div className="relative p-4 pb-4">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1 min-w-0">
-              <motion.span
-                className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border backdrop-blur-sm ${getCategoryColor(
-                  skill.category
-                )} mb-3`}
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-              >
-                {skill.category}
-              </motion.span>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
-                {skill.skillName}
-              </h2>
-            </div>
+        <div className="relative pb-2">
+          <div className="flex items-start justify-between ">
+            <h2 className="text-lg font-semibold capitalize  leading-tight  transition-colors">
+              {skill.skillName}
+            </h2>
+            <motion.span
+              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${getCategoryColor(
+                skill.category
+              )} mb-3`}
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              {skill.category}
+            </motion.span>
+          </div>
 
-            <div className="text-right ml-4 flex-shrink-0">
+          {/* Modern Stats Grid */}
+          <div className="flex items-center justify-between py-2 font-medium">
+            <div className="flex items-center gap-2 text-zinc-400">
+              <div className="flex items-center justify-between gap-1">
+                <Clock size={15} />
+                <span className="text-sm">
+                  {formatTime(skill.currentHours)}
+                </span>
+              </div>
+              <span>/</span>
+              <span className="text-sm">{formatTime(skill.targetHours)}</span>
+            </div>
+            <div className="flex items-center gap-2 ml-4 flex-shrink-0">
               <motion.div
-                className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1"
+                className="text-sm font-bold "
                 animate={{ scale: isHovered ? 1.05 : 1 }}
                 transition={{ duration: 0.2 }}
               >
                 {percentage.toFixed(0)}%
               </motion.div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">
-                Complete
-              </div>
             </div>
           </div>
-
           {/* Progress Bar with glassmorphism effect */}
           <div className="relative mb-4">
-            <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden backdrop-blur-sm">
+            <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden backdrop-blur-sm">
               <motion.div
                 className={`h-full bg-gradient-to-r ${getProgressColor(
                   percentage
@@ -176,124 +184,22 @@ export default function SkillCard({ skill, onEdit, onDelete }: SkillCardProps) {
               </motion.div>
             </div>
           </div>
+          {/* bottom section  */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-zinc-400">
+              {getMotivationTags(percentage)}
+            </span>
 
-          {/* Modern Stats Grid */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <motion.div
-              className="text-center p-2 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-100 dark:border-gray-700/50"
-              whileHover={{ scale: 1.02, y: -2 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-500/20 rounded-lg mx-auto mb-2">
-                <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            {percentage > 0 && (
+              <div className="flex items-center justify-baseline gap-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-xs text-emerald-400 font-medium">
+                  Active
+                </span>
               </div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {formatTime(skill.currentHours)}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Current
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="text-center p-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-100 dark:border-gray-700/50"
-              whileHover={{ scale: 1.02, y: -2 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex items-center justify-center w-8 h-8 bg-green-100 dark:bg-green-500/20 rounded-lg mx-auto mb-2">
-                <Target className="w-4 h-4 text-green-600 dark:text-green-400" />
-              </div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {formatTime(skill.targetHours)}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Target
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="text-center p-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm border border-gray-100 dark:border-gray-700/50"
-              whileHover={{ scale: 1.02, y: -2 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex items-center justify-center w-8 h-8 bg-orange-100 dark:bg-orange-500/20 rounded-lg mx-auto mb-2">
-                <TrendingUp className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-              </div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {formatTime(remainingHours)}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Remaining
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Expand Toggle */}
-          <div className="flex justify-center pt-2">
-            <motion.button
-              onClick={(event) => {
-                event.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
-              className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 group/button"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.1 }}
-            >
-              <motion.div
-                animate={{ rotate: isExpanded ? 180 : 0 }}
-                transition={{ duration: 0.3, ease: [0.25, 0.25, 0, 1] }}
-              >
-                <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover/button:text-gray-600 dark:group-hover/button:text-gray-300 transition-colors" />
-              </motion.div>
-            </motion.button>
+            )}
           </div>
         </div>
-
-        {/* Expandable Actions */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.25, 0.25, 0, 1] }}
-              className="overflow-hidden border-t border-gray-100 dark:border-gray-700/50"
-            >
-              <div className="p-4 bg-gray-50/30 dark:bg-gray-800/20 backdrop-blur-sm">
-                <div className="flex gap-2 justify-end">
-                  <motion.button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onEdit(skill);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 border border-blue-200 dark:border-blue-500/30 rounded-lg transition-all duration-200 hover:shadow-sm backdrop-blur-sm"
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.1 }}
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    Edit
-                  </motion.button>
-
-                  <motion.button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onDelete(skill.id);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg transition-all duration-200 hover:shadow-sm backdrop-blur-sm"
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.1 }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
     </motion.div>
   );

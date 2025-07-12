@@ -1,0 +1,1 @@
+ALTER TABLE "daily_routine" DROP CONSTRAINT "daily_routine_user_id_routine_date_unique";

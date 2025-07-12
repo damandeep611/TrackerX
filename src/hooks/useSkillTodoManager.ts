@@ -3,7 +3,6 @@ import {
   deleteSkillTask,
   editSkillTask,
   toggleTaskDone,
-  updateskillTaskTime,
   updateTaskResource,
 } from "@/actions/skillTaskAction";
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
@@ -14,6 +13,7 @@ interface useSkillTodoManagerProps {
   initialSkillTodos: skillTodo[];
   skillId: string;
   onTimeUpdate?: () => void; // Callback to refresh analytics data
+  onRefreshTimeData?: () => void; // Callback to refresh time data
 }
 
 //generating temp id for the todo
@@ -24,7 +24,6 @@ const generateTempId = (): string => {
 export const useSkillTodoManager = ({
   initialSkillTodos,
   skillId,
-  onTimeUpdate,
 }: useSkillTodoManagerProps) => {
   //all states - remove it and use state management for clean look
   const [skillTodos, setSkillTodos] = useState<skillTodo[]>(initialSkillTodos);
@@ -50,7 +49,6 @@ export const useSkillTodoManager = ({
       resourceLink: null,
       resourceLinkTitle: null,
       date: new Date().toISOString(),
-      duration: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -88,48 +86,6 @@ export const useSkillTodoManager = ({
       })
       .finally(() => {
         setIsSubmittingForm(false);
-      });
-  };
-  //--------- handles update time from the task card----
-  const handleUpdateTime = async (todoId: string, minutes: number) => {
-    const originalTodos = skillTodos;
-    setUpdatingTodoId(todoId);
-    // optimistic ui update
-    setSkillTodos((prev) =>
-      prev.map((skillTodo) =>
-        skillTodo.id === todoId
-          ? {
-              ...skillTodo,
-              duration: minutes,
-              updatedAt: new Date().toISOString(),
-            }
-          : skillTodo
-      )
-    );
-    toast
-      .promise(
-        (async () => {
-          const result = await updateskillTaskTime(todoId, minutes, skillId);
-          if (!result.success) {
-            console.error("Failed to update skillTodo time:", result.error);
-            setSkillTodos(originalTodos);
-          } else {
-            // Call the callback to refresh analytics data
-            onTimeUpdate?.();
-          }
-        })(),
-        {
-          loading: "Adding time to task...",
-          success: "Time added successfully",
-          error: "failed to add time to task",
-        }
-      )
-      .catch((err) => {
-        console.error("Error adding time:", err);
-        setSkillTodos(originalTodos);
-      })
-      .finally(() => {
-        setUpdatingTodoId(null);
       });
   };
 
@@ -323,7 +279,7 @@ export const useSkillTodoManager = ({
     //state actions
     setIsAddingTodo,
     handleAddTodo,
-    handleUpdateTime,
+
     handleEditTodo,
     handleToggleTodo,
     handleAddResource,

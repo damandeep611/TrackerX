@@ -1,14 +1,11 @@
 import { getSkillTasksForSkill, getUserId } from "@/actions/skillTaskAction";
-import SkillTodoList from "@/components/dashboard/skilltodos/skill-todo-list";
-
 import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
 import { and, eq } from "drizzle-orm";
 import React from "react";
 import SkillHeader from "../SkillHeader";
-import SkillTrackingCards from "../SkillTrackingCards";
-import SkillAnalytics from "../SkillAnalytics";
 import { getCurrentHours } from "@/actions/skillCardAction";
+import SkillPageWrapper from "@/components/dashboard/skills/SkillPageWrapper";
 
 export default async function SkillOverview({
   params,
@@ -44,26 +41,13 @@ export default async function SkillOverview({
     const skillCurrentHours = await getCurrentHours(skillSlug);
 
     return (
-      <div className="flex flex-col  overflow-hidden">
-        {/* Main Content Area (Scrollable) */}
-        <div className="flex-grow overflow-hidden   ">
-          <div className="border-b border-border">
-            <SkillHeader skillSlug={currentSkillSlug} />
-            <SkillTrackingCards skillCurrentHours={skillCurrentHours} />
-          </div>
-
-          {/* Layout: Grid for larger screens, stack on smaller */}
-          <div className="h-full">
-            {/* Task List Column (Takes more space) */}
-            <div className="flex">
-              <SkillTodoList
-                initialSkillTodos={skillTodoData}
-                skillId={skillId}
-              />
-              <SkillAnalytics />
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-col overflow-hidden">
+        <SkillHeader skillSlug={currentSkillSlug} />
+        <SkillPageWrapper
+          initialSkillTodos={skillTodoData}
+          skillId={skillId}
+          skillCurrentHours={skillCurrentHours}
+        />
       </div>
     );
   } catch (error) {

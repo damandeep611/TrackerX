@@ -27,7 +27,7 @@ export default function DailyTimeSetup({
     reset,
   } = useForm<TimeFormData>({
     defaultValues: {
-      wakeUpTime: "06:00",
+      wakeUpTime: "05:00",
       sleepTime: "22:00",
     },
   });

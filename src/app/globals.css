@@ -96,7 +96,7 @@
 }
 
 .dark {
-  --background: oklch(0.179 0.015 260)
+  --background: rgb(9 9 11)
 ; /* Deep blue-gray */
   --foreground: oklch(0.98 0.01 260);
 

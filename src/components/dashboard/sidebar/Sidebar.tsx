@@ -6,6 +6,7 @@ import {
   ChevronRightIcon,
   HelpCircle,
   House,
+  ListStart,
   ListTodo,
   Settings,
 } from "lucide-react";
@@ -15,7 +16,7 @@ import SidebarSection from "./sidebar-section";
 import SidebarItem from "./sidebar-item";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "../../layout/mode-toggle";
-import HeaderLogo from "./header-logo";
+import SidebarProfile from "./SidebarProfile";
 
 const navigation = {
   quicklinks: [
@@ -46,8 +47,14 @@ const navigation = {
       path: "/dashboard",
     },
     {
-      id: "todo-manager",
-      title: "Todos",
+      id: "timeline",
+      title: "Timeline",
+      icon: ListStart,
+      path: "/dashboard/timeline",
+    },
+    {
+      id: "tasks0",
+      title: "Tasks",
       icon: ListTodo,
       path: "/dashboard/tasks",
     },
@@ -74,7 +81,7 @@ export default function Sidebar() {
   };
   return (
     <div
-      className={`relative h-screen flex flex-col border-r-2 border-border transition-all duration-200 ease-in-out  ${
+      className={`relative h-screen flex flex-col dark:bg-zinc-950 transition-all duration-200 ease-in-out  ${
         isCollapsed ? "w-20" : "w-60"
       }`}
     >
@@ -82,13 +89,7 @@ export default function Sidebar() {
         <div className={`flex items-center justify-between gap-2`}>
           {!isCollapsed && (
             <div className="flex items-center">
-              <HeaderLogo />
-              <div className="flex flex-col items-center justify-start">
-                <span className="ml-2 font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent ">
-                  Dashboard
-                </span>
-                <span className="text-xs">Skill Management</span>
-              </div>
+              <SidebarProfile />
             </div>
           )}
         </div>

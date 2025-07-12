@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Trash2, X } from "lucide-react";
+import { Trash2, TrashIcon, X } from "lucide-react";
 
 interface DeleteModalProps {
   onDelete: () => void;
@@ -24,7 +24,7 @@ export default function DeleteModal({ onDelete }: DeleteModalProps) {
         <motion.button
           ref={buttonRef}
           onClick={() => setIsOpen(true)}
-          className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50  rounded-lg transition-colors duration-200 focus:outline-none focus-within:ring-1 focus:ring-red-500 "
+          className="p-2 hover:text-red-400 hover:bg-red-900/20  rounded-lg transition-colors duration-200 focus:outline-none focus-within:ring-1 focus:ring-red-500 "
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           layout
@@ -35,7 +35,7 @@ export default function DeleteModal({ onDelete }: DeleteModalProps) {
             }
             transition={{ duration: 0.2 }}
           >
-            <Trash2 className="w-5 h-5" />
+            <TrashIcon size={16} />
           </motion.div>
         </motion.button>
         <AnimatePresence>

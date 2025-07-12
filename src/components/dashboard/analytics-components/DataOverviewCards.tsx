@@ -1,9 +1,11 @@
 "use client";
-import { CalendarClock, Clock, Edit3, Hourglass } from "lucide-react";
+import { CalendarClock, Clock } from "lucide-react";
+import TotalHoursCard from "./TotalHoursCard";
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import DailyTimeSetup from "./DailyTimeSetup";
 import { getTodayTotalTimeSpent } from "@/actions/skillTaskAction";
+import { getTodayTotalTimeSpentFromLogs } from "@/actions/timeLogAction"; // Enable after schema generation
 import { calculateRemainingHours, formatTimeSpent } from "@/utils/format-time";
 
 export default function DataOverviewCards() {
@@ -13,12 +15,26 @@ export default function DataOverviewCards() {
   const [remainingHours, setRemainingHours] = useState("17");
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [useTimeLogs, setUseTimeLogs] = useState(true); // Toggle between old and new system
 
   // Fetch today's time spent data
   const fetchTodayTimeSpent = useCallback(async () => {
     try {
       setIsLoading(true);
-      const todayTimeSpent = await getTodayTotalTimeSpent();
+      let todayTimeSpent: number;
+
+      if (useTimeLogs) {
+        // Use new time log system - Enable after schema generation
+        console.log("📊 Fetching time spent from time logs...");
+        todayTimeSpent = await getTodayTotalTimeSpentFromLogs();
+        console.log(`📊 Time spent from logs: ${todayTimeSpent}h`);
+      } else {
+        // Fallback to old system for backward compatibility
+        console.log("📊 Fetching time spent from legacy system...");
+        todayTimeSpent = await getTodayTotalTimeSpent();
+        console.log(`📊 Time spent from legacy: ${todayTimeSpent}h`);
+      }
+
       setTimeSpent(todayTimeSpent.toString());
 
       // Calculate remaining hours using utility function
@@ -33,21 +49,25 @@ export default function DataOverviewCards() {
     } finally {
       setIsLoading(false);
     }
-  }, [totalHours]);
+  }, [useTimeLogs, totalHours]); // Include proper dependencies
 
-  // Fetch data on component mount and when total hours change
+  // Fetch data on component mount and when dependencies change
   useEffect(() => {
     fetchTodayTimeSpent();
   }, [fetchTodayTimeSpent]);
 
   // Set up periodic refresh every 30 seconds
+  // COMMENTED OUT: Automatic refresh to prevent high AWS costs
+  // Uncomment this section if you want automatic refresh in the future
+  /*
   useEffect(() => {
     const interval = setInterval(() => {
       fetchTodayTimeSpent();
     }, 30000); // 30 seconds
 
     return () => clearInterval(interval);
-  }, [fetchTodayTimeSpent]);
+  }, [fetchTodayTimeSpent]); // Depend on the stable callback
+  */
 
   const handleTimeSubmit = (hours: number) => {
     console.log("Time schedule updated:", hours);
@@ -60,8 +80,13 @@ export default function DataOverviewCards() {
   };
 
   // Refresh time spent data (can be called manually)
-  const refreshTimeData = () => {
+  const refreshTimeData = useCallback(() => {
     fetchTodayTimeSpent();
+  }, [fetchTodayTimeSpent]);
+
+  // Toggle between time log and legacy system
+  const toggleTimeSystem = () => {
+    setUseTimeLogs(!useTimeLogs);
   };
 
   return (
@@ -71,23 +96,21 @@ export default function DataOverviewCards() {
       className="p-4"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <DataCards
-          title="Total Hours"
-          value={totalHours}
-          subtitle="Available Hours Today"
-          icon={<Hourglass size={18} className=" text-blue-500" />}
-          onEdit={() => setShowModal(true)}
-          isLoading={isLoading}
-        />
+        <TotalHoursCard onHoursUpdate={setTotalHours} />
         <DataCards
           title="Time Spent"
           value={formatTimeSpent(parseFloat(timeSpent))}
-          subtitle="Time spent on skills and working"
+          subtitle={`Time spent on skills (${
+            useTimeLogs ? "New" : "Legacy"
+          } system)`}
           icon={<CalendarClock size={18} className="text-green-500" />}
           isLoading={isLoading}
           onRefresh={refreshTimeData}
+          onToggle={toggleTimeSystem}
           lastUpdated={lastUpdated}
+          showToggle={true}
         />
+        {/* this is the remaining hours card */}
         <DataCards
           title="Remaining Hours"
           value={formatTimeSpent(parseFloat(remainingHours))}
@@ -111,9 +134,11 @@ interface DataCardsProps {
   subtitle: string;
   onEdit?: () => void;
   onRefresh?: () => void;
+  onToggle?: () => void;
   icon: React.ReactNode;
   isLoading?: boolean;
   lastUpdated?: Date;
+  showToggle?: boolean;
 }
 
 const DataCards = ({
@@ -122,9 +147,11 @@ const DataCards = ({
   subtitle,
   onEdit,
   onRefresh,
+  onToggle,
   icon,
   isLoading = false,
   lastUpdated,
+  showToggle = false,
 }: DataCardsProps) => {
   const formatLastUpdated = (date: Date) => {
     const now = new Date();
@@ -144,6 +171,27 @@ const DataCards = ({
             <h3 className="text-lg font-bold capitalize">{title}</h3>
           </div>
           <div className="flex items-center space-x-1">
+            {showToggle && onToggle && (
+              <button
+                onClick={onToggle}
+                className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                title="Toggle time system"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                  />
+                </svg>
+              </button>
+            )}
             {onRefresh && (
               <button
                 onClick={onRefresh}
@@ -171,7 +219,19 @@ const DataCards = ({
                 className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                 title="Edit time window"
               >
-                <Edit3 className="w-4 h-4" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
               </button>
             )}
           </div>

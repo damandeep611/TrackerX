@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { skillCard, skillTask } from "@/db/schema/schema";
+import { skillCard, skillTask, timeLog } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
 import { and, desc, eq, sql } from "drizzle-orm";
@@ -19,30 +19,28 @@ export async function getUserId(): Promise<string> {
   return session.user.id;
 }
 
-// --- Helper functionto update the parent' skillcard current hours
-//to calculate the total duration in hours for skill's tasks and update the current hours field on the parent skillCard
+// --- Helper function to update the parent skillcard current hours
+// Calculate the total time from time logs for the skill's tasks and update the current hours
 export async function updateSkillCardHours(skillId: string): Promise<void> {
   const userId = await getUserId();
-  //calculate the sum of durations for this skill's tasks
   try {
-    //calculate the sum of durations in minutes for this skill's tasks
+    // Calculate the sum of minutes from time logs for this skill's tasks
     const result = await db
       .select({
-        // using sql helper for aggregation , to ensure type is number
-        totalDuration: sql<number>`sum(${skillTask.duration})`.mapWith(Number),
+        totalMinutes: sql<number>`sum(${timeLog.minutes})`.mapWith(Number),
       })
-      .from(skillTask)
-      .where(
-        and(eq(skillTask.skill_id, skillId), eq(skillTask.user_id, userId)) //ensure we only sum user's tasks
-      );
+      .from(timeLog)
+      .where(and(eq(timeLog.skill_id, skillId), eq(timeLog.user_id, userId)));
 
-    const totalMinutes = result[0]?.totalDuration || 0;
-    //convert total minutes to hours. using float for precision
+    const totalMinutes = result[0]?.totalMinutes || 0;
+    // Convert total minutes to hours using float for precision
     const totalHours = totalMinutes / 60.0;
+
     await db
       .update(skillCard)
-      .set({ currentHours: totalHours.toString() })//ensure currentHours column in skillCard schema can store floats
+      .set({ currentHours: totalHours.toString() })
       .where(and(eq(skillCard.id, skillId), eq(skillCard.userId, userId)));
+
     console.log(`Updated currentHours for skill ${skillId} to ${totalHours}`);
   } catch (error) {
     console.error(`Failed to update hours for skill ${skillId}:`, error);
@@ -52,47 +50,36 @@ export async function updateSkillCardHours(skillId: string): Promise<void> {
 //----------- now the server action CRUD operations
 
 //ACTION: Get tasks for a specific skill-----------
-export async function getSkillTasksForSkill(
-  skillId: string
-): Promise<skillTodo[]> {
-  // ensure the user is authenticated and get their id
+export async function getSkillTasksForSkill(skillId: string): Promise<skillTodo[]> {
   const userId = await getUserId();
 
-  //-------1. fetch tasks from the skillTasks table
   const skillTasks = await db
-    .select() //select all columns
-    .from(skillTask) //from the skillTask table
-    .where(and(eq(skillTask.skill_id, skillId), eq(skillTask.user_id, userId))) //where user_id matches the loggedin userId
-    .orderBy(desc(skillTask.createdAt)); //order results by creation date, newest first
+    .select()
+    .from(skillTask)
+    .where(and(eq(skillTask.skill_id, skillId), eq(skillTask.user_id, userId)))
+    .orderBy(desc(skillTask.createdAt));
 
-  // now data transformation and serialization for the data we are fetching from the database
   return skillTasks.map((t) => ({
     id: t.id,
     skill_id: t.skill_id || "",
     title: t.title,
     description: t.description || "",
     done: t.done,
-
     tags: t.tags || [],
     resourceLink: t.resourceLink,
     resourceLinkTitle: t.resource_link_title || null,
-    //converting date objects to ISO strings
     date: t.date.toISOString(),
-    duration: t.duration,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
   }));
 }
 
 //ACTION: Add skill Task
-
 export async function addSkillTasks(
   newTodo: newSkillTodo
 ): Promise<{ success: boolean; error?: string; newTask?: skillTodo }> {
-  //getting user id
   const userId = await getUserId();
 
-  // server side input validation to ensure all input fields are present
   if (!newTodo.skillId) {
     return { success: false, error: "skill ID is missing" };
   }
@@ -101,38 +88,35 @@ export async function addSkillTasks(
   }
 
   try {
-    //insert a new row into the skillTask table
     const insertedTasks = await db
       .insert(skillTask)
       .values({
-        //map the input data into the corresponding  table columns
         user_id: userId,
         skill_id: newTodo.skillId,
         title: newTodo.title.trim(),
         description: newTodo.description?.trim() || null,
         tags: newTodo.tags || [],
       })
-      .returning(); //ask the database to return the newly inserted row
+      .returning();
 
-    //check if the insertion was successful and data is returned
     if (!insertedTasks || insertedTasks.length === 0) {
       throw new Error("Failed to retrieve tasks or retrieve results");
     }
-    //get the data for the task that was just created
+
     const createdSkillTask = insertedTasks[0];
-    await updateSkillCardHours(createdSkillTask.skill_id || "");
-    // need the slug associated with the skillId to revalidate specific page
+
     const parentSkill = await db
       .select({ slug: skillCard.slug })
       .from(skillCard)
       .where(eq(skillCard.id, createdSkillTask.skill_id || ""))
       .limit(1);
+
     if (parentSkill[0]?.slug) {
       revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
     }
-    //next js caching and cache validation
+
     revalidatePath("/dashboard");
-    // data serialization
+
     const newTask: skillTodo = {
       id: createdSkillTask.id,
       skill_id: createdSkillTask.skill_id || "",
@@ -143,68 +127,14 @@ export async function addSkillTasks(
       resourceLink: createdSkillTask.resourceLink,
       resourceLinkTitle: createdSkillTask.resource_link_title || null,
       date: createdSkillTask.date.toISOString(),
-      duration: createdSkillTask.duration,
       createdAt: createdSkillTask.createdAt.toISOString(),
       updatedAt: createdSkillTask.updatedAt.toISOString(),
     };
-    //return success and newly created skill task data
+
     return { success: true, newTask };
   } catch (error) {
     console.log("Failed to add skill Task to the skill card", error);
     return { success: false, error: "Failed to add Task. Please try again" };
-  }
-}
-
-// to update the tracked time duration for specific task
-
-export async function updateskillTaskTime(
-  taskId: string,
-  newDuration: number,
-  skillId: string
-): Promise<{ success: boolean; error?: string }> {
-  //fetching userId
-  const userId = await getUserId();
-
-  //input validation
-  if (typeof newDuration !== "number" || newDuration < 0) {
-    return { success: false, error: "Invalid duration value" };
-  }
-  try {
-    //update rows in the task table
-    const result = await db
-      .update(skillTask)
-      .set({ duration: newDuration, updatedAt: new Date() })
-      .where(
-        and(
-          eq(skillTask.id, taskId),
-          eq(skillTask.user_id, userId),
-          eq(skillTask.skill_id, skillId) //ensuring task belongs to the specified skill
-        )
-      );
-    if (result.rowCount === 0) {
-      return {
-        success: false,
-        error: "Task not found or you don't have permission to update it",
-      };
-    }
-    await updateSkillCardHours(skillId); //update parent skillCard hours After successful update
-    //revalidate
-    const parentSkill = await db
-      .select({ slug: skillCard.slug })
-      .from(skillCard)
-      .where(eq(skillCard.id, skillId))
-      .limit(1);
-    if (parentSkill[0]?.slug) {
-      revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
-    }
-    revalidatePath("/dashboard");
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to update task time", error);
-    return {
-      success: false,
-      error: "Failed to update task time. Please try again",
-    };
   }
 }
 
@@ -414,31 +344,34 @@ export async function updateTaskResource(
 // ACTION: Get today's total time spent across all skills
 export async function getTodayTotalTimeSpent(): Promise<number> {
   const userId = await getUserId();
-  
+
   try {
     // Get today's date in YYYY-MM-DD format for date comparison
     const today = new Date();
-    const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-    
-    // Single query to get sum of all durations for today's tasks across all skills
-    // Using SQL aggregation for better performance
+    const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+    // Get sum of all minutes from time logs for today
     const result = await db
       .select({
-        totalDuration: sql<number>`COALESCE(sum(${skillTask.duration}), 0)`.mapWith(Number),
+        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(
+          Number
+        ),
       })
-      .from(skillTask)
+      .from(timeLog)
       .where(
         and(
-          eq(skillTask.user_id, userId),
-          sql`DATE(${skillTask.date}) = ${todayString}`
+          eq(timeLog.user_id, userId),
+          sql`DATE(${timeLog.logged_date}) = ${todayString}`
         )
       );
 
-    const totalMinutes = result[0]?.totalDuration || 0;
+    const totalMinutes = result[0]?.totalMinutes || 0;
     // Convert to hours and round to 1 decimal place
     const totalHours = Math.round((totalMinutes / 60) * 10) / 10;
-    
-    console.log(`Today's total time spent: ${totalHours}h (${totalMinutes} minutes)`);
+
+    console.log(
+      `Today's total time spent: ${totalHours}h (${totalMinutes} minutes)`
+    );
     return totalHours;
   } catch (error) {
     console.error("Failed to get today's total time spent:", error);

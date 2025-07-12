@@ -23,7 +23,7 @@ export const skillColors = {
 
 export default function DailyHoursChart() {
   return (
-   <motion.div
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
@@ -31,7 +31,7 @@ export default function DailyHoursChart() {
     >
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Daily Logged Time</h3>
+          <h3 className="text-lg font-semibold ">Daily Logged Time</h3>
           <p className="text-sm ">Last 7 days</p>
         </div>
         <BarChart3 className="w-5 h-5 " />
@@ -41,7 +41,12 @@ export default function DailyHoursChart() {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={dailyLoggedData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
+            <XAxis
+              dataKey="date"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 12, fill: "#6b7280" }}
+            />
             <YAxis
               axisLine={false}
               tickLine={false}
@@ -56,13 +61,33 @@ export default function DailyHoursChart() {
                 boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               }}
             />
-            <Bar dataKey="UI Design" stackId="a" fill={skillColors["UI Design"]} radius={[0, 0, 0, 0]} />
-            <Bar dataKey="React" stackId="a" fill={skillColors["React"]} radius={[0, 0, 0, 0]} />
-            <Bar dataKey="Writing" stackId="a" fill={skillColors["Writing"]} radius={[0, 0, 0, 0]} />
-            <Bar dataKey="Reading" stackId="a" fill={skillColors["Reading"]} radius={[2, 2, 0, 0]} />
+            <Bar
+              dataKey="UI Design"
+              stackId="a"
+              fill={skillColors["UI Design"]}
+              radius={[0, 0, 0, 0]}
+            />
+            <Bar
+              dataKey="React"
+              stackId="a"
+              fill={skillColors["React"]}
+              radius={[0, 0, 0, 0]}
+            />
+            <Bar
+              dataKey="Writing"
+              stackId="a"
+              fill={skillColors["Writing"]}
+              radius={[0, 0, 0, 0]}
+            />
+            <Bar
+              dataKey="Reading"
+              stackId="a"
+              fill={skillColors["Reading"]}
+              radius={[2, 2, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
     </motion.div>
-  )
+  );
 }

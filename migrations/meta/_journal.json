@@ -36,6 +36,41 @@
       "when": 1749613626564,
       "tag": "0004_dusty_killer_shrike",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1751278445077,
+      "tag": "0005_damp_donald_blake",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1751718852844,
+      "tag": "0006_high_strong_guy",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1751719056533,
+      "tag": "0007_past_otto_octavius",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1751732147507,
+      "tag": "0008_daily_juggernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1751784986205,
+      "tag": "0009_sad_scourge",
+      "breakpoints": true
     }
   ]
 }
