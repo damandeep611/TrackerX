@@ -117,7 +117,7 @@ export default function SkillTodoList({
     };
   }, [skillTodos]); // Re-run if skillTodos array changes
   return (
-    <div className="container mx-auto max-w-4xl p-4 ">
+    <div className=" mx-10 ">
       <div>
         {/* show todo form only when isAdding state is true */}
 

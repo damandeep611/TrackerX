@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { BarChart3, Clock, FileText } from "lucide-react";
+import { Clock, TargetIcon, TrendingUp } from "lucide-react";
 import { useSkillAnalytics } from "@/hooks/useSkillAnalytics";
 
 interface SkillAnalyticsCardsProps {
@@ -73,79 +73,62 @@ export default function SkillAnalyticsCards({
           className="relative overflow-hidden dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-6 py-4 shadow-sm hover:shadow-md transition-all duration-300"
           whileHover={{ y: -2 }}
         >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-                    Total Time Spent
-                  </p>
-                  <Clock size={18}/>
-                </div>
-                <div className="flex items-baseline gap-2 mb-4">
-                  <p className="text-4xl font-bold ">
-                    {skillCurrentHours}
-                  </p>
-                  <p className="text-lg font-medium ">
-                    hours
-                  </p>
-                </div>
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                  Total Time Spent
+                </p>
+                <Clock size={18} />
+              </div>
+              <div className="flex items-baseline gap-2 mb-4">
+                <p className="text-4xl font-bold ">{skillCurrentHours}</p>
+                <p className="text-lg font-medium ">hours</p>
+              </div>
 
-                {/* Stats grid */}
-                <div className="">
-                  <div className="flex items-center justify-between py-2   rounded-lg">
-                    <span className="text-xs ">
-                     Skill Created On
-                    </span>
-                    <span className="text-xs font-medium ">
-                      {isLoading
-                        ? "Loading..."
-                        : error
-                        ? "Error"
-                        : analytics.createdAt
-                        ? new Date(analytics.createdAt).toLocaleDateString(
-                            undefined,
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            }
-                          )
-                        : "Not available"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between py-2  rounded-lg">
-                    <span className="text-xs ">
-                      Days Since Creation
-                    </span>
-                    <span className="text-xs font-medium ">
-                      {isLoading
-                        ? "Loading..."
-                        : error
-                        ? "Error"
-                        : typeof analytics.daysSinceCreation === "number"
-                        ? `${analytics.daysSinceCreation} days`
-                        : "Not available"}
-                    </span>
-                  </div>
+              {/* Stats grid */}
+              <div className="">
+                <div className="flex items-center justify-between py-2   rounded-lg">
+                  <span className="text-xs ">Skill Created On</span>
+                  <span className="text-xs font-medium ">
+                    {isLoading
+                      ? "Loading..."
+                      : error
+                      ? "Error"
+                      : analytics.createdAt
+                      ? new Date(analytics.createdAt).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )
+                      : "Not available"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2  rounded-lg">
+                  <span className="text-xs ">Days Since Creation</span>
+                  <span className="text-xs font-medium ">
+                    {isLoading
+                      ? "Loading..."
+                      : error
+                      ? "Error"
+                      : typeof analytics.daysSinceCreation === "number"
+                      ? `${analytics.daysSinceCreation} days`
+                      : "Not available"}
+                  </span>
                 </div>
               </div>
-            
             </div>
-         
+          </div>
         </motion.div>
 
         {/* Average time daily spend */}
         <motion.div
-          className="relative overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
+          className="relative overflow-hidden  dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-6 py-4 shadow-sm hover:shadow-md transition-all duration-300"
           whileHover={{ y: -2 }}
         >
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 via-transparent to-emerald-50/30 dark:from-green-900/20 dark:via-transparent dark:to-emerald-900/10 rounded-xl"></div>
-
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/20 rounded-full -translate-y-12 translate-x-12 opacity-60"></div>
-          <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-green-50 to-emerald-50 dark:from-green-800/20 dark:to-emerald-800/10 rounded-full translate-y-8 -translate-x-8 opacity-40"></div>
-
           <div className="relative z-10">
             {isLoading ? (
               <LoadingSkeleton className="text-gray-600 dark:text-gray-400" />
@@ -154,11 +137,11 @@ export default function SkillAnalyticsCards({
             ) : (
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                       Avg Time Per Day
                     </p>
+                    <TrendingUp size={18} />
                   </div>
                   <div className="flex items-baseline gap-2 mb-4">
                     <p className="text-4xl font-bold text-gray-900 dark:text-white">
@@ -171,20 +154,16 @@ export default function SkillAnalyticsCards({
 
                   {/* Stats grid */}
                   <div className="grid grid-cols-1 gap-3">
-                    <div className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
-                        Last 7 days
-                      </span>
+                    <div className="flex items-center justify-between py-2   rounded-lg">
+                      <span className="text-xs ">Last 7 days</span>
                       <span className="text-xs font-medium text-gray-900 dark:text-white">
                         {analytics.totalDaysWithActivity > 0
                           ? `${analytics.totalDaysWithActivity} days`
                           : "No activity"}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
-                        Activity Rate
-                      </span>
+                    <div className="flex items-center justify-between py-2  rounded-lg">
+                      <span className="text-xs ">Activity Rate</span>
                       <span className="text-xs font-medium text-gray-900 dark:text-white">
                         {analytics.totalDaysWithActivity > 0
                           ? `${Math.round(
@@ -195,11 +174,6 @@ export default function SkillAnalyticsCards({
                     </div>
                   </div>
                 </div>
-                <div className="flex-shrink-0 ml-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <BarChart3 className="w-7 h-7 text-white" />
-                  </div>
-                </div>
               </div>
             )}
           </div>
@@ -207,16 +181,9 @@ export default function SkillAnalyticsCards({
 
         {/* Total tasks done */}
         <motion.div
-          className="relative overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
+          className="relative overflow-hidden dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-6 py-4 shadow-sm hover:shadow-md transition-all duration-300"
           whileHover={{ y: -2 }}
         >
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-transparent to-pink-50/30 dark:from-purple-900/20 dark:via-transparent dark:to-pink-900/10 rounded-xl"></div>
-
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/20 rounded-full -translate-y-12 translate-x-12 opacity-60"></div>
-          <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-purple-50 to-pink-50 dark:from-purple-800/20 dark:to-pink-800/10 rounded-full translate-y-8 -translate-x-8 opacity-40"></div>
-
           <div className="relative z-10">
             {isLoading ? (
               <LoadingSkeleton className="text-gray-600 dark:text-gray-400" />
@@ -225,11 +192,11 @@ export default function SkillAnalyticsCards({
             ) : (
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <p className="text-sm font-medium  uppercase tracking-wide">
                       Tasks This Week
                     </p>
+                    <TargetIcon size={18} />
                   </div>
                   <div className="flex items-baseline gap-2 mb-4">
                     <p className="text-4xl font-bold text-gray-900 dark:text-white">
@@ -242,19 +209,15 @@ export default function SkillAnalyticsCards({
 
                   {/* Stats grid */}
                   <div className="grid grid-cols-1 gap-3">
-                    <div className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
-                        Total Tasks
-                      </span>
-                      <span className="text-xs font-medium text-gray-900 dark:text-white">
+                    <div className="flex items-center justify-between py-2  rounded-lg">
+                      <span className="text-xs ">Total Tasks</span>
+                      <span className="text-xs font-medium ">
                         {analytics.totalTasks}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
-                        Completion Rate
-                      </span>
-                      <span className="text-xs font-medium text-gray-900 dark:text-white">
+                    <div className="flex items-center justify-between py-2 rounded-lg">
+                      <span className="text-xs ">Completion Rate</span>
+                      <span className="text-xs font-medium ">
                         {analytics.totalTasks > 0
                           ? `${Math.round(
                               (analytics.completedTasks /
@@ -264,11 +227,6 @@ export default function SkillAnalyticsCards({
                           : "0%"}
                       </span>
                     </div>
-                  </div>
-                </div>
-                <div className="flex-shrink-0 ml-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <FileText className="w-7 h-7 text-white" />
                   </div>
                 </div>
               </div>

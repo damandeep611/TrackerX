@@ -128,14 +128,17 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
   }
 
   return (
-    <div className=" p-2">
-      <div className="flex items-center justify-center p-4">
-        <h3 className="text-xl font-bold">Skill Analytics</h3>
+    <div className=" w-96 p-2  dark:bg-zinc-900 ">
+      <div className=" p-4">
+        <h3 className="text-xl font-semibold"> Analytics</h3>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Track Your Progress
+        </p>
       </div>
       <div>
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
-            <CardTitle>Tag Distribution</CardTitle>
+            <CardTitle>Tags Distribution</CardTitle>
             <CardDescription>Most used tags in tasks</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
