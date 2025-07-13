@@ -5,12 +5,13 @@ import {
   CheckSquareIcon,
   ChevronRight,
   EditIcon,
+  Hourglass,
   LinkIcon,
   SquareIcon,
 } from "lucide-react";
 import React, { useState } from "react";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { formatDate, formatDuration } from "@/utils/format-time";
 import {
@@ -184,13 +185,21 @@ export default function SkillTodoCard({
 
       <motion.div
         variants={taskCardVariants}
-        className={` relative ml-6 rounded-xl p-4  shadow-sm  hover:shadow-lg  border  transition-all duration-300 group ${
+        animate={{
+          scale: todo.done ? 0.98 : 1,
+          transition: { duration: 0.3, ease: "easeInOut" },
+        }}
+        className={` relative ml-6 rounded-xl p-2  shadow-sm  hover:shadow-lg  border  transition-all duration-300 group ${
           todo.done
-            ? "bg-green-50 dark:bg-black  "
-            : "dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+            ? "bg-emerald-50/50  dark:bg-emerald-950/20 border-emerald-200/50 dark:border-emerald-800/30 opacity-80  "
+            : " bg-white  dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
         }`}
       >
-        <div className="space-y-4">
+        <div
+          className={` transition-all duration-300 ${
+            todo.done ? "p-2 space-y-2" : "p-4 space-y-4"
+          }`}
+        >
           {/* top section of edit delete and tag  */}
           <div className="flex justify-between items-center gap-4">
             {/* left side of the top section  */}
@@ -204,14 +213,24 @@ export default function SkillTodoCard({
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 }}
-                        className=" inline-flex items-center px-2.5 py-1 dark:text-zinc-300 dark:bg-zinc-800 text-xs font-medium rounded-full capitalize border"
+                        className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full capitalize border transition-all duration-300 ${
+                          todo.done
+                            ? "text-emerald-600/70 dark:text-emerald-300/70 bg-emerald-100/50 dark:bg-emerald-900/20 border-emerald-300/50 dark:border-emerald-700/50"
+                            : "dark:text-zinc-300 dark:bg-zinc-800 text-zinc-700 bg-zinc-100 border-zinc-300 dark:border-zinc-600"
+                        }`}
                       >
                         {tag}
                       </motion.span>
                     ))}
                   </div>
                 )}
-                <span className="text-xs font-semibold text-gray-500 dark:text-zinc-500  whitespace-nowrap">
+                <span
+                  className={`text-xs font-semibold whitespace-nowrap transition-all duration-300 ${
+                    todo.done
+                      ? "text-emerald-600/70 dark:text-emerald-400/70"
+                      : "text-gray-500 dark:text-zinc-500"
+                  }`}
+                >
                   {formatDate(todo.date)}
                 </span>
               </div>
@@ -239,7 +258,11 @@ export default function SkillTodoCard({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onOpenModal}
-                className=" p-2 dark:text-zinc-400 rounded-xl dark:hover:bg-zinc-800 "
+                className={`p-2 rounded-xl transition-all duration-300 ${
+                  todo.done
+                    ? "text-emerald-600/70 dark:text-emerald-400/70 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/20"
+                    : "dark:text-zinc-400 text-zinc-500 dark:hover:bg-zinc-800 hover:bg-zinc-100"
+                }`}
                 title="Add resources"
               >
                 <LinkIcon size={16} />
@@ -250,7 +273,11 @@ export default function SkillTodoCard({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleExpand}
-                className="flex items-center  p-2  rounded-md transition-colors hover:bg-zinc-800 "
+                className={`flex items-center p-2 rounded-md transition-all duration-300 ${
+                  todo.done
+                    ? "text-emerald-600/70 dark:text-emerald-400/70 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/20"
+                    : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                }`}
                 title={`${isExpanded ? "Hide" : "Show"} resources`}
                 aria-expanded={isExpanded}
               >
@@ -294,7 +321,11 @@ export default function SkillTodoCard({
                   whileTap={{ scale: 0.95 }}
                   onClick={handleEdit}
                   disabled={isUpdating}
-                  className="flex items-center  px-2 py-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`flex items-center px-2 py-2 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    todo.done
+                      ? "text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/20"
+                      : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  }`}
                   aria-label="Edit task"
                   title="Edit task details"
                 >
@@ -319,21 +350,41 @@ export default function SkillTodoCard({
           </div>
           {/* main content title and description */}
           <div className="space-y-3">
-            <h3
-              className={`text-base mb-2  leading-tight font-semibold ${
-                todo.done
-                  ? "line-through text-gray-400 dark:text-gray-500  "
-                  : " "
-              } `}
-            >
-              {todo.title}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3
+                className={`text-base leading-tight font-semibold transition-all duration-300 ${
+                  todo.done
+                    ? "line-through text-emerald-700/70 dark:text-emerald-300/70"
+                    : "text-gray-900 dark:text-gray-100"
+                }`}
+              >
+                {todo.title}
+              </h3>
+              {/* Compact time display for completed tasks */}
+              {todo.done && displayMinutes > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-100/70 dark:bg-emerald-900/30 border border-emerald-200/50 dark:border-emerald-800/50"
+                >
+                  <Hourglass
+                    size={12}
+                    className="text-emerald-600/80 dark:text-emerald-400/80"
+                  />
+                  <span className="text-xs font-medium text-emerald-700/80 dark:text-emerald-300/80">
+                    {formatDuration(displayMinutes)}
+                  </span>
+                </motion.div>
+              )}
+            </div>
+
             {todo.description && (
               <p
-                className={` text-sm    break-words whitespace-pre-line ${
+                className={` break-words whitespace-pre-line transition-all duration-300 ${
                   todo.done
-                    ? "text-gray-400 dark:text-gray-600"
-                    : "text-gray-600 dark:text-gray-300"
+                    ? " text-xs  text-emerald-600/60 dark:text-emerald-400/60"
+                    : " text-sm text-gray-600 dark:text-gray-300"
                 }`}
               >
                 {todo.description}
@@ -341,15 +392,24 @@ export default function SkillTodoCard({
             )}
           </div>
 
-          <div className={`${todo.done ? "hidden" : "flex "}`}>
-            {/* Time Tracking Section */}
-            <TimeBlockList
-              currentMinutes={displayMinutes}
-              onTimeUpdate={handleTimeUpdate}
-              isUpdating={isUpdating || isLoadingTime}
-              isDeleting={isDeleting}
-            />
-          </div>
+          <AnimatePresence>
+            {!todo.done && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <TimeBlockList
+                  currentMinutes={displayMinutes}
+                  onTimeUpdate={handleTimeUpdate}
+                  isUpdating={isUpdating || isLoadingTime}
+                  isDeleting={isDeleting}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* Expandable resources section with improved animation */}
           <ResourceExpand todo={todo} isExpanded={isExpanded} />
         </div>
