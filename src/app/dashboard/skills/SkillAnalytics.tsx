@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/chart";
 import React from "react";
 import { LabelList, Pie, PieChart } from "recharts";
+import { motion } from "framer-motion";
 import { useTagStats } from "@/hooks/useTagStats";
 
 interface SkillAnalyticsProps {
@@ -56,7 +57,12 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
 
   if (isLoading) {
     return (
-      <div className=" p-2">
+      <motion.div
+        initial={{ x: 320, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        className="w-96 p-2  dark:bg-zinc-900"
+      >
         <div className="flex items-center justify-center p-4">
           <h3 className="text-xl font-bold">Skill Analytics</h3>
         </div>
@@ -75,13 +81,13 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (error) {
     return (
-      <div className=" p-2">
+      <div className="w-96 p-2  dark:bg-zinc-900">
         <div className="flex items-center justify-center p-4">
           <h3 className="text-xl font-bold">Skill Analytics</h3>
         </div>
@@ -104,7 +110,12 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
 
   if (chartData.length === 0) {
     return (
-      <div className=" p-2">
+      <motion.div
+        initial={{ x: 320, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        className=" w-96 p-2  dark:bg-zinc-900"
+      >
         <div className="flex items-center justify-center p-4">
           <h3 className="text-xl font-bold">Skill Analytics</h3>
         </div>
@@ -123,49 +134,65 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className=" w-96 p-2  dark:bg-zinc-900 ">
+    <motion.div
+      initial={{ x: 320, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.4, delay: 0.5 }}
+      className=" w-96 p-2  dark:bg-zinc-900 "
+    >
       <div className=" p-4">
         <h3 className="text-xl font-semibold"> Analytics</h3>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Track Your Progress
         </p>
       </div>
-      <div>
-        <Card className="flex flex-col">
-          <CardHeader className="items-center pb-0">
-            <CardTitle>Tags Distribution</CardTitle>
-            <CardDescription>Most used tags in tasks</CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 pb-0">
-            <ChartContainer
-              config={chartConfig}
-              className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[250px]"
-            >
-              <PieChart>
-                <ChartTooltip
-                  content={<ChartTooltipContent nameKey="count" hideLabel />}
-                />
-                <Pie data={chartData} dataKey="count">
-                  <LabelList
-                    dataKey="tag"
-                    className="fill-background"
-                    stroke="none"
-                    fontSize={12}
-                    formatter={(value: string) =>
-                      chartConfig[value]?.label || value
-                    }
-                  />
-                </Pie>
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+      <div className=" p-4 rounded-2xl shadow-sm mb-6 border border-zinc-200 dark:border-zinc-800">
+        <ChartContainer
+          config={chartConfig}
+          className="[&_.recharts-text]:fill-background mx-auto aspect-square "
+        >
+          <PieChart>
+            <ChartTooltip
+              content={<ChartTooltipContent nameKey="count" hideLabel />}
+            />
+            <Pie data={chartData} dataKey="count">
+              <LabelList
+                dataKey="tag"
+                className="fill-background"
+                stroke="none"
+                fontSize={12}
+                formatter={(value: string) =>
+                  chartConfig[value]?.label || value
+                }
+              />
+            </Pie>
+          </PieChart>
+        </ChartContainer>
       </div>
-    </div>
+      {/*  */}
+      <div className="p-4">
+        {chartData.map((item) => (
+          <div key={item.tag} className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: item.fill }}
+              ></div>
+              <span className=" font-medium text-zinc-600 dark:text-zinc-300">
+                {item.tag}
+              </span>
+            </div>
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-100">
+              {item.count}
+            </span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
   );
 }

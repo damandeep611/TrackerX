@@ -186,7 +186,7 @@ export default function SkillTodoCard({
         variants={taskCardVariants}
         className={` relative ml-6 rounded-xl p-4  shadow-sm  hover:shadow-lg  border  transition-all duration-300 group ${
           todo.done
-            ? "bg-green-50 dark:bg-black border-green-900 "
+            ? "bg-green-50 dark:bg-black  "
             : "dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
         }`}
       >
@@ -341,7 +341,7 @@ export default function SkillTodoCard({
             )}
           </div>
 
-          <div className=" flex items-center justify-between">
+          <div className={`${todo.done ? "hidden" : "flex "}`}>
             {/* Time Tracking Section */}
             <TimeBlockList
               currentMinutes={displayMinutes}
