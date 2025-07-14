@@ -1,9 +1,10 @@
 "use client";
 
-import { Hourglass } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { setDailyHours, getTodayRoutine } from "@/actions/dailyRoutineAction";
 import DailyTimeSetup from "./DailyTimeSetup";
+import { Edit2 } from "lucide-react";
+import NumberSkeleton from "@/components/skeletons/NumberSkeleton";
 
 interface TotalHoursCardProps {
   onHoursUpdate: (hours: string) => void;
@@ -58,46 +59,29 @@ export default function TotalHoursCard({ onHoursUpdate }: TotalHoursCardProps) {
 
   return (
     <>
-      <div className="border border-border rounded-md">
-        <div className="flex flex-col justify-center gap-2 p-4">
+      <div className="border border-border rounded-md dark:bg-zinc-900 p-6 ">
+        <div className="flex flex-col justify-center gap-2">
           <div className="w-full flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="p-2 bg-blue-50 rounded-md">
-                <Hourglass size={18} className="text-blue-500" />
-              </span>
-              <h3 className="text-lg font-bold capitalize">Total Hours</h3>
-            </div>
+            <h3 className="text-lg font-bold text-zinc-700 dark:text-zinc-300 capitalize">
+              Total Hours
+            </h3>
             <button
               onClick={() => setShowModal(true)}
-              className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+              className="p-2  rounded-lg transition-colors cursor-pointer"
               title="Edit time window"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                />
-              </svg>
+              <Edit2 size={16} />
             </button>
           </div>
           <div>
-            <p className="text-3xl font-bold">
-              {isLoading ? (
-                <span className="inline-block w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></span>
-              ) : (
-                totalHours
-              )}
-            </p>
+            <div className="text-3xl font-bold">
+              {isLoading ? <NumberSkeleton /> : totalHours}
+            </div>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-xs">Available Hours Today</p>
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-400">
+              Available Hours Today
+            </p>
           </div>
         </div>
       </div>

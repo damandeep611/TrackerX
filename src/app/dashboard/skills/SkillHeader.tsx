@@ -16,7 +16,7 @@ interface SkillHeaderProps {
 
 export default function SkillHeader({ skillSlug }: SkillHeaderProps) {
   return (
-    <div className=" dark:bg-zinc-900 border border-border flex items-center justify-between gap-6 p-4 px-6">
+    <div className=" dark:bg-zinc-900 border border-border flex items-center justify-between gap-6 p-3 px-6">
       <div>
         <Breadcrumb>
           <BreadcrumbList>

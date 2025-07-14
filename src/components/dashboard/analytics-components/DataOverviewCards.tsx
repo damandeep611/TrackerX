@@ -7,6 +7,7 @@ import DailyTimeSetup from "./DailyTimeSetup";
 import { getTodayTotalTimeSpent } from "@/actions/skillTaskAction";
 import { getTodayTotalTimeSpentFromLogs } from "@/actions/timeLogAction"; // Enable after schema generation
 import { calculateRemainingHours, formatTimeSpent } from "@/utils/format-time";
+import NumberSkeleton from "@/components/skeletons/NumberSkeleton";
 
 export default function DataOverviewCards() {
   const [showModal, setShowModal] = useState(false);
@@ -103,7 +104,7 @@ export default function DataOverviewCards() {
           subtitle={`Time spent on skills (${
             useTimeLogs ? "New" : "Legacy"
           } system)`}
-          icon={<CalendarClock size={18} className="text-green-500" />}
+          icon={<CalendarClock size={18} />}
           isLoading={isLoading}
           onRefresh={refreshTimeData}
           onToggle={toggleTimeSystem}
@@ -115,7 +116,7 @@ export default function DataOverviewCards() {
           title="Remaining Hours"
           value={formatTimeSpent(parseFloat(remainingHours))}
           subtitle="Remaining hours today"
-          icon={<Clock size={18} className="text-red-600" />}
+          icon={<Clock size={18} />}
           isLoading={isLoading}
         />
       </div>
@@ -163,12 +164,12 @@ const DataCards = ({
   };
 
   return (
-    <div className="border border-border rounded-md">
+    <div className="border border-border rounded-md dark:bg-zinc-900">
       <div className="flex flex-col justify-center gap-2 p-4">
         <div className="w-full flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="p-2 bg-blue-50 rounded-md">{icon}</span>
             <h3 className="text-lg font-bold capitalize">{title}</h3>
+            <span className="p-2  rounded-md ">{icon}</span>
           </div>
           <div className="flex items-center space-x-1">
             {showToggle && onToggle && (
@@ -237,18 +238,14 @@ const DataCards = ({
           </div>
         </div>
         <div>
-          <p className="text-3xl font-bold">
-            {isLoading ? (
-              <span className="inline-block w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></span>
-            ) : (
-              value
-            )}
-          </p>
+          <div className="text-3xl font-bold">
+            {isLoading ? <NumberSkeleton /> : value}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <p className="text-xs">{subtitle}</p>
           {lastUpdated && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-zinc-700 dark:text-zinc-400">
               Updated {formatLastUpdated(lastUpdated)}
             </p>
           )}
