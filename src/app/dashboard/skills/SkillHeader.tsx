@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,13 +8,17 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Bell, Cpu, FolderCheck, House, Search } from "lucide-react";
+import { Cpu, FolderCheck, House, MoreVertical, Search } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import SkillDropdownMenu from "./SkillDropdownMenu";
 
 interface SkillHeaderProps {
   skillSlug: string;
+  skillId: string;
 }
 
-export default function SkillHeader({ skillSlug }: SkillHeaderProps) {
+export default function SkillHeader({ skillSlug, skillId }: SkillHeaderProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
     <div className=" dark:bg-zinc-900 border border-border flex items-center justify-between gap-6 p-3 px-6">
       <div>
@@ -42,7 +46,6 @@ export default function SkillHeader({ skillSlug }: SkillHeaderProps) {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="flex items-center justify-center gap-2">
-                {" "}
                 <FolderCheck size={15} />
                 {skillSlug}
               </BreadcrumbPage>
@@ -57,14 +60,30 @@ export default function SkillHeader({ skillSlug }: SkillHeaderProps) {
           <input
             type="text"
             placeholder="Search tasks, projects..."
-            className="pl-12 pr-6 py-2 w-80 border border-gray-200 dark:border-gray-700 rounded-xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-lg"
+            className="pl-12 pr-6 py-2 w-80  border border-gray-200 dark:border-gray-700 rounded-xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-lg"
           />
         </div>
-
-        <button className="p-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors relative rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
-          <Bell className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-        </button>
+        {/* three dots menu */}
+        <div>
+          <motion.button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className={`relative p-2  rounded-lg cursor-pointer ${
+              isDropdownOpen
+                ? "bg-zinc-300 dark:bg-zinc-800"
+                : "text-zinc-700 dark:text-zinc-400"
+            }`}
+          >
+            <MoreVertical size={20} />
+          </motion.button>
+          {/* dropdown skill menu */}
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <>
+                <SkillDropdownMenu skillId={skillId} />
+              </>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

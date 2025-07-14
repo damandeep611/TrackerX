@@ -1,6 +1,6 @@
 "use server";
 import { db } from "@/db/drizzle";
-import { skillCard, timeLog } from "@/db/schema/schema";
+import { skillCard, skillTask, timeLog } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
 import { and, eq, like, sql } from "drizzle-orm";
 import { headers } from "next/headers";
@@ -178,9 +178,24 @@ export async function deleteSkillCard(id: string) {
   });
   if (!session) throw new Error("Not authenticated");
 
+  // Delete all related time logs first
+  await db
+    .delete(timeLog)
+    .where(and(eq(timeLog.skill_id, id), eq(timeLog.user_id, session.user.id)));
+
+  // Delete all related skill tasks
+  await db
+    .delete(skillTask)
+    .where(
+      and(eq(skillTask.skill_id, id), eq(skillTask.user_id, session.user.id))
+    );
+
+  // Finally delete the skill card
   await db
     .delete(skillCard)
     .where(and(eq(skillCard.id, id), eq(skillCard.userId, session.user.id)));
+
+  return { success: true };
 }
 
 // Update skill card current hours based on time logs

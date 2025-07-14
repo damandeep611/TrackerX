@@ -42,7 +42,7 @@ export default async function SkillOverview({
 
     return (
       <div className="flex flex-col overflow-hidden">
-        <SkillHeader skillSlug={currentSkillSlug} />
+        <SkillHeader skillSlug={currentSkillSlug} skillId={skillId} />
         <SkillPageWrapper
           initialSkillTodos={skillTodoData}
           skillId={skillId}

@@ -197,7 +197,7 @@ export default function SkillTodoCard({
       >
         <div
           className={` transition-all duration-300 ${
-            todo.done ? "p-2 space-y-2" : "p-4 space-y-4"
+            todo.done ? "p-2 space-y-2" : "p-3 space-y-3"
           }`}
         >
           {/* top section of edit delete and tag  */}
