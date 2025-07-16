@@ -10,14 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
-export const todo = pgTable("todo", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  text: text("text").notNull(),
-  done: boolean("done").default(false).notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-});
+
 
 export const skillCard = pgTable("skillcard", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -103,4 +96,20 @@ export const dailyRoutine = pgTable("daily_routine", {
   }).notNull(),
   routineDate: timestamp("routine_date").defaultNow().notNull(),
   lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+});
+
+// Goals schema for tracking personal goals
+export const goals = pgTable("goals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  startDate: timestamp("start_date"),
+  completedDate: timestamp("completed_date"),
+  daysToComplete: integer("days_to_complete"),
+  reflectionNote: text("reflection_note"),
+  isCompleted: boolean("is_completed").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

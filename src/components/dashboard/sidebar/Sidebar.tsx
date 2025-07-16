@@ -1,12 +1,11 @@
 "use client";
 import {
-  BookMarked,
   ChartPie,
   ChevronLeftIcon,
   ChevronRightIcon,
+  GoalIcon,
   HelpCircle,
   House,
-  ListStart,
   ListTodo,
   Settings,
 } from "lucide-react";
@@ -30,7 +29,7 @@ const navigation = {
       id: "settings",
       title: "Settings",
       icon: Settings,
-      path: "/setting",
+      path: "/dashboard/usersetting",
     },
     {
       id: "Help",
@@ -47,22 +46,16 @@ const navigation = {
       path: "/dashboard",
     },
     {
-      id: "timeline",
-      title: "Timeline",
-      icon: ListStart,
-      path: "/dashboard/timeline",
+      id: "goals-list",
+      title: "Goals List",
+      icon: GoalIcon,
+      path: "/dashboard/goals",
     },
     {
       id: "tasks0",
       title: "Tasks",
       icon: ListTodo,
       path: "/dashboard/tasks",
-    },
-    {
-      id: "bookmark",
-      title: "BookMarks",
-      icon: BookMarked,
-      path: "/dashboard/bookmarks",
     },
   ],
 };

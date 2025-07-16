@@ -71,6 +71,13 @@
       "when": 1751784986205,
       "tag": "0009_sad_scourge",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1752590079993,
+      "tag": "0010_chemical_paibok",
+      "breakpoints": true
     }
   ]
 }
