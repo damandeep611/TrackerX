@@ -1,5 +1,11 @@
 "use client";
-import { CalendarClock, Clock } from "lucide-react";
+import {
+  ArrowRightLeft,
+  CalendarClock,
+  Clock,
+  Pencil,
+  RefreshCcw,
+} from "lucide-react";
 import TotalHoursCard from "./TotalHoursCard";
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
@@ -25,15 +31,11 @@ export default function DataOverviewCards() {
       let todayTimeSpent: number;
 
       if (useTimeLogs) {
-        // Use new time log system - Enable after schema generation
-        console.log("📊 Fetching time spent from time logs...");
         todayTimeSpent = await getTodayTotalTimeSpentFromLogs();
-        console.log(`📊 Time spent from logs: ${todayTimeSpent}h`);
       } else {
         // Fallback to old system for backward compatibility
-        console.log("📊 Fetching time spent from legacy system...");
+        // console.log("📊 Fetching time spent from legacy system...");
         todayTimeSpent = await getTodayTotalTimeSpent();
-        console.log(`📊 Time spent from legacy: ${todayTimeSpent}h`);
       }
 
       setTimeSpent(todayTimeSpent.toString());
@@ -71,7 +73,6 @@ export default function DataOverviewCards() {
   */
 
   const handleTimeSubmit = (hours: number) => {
-    console.log("Time schedule updated:", hours);
     setTotalHours(hours.toString());
 
     // Recalculate remaining hours immediately using utility function
@@ -178,19 +179,7 @@ const DataCards = ({
                 className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                 title="Toggle time system"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                  />
-                </svg>
+                <ArrowRightLeft size={18} />
               </button>
             )}
             {onRefresh && (
@@ -199,19 +188,7 @@ const DataCards = ({
                 className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                 title="Refresh data"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
+                <RefreshCcw size={18} />
               </button>
             )}
             {onEdit && (
@@ -220,19 +197,7 @@ const DataCards = ({
                 className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                 title="Edit time window"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                  />
-                </svg>
+                <Pencil />
               </button>
             )}
           </div>
