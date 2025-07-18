@@ -7,7 +7,6 @@ import { Clock } from "lucide-react";
 
 interface SkillCardProps {
   skill: Skill;
-  onEdit: (skill: Skill) => void;
 }
 
 export default function SkillCard({ skill }: SkillCardProps) {

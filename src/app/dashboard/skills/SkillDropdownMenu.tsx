@@ -103,20 +103,21 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
                 <button
                   key={itemIndex}
                   onClick={() => {
-                    if (!item.isLoading && (!item.confirmDelete || !showConfirm)) {
+                    if (
+                      !item.isLoading &&
+                      (!item.confirmDelete || !showConfirm)
+                    ) {
                       item.action();
                     }
                   }}
                   disabled={item.isLoading}
-                  className={`w-full cursor-pointer text-left group rounded-md flex items-center py-2.5 px-3 ${
-                    item.className
-                  }`}
+                  className={`w-full cursor-pointer text-left group rounded-md flex items-center py-2.5 px-3 ${item.className}`}
                 >
                   <div className="flex items-center space-x-3 w-full">
                     <div>
                       <AnimatePresence mode="wait">
                         {item.confirmDelete && showConfirm ? (
-                          <motion.div 
+                          <motion.div
                             className="flex items-center justify-between w-full"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -125,7 +126,7 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
                           >
                             <span className="text-sm">Are you sure?</span>
                             <div className="flex gap-2">
-                              <button
+                              <div
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteSkill();
@@ -133,8 +134,8 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
                                 className="p-1 hover:bg-red-100 rounded-md"
                               >
                                 <Check className="w-4 h-4 text-red-600" />
-                              </button>
-                              <button
+                              </div>
+                              <div
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setShowConfirm(false);
@@ -142,11 +143,11 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
                                 className="p-1 hover:bg-gray-100 rounded-md"
                               >
                                 <X className="w-4 h-4" />
-                              </button>
+                              </div>
                             </div>
                           </motion.div>
                         ) : (
-                          <motion.div 
+                          <motion.div
                             className="flex items-center space-x-3"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}

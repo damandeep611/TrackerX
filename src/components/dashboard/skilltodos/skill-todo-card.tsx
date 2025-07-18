@@ -177,7 +177,7 @@ export default function SkillTodoCard({
   return (
     <>
       <motion.div
-        className="absolute -left-5 flex items-center justify-center w-10 h-10 rounded-2xl bg-white dark:bg-zinc-800  shadow-md  "
+        className="absolute -left-5 flex  items-center justify-center w-10 h-10 rounded-2xl bg-white dark:bg-zinc-800  shadow-md  "
         variants={dateIndicatorVariants}
       >
         <CalendarIcon size={16} className="text-zinc-400 " />

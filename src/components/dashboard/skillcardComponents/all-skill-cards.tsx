@@ -1,24 +1,18 @@
 "use client";
 import { Skill } from "@/types/skillDashboardTypes";
-import { useState } from "react";
 import SkillCard from "./skill-card";
-import { v4 as uuidv4 } from "uuid";
-import { addSkillCard } from "@/actions/skillCardAction";
 import DashboardHeader from "../header/DashboardHeader";
 import OverviewCards from "../analytics-components/OverviewCards";
 import InsightsCards from "../analytics-components/InsightsCards";
+import { useAddSkillCard, useSkillCards } from "@/hooks/useSkillCardsHook";
 
-interface skillcardProps {
-  skillcards: Skill[];
-}
-
-export default function SkillDashboard({ skillcards }: skillcardProps) {
-  const [skills, setSkills] = useState<Skill[]>(skillcards);
+export default function SkillDashboard() {
+  const { data: skills = [], isLoading, error } = useSkillCards();
+  const addSkillMutation = useAddSkillCard();
 
   const handleAddSkill = async (
     newSkill: Omit<Skill, "id" | "currentHours" | "slug" | "createdAt">
   ) => {
-    const now = new Date().toISOString();
     const skillToAdd = {
       skillName: newSkill.skillName,
       category: newSkill.category,
@@ -27,34 +21,37 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
       description: newSkill.description || undefined,
     };
 
-    const skill: Skill = {
-      ...newSkill,
-      id: uuidv4(),
-      currentHours: 0,
-      createdAt: now,
-      description: newSkill.description || null,
-      slug: newSkill.skillName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, ""),
-    };
-    await addSkillCard(skillToAdd);
-    setSkills((prev) => [...prev, skill]);
+    try {
+      await addSkillMutation.mutateAsync(skillToAdd);
+    } catch (error) {
+      console.error("Failed to add skill:", error);
+    }
   };
 
-  const handleEditSkill = (updatedSkill: Skill) => {
-    setSkills((prev) =>
-      prev.map((skill) => (skill.id === updatedSkill.id ? updatedSkill : skill))
+  if (isLoading) {
+    return (
+      <div className="dark:bg-zinc-950 p-2">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
     );
-  };
+  }
 
-  // const handleDeleteSkill = (id: string) => {
-  //   setSkills((prev) => prev.filter((skill) => skill.id !== id));
-  //   deleteSkillCard(id);
-  // };
+  if (error) {
+    return (
+      <div className="dark:bg-zinc-950 p-2">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">
+            Error loading skills: {error.message}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dark:bg-zinc-950 p-2">
-      {/* dashboard header and title */}
       <DashboardHeader onAddSkill={handleAddSkill} />
       <div className="p-4">
         <h3 className="text-xl font-bold">Your progress</h3>
@@ -64,15 +61,16 @@ export default function SkillDashboard({ skillcards }: skillcardProps) {
       </div>
       <OverviewCards />
       <InsightsCards />
-      {/* skill cards adding to dashbaord */}
+
       <div className="p-4 my-2">
         <div>
           <h2 className="text-xl font-semibold">Your Skills / Projects</h2>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 ">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {skills.map((skill) => (
-          <SkillCard key={skill.id} skill={skill} onEdit={handleEditSkill} />
+          <SkillCard key={skill.id} skill={skill} />
         ))}
       </div>
     </div>

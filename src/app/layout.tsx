@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import QueryProvider from "./providers/QueryProvider";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -28,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${roboto.variable} ${roboto_mono.variable} antialiased`}
       >
-        <main>{children}</main>
+        <QueryProvider>
+          <main>{children}</main>
+        </QueryProvider>
         <Toaster
           position="top-right"
           toastOptions={{
