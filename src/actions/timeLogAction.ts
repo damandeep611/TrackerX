@@ -130,7 +130,6 @@ export async function getTotalTimeForTask(taskId: string): Promise<number> {
       })
       .from(timeLog)
       .where(and(eq(timeLog.task_id, taskId), eq(timeLog.user_id, userId)));
-
     const totalMinutes = result[0]?.totalMinutes || 0;
     return totalMinutes;
   } catch (error) {
@@ -304,5 +303,204 @@ export async function getTimeLogsForDateRange(
   } catch (error) {
     console.error("Failed to get time logs for date range:", error);
     return [];
+  }
+}
+
+// Weekly activity data interface for insights
+interface WeeklyActivityData {
+  day: string;
+  hours: number;
+  hasActivity: boolean;
+}
+
+// Weekly progress data interface for charts
+interface WeeklyProgressData {
+  weekLabel: string;
+  weekStart: string;
+  weekEnd: string;
+  hours: number;
+}
+
+// Get last 7 days activity data for insights dashboard
+export async function getLastSevenDaysActivity(): Promise<
+  WeeklyActivityData[]
+> {
+  const userId = await getUserId();
+
+  try {
+    // Calculate date range for last 7 days including today
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 6);
+
+    // Reset time to start of day for accurate date comparison
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    const result = await db
+      .select({
+        loggedDate: timeLog.logged_date,
+        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(
+          Number
+        ),
+      })
+      .from(timeLog)
+      .where(
+        and(
+          eq(timeLog.user_id, userId),
+          gte(timeLog.logged_date, startDate),
+          lte(timeLog.logged_date, endDate)
+        )
+      )
+      .groupBy(timeLog.logged_date)
+      .orderBy(timeLog.logged_date);
+
+    // Create a map of dates to hours for easy lookup
+    const activityMap = new Map<string, number>();
+    result.forEach((item) => {
+      const dateKey = item.loggedDate.toISOString().split("T")[0];
+      const hours = Math.round((item.totalMinutes / 60) * 10) / 10; // Round to 1 decimal
+      activityMap.set(dateKey, hours);
+    });
+
+    // Generate array for last 7 days
+    const weeklyData: WeeklyActivityData[] = [];
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().split("T")[0];
+      const dayName = dayNames[date.getDay()];
+
+      const hours = activityMap.get(dateKey) || 0;
+
+      weeklyData.push({
+        day: dayName,
+        hours: hours,
+        hasActivity: hours > 0,
+      });
+    }
+
+    return weeklyData;
+  } catch (error) {
+    console.error("Failed to get weekly activity data:", error);
+    // Return default structure with 7 days and no activity
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = new Date();
+
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(today.getDate() - (6 - i));
+      return {
+        day: dayNames[date.getDay()],
+        hours: 0,
+        hasActivity: false,
+      };
+    });
+  }
+}
+
+// Get last 7 weeks progress data for weekly chart
+export async function getLastSevenWeeksProgress(): Promise<
+  WeeklyProgressData[]
+> {
+  const userId = await getUserId();
+
+  try {
+    const weeklyData: WeeklyProgressData[] = [];
+
+    // Helper function to get Monday of a given week
+    const getMondayOfWeek = (date: Date): Date => {
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+      return new Date(date.setDate(diff));
+    };
+
+    // Helper function to get Sunday of a given week
+    const getSundayOfWeek = (mondayDate: Date): Date => {
+      const sunday = new Date(mondayDate);
+      sunday.setDate(mondayDate.getDate() + 6);
+      return sunday;
+    };
+
+    // Generate data for last 7 weeks (Monday to Sunday)
+    for (let i = 6; i >= 0; i--) {
+      // Calculate the Monday of the target week
+      const today = new Date();
+      const currentMonday = getMondayOfWeek(new Date(today));
+
+      const weekMonday = new Date(currentMonday);
+      weekMonday.setDate(currentMonday.getDate() - i * 7);
+
+      const weekSunday = getSundayOfWeek(new Date(weekMonday));
+
+      // Set proper time boundaries
+      weekMonday.setHours(0, 0, 0, 0);
+      weekSunday.setHours(23, 59, 59, 999);
+
+      // Query time logs for this week
+      const result = await db
+        .select({
+          totalMinutes:
+            sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(Number),
+        })
+        .from(timeLog)
+        .where(
+          and(
+            eq(timeLog.user_id, userId),
+            gte(timeLog.logged_date, weekMonday),
+            lte(timeLog.logged_date, weekSunday)
+          )
+        );
+
+      const totalMinutes = result[0]?.totalMinutes || 0;
+      const hours = Math.round((totalMinutes / 60) * 10) / 10; // Round to 1 decimal
+
+      // Format week label
+      const weekLabel =
+        i === 0 ? "This Week" : i === 1 ? "Last Week" : `${i} weeks ago`;
+
+      weeklyData.push({
+        weekLabel,
+        weekStart: weekMonday.toISOString().split("T")[0],
+        weekEnd: weekSunday.toISOString().split("T")[0],
+        hours,
+      });
+    }
+
+    return weeklyData;
+  } catch (error) {
+    console.error("Failed to get weekly progress data:", error);
+    // Return default structure with 7 weeks and no activity
+    const getMondayOfWeek = (date: Date): Date => {
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(date.setDate(diff));
+    };
+
+    const getSundayOfWeek = (mondayDate: Date): Date => {
+      const sunday = new Date(mondayDate);
+      sunday.setDate(mondayDate.getDate() + 6);
+      return sunday;
+    };
+
+    return Array.from({ length: 7 }, (_, i) => {
+      const today = new Date();
+      const currentMonday = getMondayOfWeek(new Date(today));
+      const weekMonday = new Date(currentMonday);
+      weekMonday.setDate(currentMonday.getDate() - i * 7);
+      const weekSunday = getSundayOfWeek(new Date(weekMonday));
+
+      const weekLabel =
+        i === 0 ? "This Week" : i === 1 ? "Last Week" : `${i} weeks ago`;
+
+      return {
+        weekLabel,
+        weekStart: weekMonday.toISOString().split("T")[0],
+        weekEnd: weekSunday.toISOString().split("T")[0],
+        hours: 0,
+      };
+    }).reverse();
   }
 }

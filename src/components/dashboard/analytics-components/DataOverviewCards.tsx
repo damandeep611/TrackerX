@@ -99,6 +99,7 @@ export default function DataOverviewCards() {
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <TotalHoursCard onHoursUpdate={setTotalHours} />
+        {/* total time on cards by daily count */}
         <DataCards
           title="Time Spent"
           value={formatTimeSpent(parseFloat(timeSpent))}
