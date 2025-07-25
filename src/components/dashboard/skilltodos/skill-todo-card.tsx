@@ -189,9 +189,9 @@ export default function SkillTodoCard({
           scale: todo.done ? 0.98 : 1,
           transition: { duration: 0.3, ease: "easeInOut" },
         }}
-        className={` relative ml-6 rounded-xl p-2  shadow-sm  hover:shadow-lg  border  transition-all duration-300 group ${
+        className={` relative ml-6 rounded-xl p-2   shadow-sm  hover:shadow-lg  border  transition-all duration-300 group ${
           todo.done
-            ? "bg-emerald-50/50  dark:bg-emerald-950/20 border-emerald-200/50 dark:border-emerald-800/30 opacity-80  "
+            ? "bg-emerald-50/75  dark:bg-zinc-950 border-emerald-200/50 dark:border-emerald-800/30 opacity-80  "
             : " bg-white  dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
         }`}
       >
@@ -215,7 +215,7 @@ export default function SkillTodoCard({
                         transition={{ delay: index * 0.1 }}
                         className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full capitalize border transition-all duration-300 ${
                           todo.done
-                            ? "text-emerald-600/70 dark:text-emerald-300/70 bg-emerald-100/50 dark:bg-emerald-900/20 border-emerald-300/50 dark:border-emerald-700/50"
+                            ? "text-emerald-400/70 dark:text-emerald-700/70 bg-emerald-100/50 dark:bg-emerald-900/20 border-emerald-300/50 dark:border-emerald-700/50"
                             : "dark:text-zinc-300 dark:bg-zinc-800 text-zinc-700 bg-zinc-100 border-zinc-300 dark:border-zinc-600"
                         }`}
                       >
@@ -227,7 +227,7 @@ export default function SkillTodoCard({
                 <span
                   className={`text-xs font-semibold whitespace-nowrap transition-all duration-300 ${
                     todo.done
-                      ? "text-emerald-600/70 dark:text-emerald-400/70"
+                      ? "text-emerald-400/70 dark:text-emerald-700/70"
                       : "text-gray-500 dark:text-zinc-500"
                   }`}
                 >
@@ -354,7 +354,7 @@ export default function SkillTodoCard({
               <h3
                 className={`text-base leading-tight font-semibold transition-all duration-300 ${
                   todo.done
-                    ? "line-through text-emerald-700/70 dark:text-emerald-300/70"
+                    ? " text-emerald-900/70 dark:text-emerald-800/70"
                     : "text-gray-900 dark:text-gray-100"
                 }`}
               >
@@ -383,7 +383,7 @@ export default function SkillTodoCard({
               <p
                 className={` break-words whitespace-pre-line transition-all duration-300 ${
                   todo.done
-                    ? " text-xs  text-emerald-600/60 dark:text-emerald-400/60"
+                    ? " text-xs  text-emerald-900/70 dark:text-emerald-800/80"
                     : " text-sm text-gray-600 dark:text-gray-300"
                 }`}
               >
