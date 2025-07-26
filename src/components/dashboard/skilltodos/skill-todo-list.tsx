@@ -3,8 +3,8 @@ import { skillTodo } from "@/types/skillDashboardTypes";
 import SkillTodoForm from "./skill-todo-form";
 import SkillTodoCard from "./skill-todo-card";
 import ResourceModal from "./resource-modal";
-import { motion } from "framer-motion";
-import { taskCardContainerVariants } from "@/components/animations/taskCardAnimations";
+import { motion, AnimatePresence } from "framer-motion";
+import { taskCardVariants } from "@/components/animations/taskCardAnimations";
 import { useSkillTodoManager } from "@/hooks/useSkillTodoManager";
 import { getTotalTimeForTasks } from "@/actions/timeLogAction";
 import { useEffect, useState } from "react";
@@ -147,27 +147,37 @@ export default function SkillTodoList({
               animate={{ height: "100%" }}
               transition={{ duration: 0.5 }}
             />
-            <motion.div
-              className="space-y-8 my-6 mx-2 "
-              variants={taskCardContainerVariants}
-              initial="hidden"
-              animate="show"
-            >
-              {skillTodos.map((skillTodo) => (
-                <SkillTodoCard
-                  key={skillTodo.id}
-                  todo={skillTodo}
-                  timeLogMinutes={timeData[skillTodo.id] || 0}
-                  isLoadingTime={isLoadingTimeData}
-                  onEditTodo={handleEditTodo}
-                  onDeleteTodo={handleDeleteTodo}
-                  toggleIsdone={handleToggleTodo}
-                  onOpenModal={() => handleOpenResourceModal(skillTodo.id)}
-                  isUpdating={updatingTodoId === skillTodo.id}
-                  isDeleting={deletingTodoId === skillTodo.id}
-                  onTimeLogCreated={() => refreshTimeDataForTask(skillTodo.id)}
-                />
-              ))}
+            <div className="space-y-8 my-6 mx-2">
+              <AnimatePresence mode="popLayout">
+                {skillTodos.map((skillTodo) => (
+                  <motion.div
+                    key={skillTodo.id}
+                    variants={taskCardVariants}
+                    initial="hidden"
+                    animate="show"
+                    exit="hidden"
+                    transition={{
+                      duration: 0.4,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    <SkillTodoCard
+                      todo={skillTodo}
+                      timeLogMinutes={timeData[skillTodo.id] || 0}
+                      isLoadingTime={isLoadingTimeData}
+                      onEditTodo={handleEditTodo}
+                      onDeleteTodo={handleDeleteTodo}
+                      toggleIsdone={handleToggleTodo}
+                      onOpenModal={() => handleOpenResourceModal(skillTodo.id)}
+                      isUpdating={updatingTodoId === skillTodo.id}
+                      isDeleting={deletingTodoId === skillTodo.id}
+                      onTimeLogCreated={() =>
+                        refreshTimeDataForTask(skillTodo.id)
+                      }
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
               {showResourceModal && (
                 <ResourceModal
                   onClose={handleCloseResourceModal}
@@ -175,7 +185,7 @@ export default function SkillTodoList({
                   isSubmitting={isAddingResource}
                 />
               )}
-            </motion.div>
+            </div>
           </div>
         </>
       )}

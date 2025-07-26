@@ -5,6 +5,9 @@ import DashboardHeader from "../header/DashboardHeader";
 import OverviewCards from "../analytics-components/OverviewCards";
 import InsightsCards from "../analytics-components/InsightsCards";
 import { useAddSkillCard, useSkillCards } from "@/hooks/useSkillCardsHook";
+import { toast } from "react-hot-toast";
+
+import BouncingBarsLoader from "@/components/ui/BouncingBars";
 
 export default function SkillDashboard() {
   const { data: skills = [], isLoading, error } = useSkillCards();
@@ -22,7 +25,11 @@ export default function SkillDashboard() {
     };
 
     try {
-      await addSkillMutation.mutateAsync(skillToAdd);
+      await toast.promise(addSkillMutation.mutateAsync(skillToAdd), {
+        loading: "Adding skill...",
+        success: `${skillToAdd.skillName} added successfully!`,
+        error: "Failed to add skill. Please try again.",
+      });
     } catch (error) {
       console.error("Failed to add skill:", error);
     }
@@ -30,10 +37,11 @@ export default function SkillDashboard() {
 
   if (isLoading) {
     return (
-      <div className="dark:bg-zinc-950 p-2">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-        </div>
+      <div className="dark:bg-zinc-950 min-h-screen flex flex-col items-center justify-center space-y-4">
+        <BouncingBarsLoader />
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 font-medium">
+          Fetching skill data...
+        </p>
       </div>
     );
   }
