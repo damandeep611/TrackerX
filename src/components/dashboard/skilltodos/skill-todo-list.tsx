@@ -116,6 +116,37 @@ export default function SkillTodoList({
       isMounted = false;
     };
   }, [skillTodos]); // Re-run if skillTodos array changes
+
+  // State for tab selection
+  const [selectedTab, setSelectedTab] = useState<
+    "all" | "pending" | "completed"
+  >("all");
+
+  // Filtered todos based on selected tab
+  const filteredSkillTodos = skillTodos.filter((todo) => {
+    if (selectedTab === "all") return true;
+    if (selectedTab === "pending") return !todo.done;
+    if (selectedTab === "completed") return todo.done;
+    return true;
+  });
+
+  // Pagination state
+  const TASKS_PER_PAGE = 12;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page to 1 when tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedTab]);
+
+  // Calculate pagination
+  const totalTasks = filteredSkillTodos.length;
+  const totalPages = Math.ceil(totalTasks / TASKS_PER_PAGE);
+  const paginatedTodos = filteredSkillTodos.slice(
+    (currentPage - 1) * TASKS_PER_PAGE,
+    currentPage * TASKS_PER_PAGE
+  );
+
   return (
     <div className=" mx-10 ">
       <div>
@@ -139,6 +170,56 @@ export default function SkillTodoList({
         <>
           <div>
             <h2 className="text-xl font-semibold">Recent Activity</h2>
+            {/* Tabs for filtering */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 mb-2 w-full">
+              <div
+                className="flex flex-wrap gap-2"
+                role="tablist"
+                aria-label="Task filter tabs"
+              >
+                {[
+                  { label: "All", value: "all" },
+                  { label: "Pending", value: "pending" },
+                  { label: "Completed", value: "completed" },
+                ].map((tab) => (
+                  <button
+                    key={tab.value}
+                    role="tab"
+                    aria-selected={selectedTab === tab.value}
+                    tabIndex={selectedTab === tab.value ? 0 : -1}
+                    onClick={() =>
+                      setSelectedTab(tab.value as typeof selectedTab)
+                    }
+                    className={`px-5 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 text-sm font-semibold shadow-sm
+                      ${
+                        selectedTab === tab.value
+                          ? "bg-green-600 text-white shadow-md border border-green-700"
+                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-green-100 dark:hover:bg-green-900 border border-transparent"
+                      }
+                    `}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold shadow-sm border border-green-200 dark:border-green-800">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h7"
+                  />
+                </svg>
+                Total: {skillTodos.length}
+              </span>
+            </div>
           </div>
           <div className="relative">
             <motion.div
@@ -149,7 +230,7 @@ export default function SkillTodoList({
             />
             <div className="space-y-8 my-6 mx-2">
               <AnimatePresence mode="popLayout">
-                {skillTodos.map((skillTodo) => (
+                {paginatedTodos.map((skillTodo) => (
                   <motion.div
                     key={skillTodo.id}
                     variants={taskCardVariants}
@@ -184,6 +265,47 @@ export default function SkillTodoList({
                   onAddResource={handleAddResource}
                   isSubmitting={isAddingResource}
                 />
+              )}
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div
+                  className="flex items-center justify-center mt-8 space-x-4"
+                  aria-label="Pagination Navigation"
+                >
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium transition-colors
+                      ${
+                        currentPage === 1
+                          ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                      }
+                    `}
+                    aria-label="Previous Page"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-zinc-700 dark:text-zinc-200 text-sm">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium transition-colors
+                      ${
+                        currentPage === totalPages
+                          ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                      }
+                    `}
+                    aria-label="Next Page"
+                  >
+                    Next
+                  </button>
+                </div>
               )}
             </div>
           </div>
