@@ -147,3 +147,21 @@
     @apply bg-background text-foreground;
   }
 }
+.bg-hero {
+  background-image: linear-gradient(
+    0deg,
+    hsl(240deg 70% 87%) 0%,
+    hsl(240deg 70% 88%) 3%,
+    hsl(241deg 70% 89%) 7%,
+    hsl(241deg 70% 90%) 12%,
+    hsl(241deg 71% 91%) 17%,
+    hsl(242deg 71% 92%) 25%,
+    hsl(242deg 71% 93%) 33%,
+    hsl(242deg 71% 95%) 43%,
+    hsl(242deg 71% 96%) 55%,
+    hsl(243deg 72% 97%) 66%,
+    hsl(243deg 72% 98%) 78%,
+    hsl(243deg 72% 99%) 89%,
+    hsl(0deg 0% 100%) 100%
+  );
+}

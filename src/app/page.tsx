@@ -1,18 +1,15 @@
 import HeroSection from "@/components/layout/HeroSection";
-import FeaturesPage from "@/components/layout/landingPage/FeaturesPage";
+import BentoGrid from "@/components/layout/landingPage/BentoGrid";
+import FeaturesSection from "@/components/layout/landingPage/FeaturesSection";
 import Footer from "@/components/layout/landingPage/Footer";
-import Solutions from "@/components/layout/landingPage/Solutions";
 import TestimonialSection from "@/components/layout/landingPage/testimonial-section";
-import Navigation from "@/components/layout/Navigation";
-
 
 export default function Home() {
   return (
     <div>
-      <Navigation />
       <HeroSection />
-      <Solutions />
-      <FeaturesPage />
+      <FeaturesSection />
+      <BentoGrid />
       <TestimonialSection />
       <Footer />
     </div>

@@ -50,11 +50,10 @@ export default function Navigation() {
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 py-4">
       <div
         ref={navRef}
-        className="flex items-center justify-between w-full px-6 py-2 bg-black rounded-full shadow-lg max-w-5xl text-white border border-gray-400 "
+        className="flex items-center justify-between w-full bg-white text-zinc-700 px-6 py-2 rounded-2xl max-w-3xl  border border-zinc-200 "
       >
         <Link href="/" className="flex items-center gap-2">
           <AnimatedLeafLogo />
-          <span className="text-xl font-bold">BuildxSkill</span>
         </Link>
 
         <nav className="hidden md:flex items-center justify-center flex-1 px-4">
@@ -62,7 +61,7 @@ export default function Navigation() {
             <Link
               key={index}
               href={link.href}
-              className="nav-item hover:text-orange-300 transition-colors px-4"
+              className="nav-item text-lg font-semibold text-gray-500  hover:bg-gray-100 p-2 hover:rounded-xl transition-colors px-4"
             >
               {link.label}
             </Link>
@@ -71,7 +70,7 @@ export default function Navigation() {
         <div className="flex items-center gap-3">
           <button
             onClick={openModal}
-            className="nav-item hidden md:block px-6 py-2 bg-white text-black rounded-full font-medium hover:bg-orange-300 transition-colors"
+            className="nav-item hidden md:block px-6 py-2 bg-sky-500 text-white  text-shadow rounded-2xl font-medium cursor-pointer  transition-colors"
           >
             Login
           </button>
