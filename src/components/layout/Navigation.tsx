@@ -47,7 +47,7 @@ export default function Navigation() {
     };
   }, []);
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 py-4">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 py-4 ">
       <div
         ref={navRef}
         className="flex items-center justify-between w-full bg-white text-zinc-700 px-6 py-2 rounded-2xl max-w-3xl  border border-zinc-200 "
