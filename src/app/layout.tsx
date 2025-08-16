@@ -1,18 +1,13 @@
 import type { Metadata } from "next";
-import { Roboto, Roboto_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import QueryProvider from "./providers/QueryProvider";
 
-const roboto = Roboto({
+const geist = Geist({
   subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const roboto_mono = Roboto_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-roboto-mono",
+  display: "auto",
+  variable: "--font-geist",
 });
 export const metadata: Metadata = {
   title: "buildxSkill",
@@ -26,9 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${roboto.variable} ${roboto_mono.variable} antialiased`}
-      >
+      <body className={` ${geist.variable} antialiased`}>
         <QueryProvider>
           <main>{children}</main>
         </QueryProvider>

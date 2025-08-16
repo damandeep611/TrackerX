@@ -12,7 +12,6 @@ export async function setDailyHours(hours: number) {
       headers: await headers(),
     });
     if (!session) throw new Error("Not authenticated");
-
     // Get today's date at midnight for consistent querying
     const today = new Date();
     today.setHours(0, 0, 0, 0);
