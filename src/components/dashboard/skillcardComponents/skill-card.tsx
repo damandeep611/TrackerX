@@ -3,7 +3,8 @@ import { Skill } from "@/types/skillDashboardTypes";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Clock } from "lucide-react";
+import { Timer } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface SkillCardProps {
   skill: Skill;
@@ -12,9 +13,12 @@ interface SkillCardProps {
 export default function SkillCard({ skill }: SkillCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const percentage = (skill.currentHours / skill.targetHours) * 100;
+  const totalSegments = 38;
+  const completedSegments = Math.round((percentage / 100) * totalSegments);
   // const remainingHours = Math.max(0, skill.targetHours - skill.currentHours);
   //use this remaining hours of skill in the skill overview with tasks list
-
+  const { resolvedTheme } = useTheme();
+  const segmentBg = resolvedTheme === "dark" ? "#27272a" : "#f3f4f6";
   const navigate = useRouter();
 
   // Original formatting time function
@@ -43,10 +47,10 @@ export default function SkillCard({ skill }: SkillCardProps) {
   };
 
   const getProgressColor = (percentage: number) => {
-    if (percentage >= 90) return "from-emerald-500 to-green-600";
-    if (percentage >= 70) return "from-blue-500 to-indigo-600";
-    if (percentage >= 40) return "from-amber-500 to-orange-600";
-    return "from-slate-500 to-gray-200";
+    if (percentage >= 90) return "#059669"; // emerald-500
+    if (percentage >= 70) return "#3b82f6"; // blue-500
+    if (percentage >= 40) return "#f59e42"; // amber-500
+    return "#fde047"; // yellow-500
   };
 
   // Dynamic category color generator with dark theme support
@@ -81,7 +85,7 @@ export default function SkillCard({ skill }: SkillCardProps) {
     >
       <motion.div
         onClick={() => navigate.push(`/dashboard/skills/${skill.slug}`)}
-        className="relative bg-white dark:bg-zinc-900 backdrop-blur-sm rounded-2xl p-6  cursor-pointer overflow-hidden transition-all duration-300"
+        className="relative bg-white dark:bg-zinc-900 backdrop-blur-sm rounded-xl p-6 border border-gray-300 dark:border-gray-800  cursor-pointer overflow-hidden transition-all duration-300"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
         whileHover={{
@@ -89,40 +93,14 @@ export default function SkillCard({ skill }: SkillCardProps) {
           transition: { duration: 0.2, ease: [0.25, 0.25, 0, 1] },
         }}
       >
-        {/* Simple border beam effect */}
-        <motion.div
-          className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-500"
-          style={{
-            background: `linear-gradient(90deg, transparent, ${
-              percentage >= 10 ? "#3B82F6" : "#6B7280"
-            }, transparent)`,
-            maskImage:
-              "linear-gradient(90deg, transparent 0%, black 20%, black 10%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(90deg, transparent 0%, black 20%, black 10%, transparent 100%)",
-          }}
-          animate={{
-            x: isHovered ? ["0%", "100%"] : "0%",
-          }}
-          transition={{
-            duration: 1.5,
-            ease: "easeInOut",
-          }}
-        >
-          <div className="w-full h-0.5 bg-current absolute top-0" />
-          <div className="w-full h-0.5 bg-current absolute bottom-0" />
-          <div className="h-full w-0.5 bg-current absolute left-0" />
-          <div className="h-full w-0.5 bg-current absolute right-0" />
-        </motion.div>
-
         {/* Header Section */}
         <div className="relative pb-2">
           <div className="flex items-start justify-between ">
-            <h2 className="text-lg font-semibold capitalize  leading-tight  transition-colors">
+            <h2 className="text-lg font-semibold capitalize  leading-tight   transition-colors">
               {skill.skillName}
             </h2>
             <motion.span
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${getCategoryColor(
+              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs uppercase font-medium border backdrop-blur-sm ${getCategoryColor(
                 skill.category
               )} mb-3`}
               whileHover={{ scale: 1.05 }}
@@ -132,55 +110,50 @@ export default function SkillCard({ skill }: SkillCardProps) {
             </motion.span>
           </div>
 
+          {/* Progress Bar with glassmorphism effect */}
+          <div className="relative mb-4 flex items-center justify-between">
+            <div className="flex gap-1 items-center">
+              {Array.from({ length: totalSegments }, (_, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ backgroundColor: segmentBg }}
+                  animate={{
+                    backgroundColor:
+                      index < completedSegments
+                        ? getProgressColor(percentage)
+                        : segmentBg,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    delay: 0.3 + index * 0.05,
+                    ease: "easeOut",
+                  }}
+                  className="w-1 h-10 rounded-full"
+                />
+              ))}
+            </div>
+            <motion.div
+              className="text-sm font-medium "
+              animate={{ scale: isHovered ? 1.05 : 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              {percentage.toFixed(0)}%
+            </motion.div>
+          </div>
           {/* Modern Stats Grid */}
           <div className="flex items-center justify-between py-2 font-medium">
-            <div className="flex items-center gap-2 text-zinc-400">
-              <div className="flex items-center justify-between gap-1">
-                <Clock size={15} />
+            <div className="flex items-center justify-between gap-2">
+              <Timer size={12} className="text-green-600" />
+              <span className="text-xs">Total time spend</span>
+            </div>
+            <div className="flex items-center gap-1 text-zinc-400">
+              <div className="flex items-center justify-between ">
                 <span className="text-sm">
                   {formatTime(skill.currentHours)}
                 </span>
               </div>
               <span>/</span>
               <span className="text-sm">{formatTime(skill.targetHours)}</span>
-            </div>
-            <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-              <motion.div
-                className="text-sm font-bold "
-                animate={{ scale: isHovered ? 1.05 : 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {percentage.toFixed(0)}%
-              </motion.div>
-            </div>
-          </div>
-          {/* Progress Bar with glassmorphism effect */}
-          <div className="relative mb-4">
-            <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden backdrop-blur-sm">
-              <motion.div
-                className={`h-full bg-gradient-to-r ${getProgressColor(
-                  percentage
-                )} rounded-full relative shadow-sm`}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(percentage, 100)}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <motion.div
-                  className="absolute inset-0 bg-white/30"
-                  animate={{ x: ["0%", "100%"] }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "linear",
-                    repeatDelay: 3,
-                  }}
-                  style={{
-                    background:
-                      "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
-                    width: "30%",
-                  }}
-                />
-              </motion.div>
             </div>
           </div>
           {/* bottom section  */}

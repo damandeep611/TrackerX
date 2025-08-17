@@ -71,8 +71,13 @@ export default function SkillDashboard() {
       <InsightsCards />
 
       <div className="p-4 my-2">
-        <div>
-          <h2 className="text-xl font-semibold">Your Skills / Projects</h2>
+        <div className="mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-zinc-200 mb-2">
+            Project Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-zinc-400">
+            Track progress across all your active projects
+          </p>
         </div>
       </div>
 
