@@ -31,14 +31,14 @@ export default function Navigation() {
               <Link
                 key={index}
                 href={link.href}
-                className="nav-item p-2 text-sm font-medium hover:rounded-xl transition-colors px-4"
+                className="nav-item p-2 text-sm font-medium hover:text-emerald-600 transition-colors px-4"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
           <div className="flex items-center justify-between gap-3 text-sm font-medium">
-            <button className="nav-item hidden md:block px-4 py-2 border border-gray-300 text-shadow rounded-md  cursor-pointer  transition-colors">
+            <button className="nav-item hidden md:block px-4 py-2 border border-gray-300 hover:border-emerald-600 text-shadow rounded-md  cursor-pointer  transition-colors">
               Suggestions
             </button>
             <button

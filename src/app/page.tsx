@@ -1,5 +1,5 @@
 import HeroSection from "@/components/layout/HeroSection";
-import BentoGrid from "@/components/layout/landingPage/BentoGrid";
+import FeatureGrid from "@/components/layout/landingPage/FeatureGrid";
 import FeaturesSection from "@/components/layout/landingPage/FeaturesSection";
 import Footer from "@/components/layout/landingPage/Footer";
 import MarqueeSection from "@/components/layout/landingPage/MarqueeSection";
@@ -12,8 +12,8 @@ export default function Home() {
       <Navigation />
       <HeroSection />
       <MarqueeSection />
+      <FeatureGrid />
       <FeaturesSection />
-      <BentoGrid />
       <TestimonialSection />
       <Footer />
     </div>

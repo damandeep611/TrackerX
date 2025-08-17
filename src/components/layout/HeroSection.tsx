@@ -43,7 +43,7 @@ export default function HeroSection() {
           <div className="flex items-center justify-between gap-4 mx-auto">
             <button
               onClick={openModal}
-              className="bg-emerald-500 text-white py-2 px-4 text-sm lg:py-2 lg:px-4 font-semibold  rounded-md cursor-pointer"
+              className="bg-emerald-500 text-white border border-emerald-700 hover:bg-emerald-800 py-2 px-4 text-sm lg:py-2 lg:px-4 font-semibold  rounded-md cursor-pointer"
             >
               Start Tracking
             </button>

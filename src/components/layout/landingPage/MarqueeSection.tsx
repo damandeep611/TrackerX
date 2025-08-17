@@ -26,7 +26,10 @@ const colorMap: Record<Feature["color"], string> = {
 
 export default function MarqueeSection() {
   return (
-    <div className="relative rounded-2xl max-w-5/6 mx-auto overflow-hidden" aria-label="Scrolling list of product features">
+    <div
+      className="relative rounded-2xl max-w-5/6 my-12 pb-12 mx-auto overflow-hidden"
+      aria-label="Scrolling list of product features"
+    >
       {/* subtle surrounding glow tuned for light theme */}
       <div className="pointer-events-none absolute -inset-x-10 -inset-y-6 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.06),transparent_55%)]" />
 
@@ -34,7 +37,6 @@ export default function MarqueeSection() {
         <Marquee
           autoFill
           speed={40}
-          
           gradientWidth={160}
           loop={0} // infinite
           className=""
@@ -52,7 +54,7 @@ export default function MarqueeSection() {
         </Marquee>
       </div>
     </div>
-  )
+  );
 }
 
 function Chip({ label, colorClass }: { label: string; colorClass: string }) {
