@@ -59,7 +59,7 @@ export default function SkillDashboard() {
   }
 
   return (
-    <div className=" dark:bg-zinc-950 p-4 m-3 border border-gray-300 dark:border-gray-800 rounded-2xl">
+    <div className=" dark:bg-zinc-950 p-4 ">
       <DashboardHeader onAddSkill={handleAddSkill} />
       <div className="p-4">
         <h3 className="text-xl text-zinc-700 dark:text-zinc-300 font-semibold">

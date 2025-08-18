@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={` ${geist.variable} antialiased`}>
         <QueryProvider>
-          <main>{children}</main>
+          <main className="">{children}</main>
         </QueryProvider>
         <Toaster
           position="top-right"
