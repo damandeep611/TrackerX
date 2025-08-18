@@ -17,7 +17,7 @@ export default function OverviewCards() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {[...Array(4)].map((_, index) => (
           <div key={index} className="p-6  rounded-2xl animate-pulse">
             <div className="flex items-center gap-3 mb-3">

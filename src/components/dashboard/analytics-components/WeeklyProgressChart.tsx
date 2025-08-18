@@ -98,11 +98,10 @@ export default function WeeklyProgressChart() {
         show: false,
       },
       splitLine: {
-        lineStyle: {
-          color: "#27272a",
-          type: "dashed",
-        },
+        show: false,
       },
+      interval: 10,
+      max: 70,
     },
     series: [
       {
@@ -111,14 +110,15 @@ export default function WeeklyProgressChart() {
           itemStyle: {
             color:
               index === weeklyData.length - 1
-                ? "#6366f1" // Current week - indigo
-                : "#52525b", // Previous weeks - zinc
+                ? "#05fa8c" // Current week - indigo
+                : "#818cf8", // Previous weeks - zinc
           },
         })),
         type: "bar",
-        barWidth: "60%",
+
+        barWidth: "50%",
         itemStyle: {
-          borderRadius: [4, 4, 0, 0],
+          borderRadius: [2, 2, 0, 0],
         },
         emphasis: {
           itemStyle: {
@@ -151,14 +151,16 @@ export default function WeeklyProgressChart() {
   if (isLoading) {
     return (
       <motion.div
-        className="dark:bg-zinc-900 p-6 rounded-2xl shadow-sm"
+        className=" p-6 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50  dark:bg-zinc-900"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
         <div className="flex items-center gap-3 mb-4">
           <TrendingUpIcon className="w-5 h-5 dark:text-zinc-400" />
-          <h3 className="text-sm dark:text-zinc-400 font-medium">Weekly Progress</h3>
+          <h3 className="text-sm dark:text-zinc-400 font-medium">
+            Weekly Progress
+          </h3>
         </div>
         <div className="animate-pulse">
           <div className="h-4 bg-zinc-800 rounded mb-2"></div>
@@ -170,50 +172,70 @@ export default function WeeklyProgressChart() {
 
   return (
     <motion.div
-      className="dark:bg-zinc-900 p-6 rounded-2xl shadow-sm dark:hover:bg-zinc-800/50 transition-all duration-200"
+      className=" p-4 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50  dark:bg-zinc-900 "
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <div className="flex items-center gap-3 mb-4">
-        <TrendingUpIcon className="w-5 h-5 dark:text-zinc-400" />
-        <h3 className="text-sm dark:text-zinc-400 font-medium">Weekly Progress</h3>
+      <div className="flex items-center gap-3">
+        <TrendingUpIcon className="w-5 h-5 text-purple-600" />
+        <h3 className="text-sm dark:text-zinc-400 font-medium">
+          Weekly Progress
+        </h3>
       </div>
 
-      <div className="mb-4">
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-2xl font-bold">{currentWeekHours.toFixed(1)}h</span>
-          <span className="text-sm dark:text-zinc-400">this week</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-sm font-medium ${weeklyChange >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            {weeklyChange >= 0 ? "+" : ""}
-            {weeklyChange.toFixed(0)}%
+      <div className="mb-4 flex items-center justify-between mt-2">
+        <div className=" relative flex items-baseline gap-2 ">
+          <span className="text-3xl font-semibold ">
+            {currentWeekHours.toFixed(1)} hours
           </span>
-          <span className="text-sm dark:text-zinc-400">compared to last week</span>
+
+          <span className="text-xs dark:text-zinc-400">this week</span>
         </div>
+        <span
+          className={`  text-sm font-medium p-0.5 px-2 rounded-sm ${
+            weeklyChange >= 0
+              ? "text-emerald-200 bg-emerald-700 "
+              : "text-red-700 bg-red-300 "
+          }`}
+        >
+          {weeklyChange >= 0 ? "+" : ""}
+          {weeklyChange.toFixed(0)}%
+        </span>
       </div>
 
       {/* ECharts Bar Chart */}
-      <div className="h-40">
-        <ReactECharts 
-          option={chartOptions} 
-          style={{ height: '100%', width: '100%' }} 
-          opts={{ renderer: 'svg' }}
+      <div className="h-60">
+        <ReactECharts
+          option={chartOptions}
+          style={{ height: "100%", width: "100%" }}
+          opts={{ renderer: "svg" }}
         />
       </div>
 
-      {/* Additional insights */}
-      <div className="pt-3 border-t border-zinc-800 mt-3">
-        <p className="text-xs dark:text-zinc-400">
-          {currentWeekHours === 0 
-            ? "No hours logged this week yet" 
-            : weeklyChange > 20 
-            ? "Great improvement this week! 📈" 
-            : weeklyChange < -20
-            ? "Consider increasing your weekly hours 📊"
-            : "Steady progress! Keep it up 💪"}
-        </p>
+      <div className="flex items-center justify-between pt-4 border-t ">
+        {/* Additional insights */}
+        <div className="  ">
+          <p className="text-xs dark:text-zinc-400">
+            {currentWeekHours === 0
+              ? "No hours logged this week yet"
+              : weeklyChange > 20
+              ? "Great improvement this week! 📈"
+              : weeklyChange < -20
+              ? "Consider increasing your weekly hours 📊"
+              : "Steady progress! Keep it up 💪"}
+          </p>
+        </div>
+        <div className="flex items-center justify-between gap-6 text-xs">
+          <div className="flex items-center justify-between gap-2">
+            <div className="h-2 w-4 rounded-xs bg-blue-500" />
+            <span>Past weeks</span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="h-2 w-4 rounded-xs bg-emerald-500 " />
+            <span>Current Week</span>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

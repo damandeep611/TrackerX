@@ -49,7 +49,7 @@ export default function InsightsCards() {
 
       {/* Consistency Tracker */}
       <motion.div
-        className="dark:bg-zinc-900 p-6 rounded-2xl shadow-sm dark:hover:bg-zinc-800/50 transition-all duration-200"
+        className=" p-6 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50  dark:bg-zinc-900"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}

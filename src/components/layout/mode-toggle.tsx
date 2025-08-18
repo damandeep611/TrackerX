@@ -23,7 +23,7 @@ export function ModeToggle() {
   return (
     <motion.button
       onClick={toggleTheme}
-      className="p-2 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-lg"
+      className="p-2 border rounded-md"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
