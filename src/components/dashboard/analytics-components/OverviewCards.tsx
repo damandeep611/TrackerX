@@ -64,14 +64,14 @@ export default function OverviewCards() {
           icon={<Calendar size={18} className="text-yellow-500" />}
         />
         <AnalyticsCard
-          title="Total time this week"
+          title="Time spend last 7 days"
           value={`${analytics.weeklyTime.totalHours}h`}
           subtitle={`${analytics.weeklyTime.daysWithActivity} days active`}
           subtitle2=" across all skills"
           icon={<Box size={18} className="text-blue-500" />}
         />
         <AnalyticsCard
-          title="Total time this month"
+          title="Total spend last 30 days"
           value={`${analytics.monthlyTime.totalHours}h`}
           subtitle={`${analytics.monthlyTime.daysWithActivity} days active`}
           subtitle2=" total time logged this month"

@@ -177,31 +177,41 @@ export default function WeeklyProgressChart() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <div className="flex items-center gap-3">
-        <TrendingUpIcon className="w-5 h-5 text-purple-600" />
-        <h3 className="text-sm dark:text-zinc-400 font-medium">
-          Weekly Progress
-        </h3>
-      </div>
-
-      <div className="mb-4 flex items-center justify-between mt-2">
-        <div className=" relative flex items-baseline gap-2 ">
-          <span className="text-3xl font-semibold ">
-            {currentWeekHours.toFixed(1)} hours
-          </span>
-
-          <span className="text-xs dark:text-zinc-400">this week</span>
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center justify-between gap-2 ">
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.5, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="w-14 h-14 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-900/20"
+          >
+            <TrendingUpIcon className="w-7 h-7 text-white" />
+          </motion.div>
+          <div>
+            <span className="text-sm font-semibold text-slate-500 uppercase tracking-[0.2em] block mb-1">
+              Weekly Comparision
+            </span>
+            <span className="text-xs text-slate-400 font-medium">
+              Last 7 week analysis
+            </span>
+          </div>
         </div>
-        <span
-          className={`  text-sm font-medium p-0.5 px-2 rounded-sm ${
-            weeklyChange >= 0
-              ? "text-emerald-200 bg-emerald-700 "
-              : "text-red-700 bg-red-300 "
-          }`}
-        >
-          {weeklyChange >= 0 ? "+" : ""}
-          {weeklyChange.toFixed(0)}%
-        </span>
+        {/* trend  */}
+        <div className="flex flex-col items-end justify-between gap-2">
+          <span className="text-xs text-slate-400 font-medium">
+            Compared to last week
+          </span>
+          <span
+            className={`  text-sm font-medium p-0.5 px-2 rounded-sm ${
+              weeklyChange >= 0
+                ? "text-emerald-200 bg-emerald-700 "
+                : "text-red-700 bg-red-300 "
+            }`}
+          >
+            {weeklyChange >= 0 ? "+" : ""}
+            {weeklyChange.toFixed(0)}%
+          </span>
+        </div>
       </div>
 
       {/* ECharts Bar Chart */}

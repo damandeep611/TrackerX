@@ -1,6 +1,6 @@
 "use client"
 import { motion } from 'framer-motion'
-import { BarChart3Icon } from "lucide-react";
+import { ChartNoAxesCombined } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { getLastSevenDaysActivity } from "@/actions/timeLogAction";
 import WeeklyProgressChart from "./WeeklyProgressChart";
@@ -54,14 +54,26 @@ export default function InsightsCards() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <BarChart3Icon className="w-5 h-5 dark:text-zinc-400" />
-          <h3 className="text-sm dark:text-zinc-400 font-medium">
-            Weekly Consistency
-          </h3>
+        <div className="flex items-center gap-4 mb-6">
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.5, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="w-14 h-14 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-900/20"
+          >
+            <ChartNoAxesCombined className="w-7 h-7 text-white" />
+          </motion.div>
+          <div>
+            <span className="text-sm font-semibold text-slate-500 uppercase tracking-[0.2em] block mb-1">
+              Weekly Rhythm
+            </span>
+            <span className="text-xs text-slate-400 font-medium">
+              Consistency Analytics
+            </span>
+          </div>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-6">
           <span className="text-2xl font-bold ">{activeDays} of 7 days</span>
           <p className="text-sm dark:text-zinc-400 mt-1">
             You&#39;ve logged time this week
@@ -74,28 +86,29 @@ export default function InsightsCards() {
             {weeklyData.map((day) => (
               <div key={day.day} className="flex flex-col items-center gap-2">
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                  className={`w-16 h-12 rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-300 ${
                     day.hasActivity
-                      ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                      : "bg-zinc-800 text-zinc-500 border border-zinc-700"
+                      ? "dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-500/30"
+                      : "dark:bg-zinc-800 dark:text-zinc-500 border border-zinc-700"
                   }`}
                 >
                   {day.hours > 0 ? day.hours.toFixed(1) : "—"}
                 </div>
-                <span className="text-xs dark:text-zinc-400">{day.day}</span>
+                <span className="text-sm font-medium dark:text-zinc-400">
+                  {day.day}
+                </span>
               </div>
             ))}
           </div>
-
-          <div className="pt-2 border-t border-zinc-800">
-            <p className="text-xs dark:text-zinc-400">
-              {activeDays === 0
-                ? "No activity logged this week"
-                : activeDays === 7
-                ? "Perfect consistency! You logged time every day"
-                : `Great progress! ${activeDays} active days this week`}
-            </p>
-          </div>
+        </div>
+        <div className=" border-t mt-6 pt-6">
+          <p className="text-xs dark:text-zinc-300">
+            {activeDays === 0
+              ? "No activity logged this week"
+              : activeDays === 7
+              ? "Perfect consistency! You logged time every day"
+              : `Great progress! ${activeDays} active days this week`}
+          </p>
         </div>
       </motion.div>
     </div>
