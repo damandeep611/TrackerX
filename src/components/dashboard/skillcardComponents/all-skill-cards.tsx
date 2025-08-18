@@ -37,7 +37,7 @@ export default function SkillDashboard() {
 
   if (isLoading) {
     return (
-      <div className="dark:bg-zinc-950 min-h-screen flex flex-col items-center justify-center space-y-4">
+      <div className="dark:bg-zinc-950 min-h-screen flex flex-col items-center justify-center space-y-4 p-4 m-3 border border-gray-300 dark:border-gray-800 rounded-2xl">
         <BouncingBarsLoader />
         <p className="text-sm text-zinc-600 dark:text-zinc-400 font-medium">
           Fetching skill data...
@@ -48,7 +48,7 @@ export default function SkillDashboard() {
 
   if (error) {
     return (
-      <div className="dark:bg-zinc-950 p-2">
+      <div className="dark:bg-zinc-950 p-4 m-3 border border-gray-300 dark:border-gray-800 rounded-2xl">
         <div className="flex items-center justify-center h-64">
           <div className="text-red-500">
             Error loading skills: {error.message}
@@ -59,12 +59,14 @@ export default function SkillDashboard() {
   }
 
   return (
-    <div className="dark:bg-zinc-950 p-2">
+    <div className=" dark:bg-zinc-950 p-4 m-3 border border-gray-300 dark:border-gray-800 rounded-2xl">
       <DashboardHeader onAddSkill={handleAddSkill} />
       <div className="p-4">
-        <h3 className="text-xl font-bold">Your progress</h3>
-        <p className="text-sm dark:text-zinc-400 font-semibold">
-          Learning Patterns and Productivity Insights
+        <h3 className="text-xl text-zinc-700 dark:text-zinc-300 font-semibold">
+          Welcome Back,👋{" "}
+        </h3>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 ">
+          Overview of Learning Patterns and Productivity Insights
         </p>
       </div>
       <OverviewCards />

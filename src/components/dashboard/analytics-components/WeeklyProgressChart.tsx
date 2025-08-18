@@ -44,23 +44,27 @@ export default function WeeklyProgressChart() {
   // ECharts options
   const chartOptions = {
     grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '15%',
-      top: '10%',
-      containLabel: true
+      left: "3%",
+      right: "4%",
+      bottom: "15%",
+      top: "10%",
+      containLabel: true,
     },
     xAxis: {
-      type: 'category',
-      data: weeklyData.map(week => {
+      type: "category",
+      data: weeklyData.map((week) => {
         // Format date range for display
         const startDate = new Date(week.weekStart);
         const endDate = new Date(week.weekEnd);
-        const startMonth = startDate.toLocaleDateString('en-US', { month: 'short' });
-        const endMonth = endDate.toLocaleDateString('en-US', { month: 'short' });
+        const startMonth = startDate.toLocaleDateString("en-US", {
+          month: "short",
+        });
+        const endMonth = endDate.toLocaleDateString("en-US", {
+          month: "short",
+        });
         const startDay = startDate.getDate();
         const endDay = endDate.getDate();
-        
+
         if (startMonth === endMonth) {
           return `${startMonth} ${startDay}-${endDay}`;
         } else {
@@ -68,68 +72,69 @@ export default function WeeklyProgressChart() {
         }
       }),
       axisLabel: {
-        color: '#71717a',
-        fontSize: 10,
+        color: "#64748b",
+        fontSize: 11,
         interval: 0,
-        rotate: 0
+        rotate: 0,
       },
       axisLine: {
-        show: false
+        show: false,
       },
       axisTick: {
-        show: false
-      }
+        show: false,
+      },
     },
     yAxis: {
-      type: 'value',
+      type: "value",
       axisLabel: {
-        color: '#71717a',
+        color: "#71717a",
         fontSize: 10,
-        formatter: '{value}h'
+        formatter: "{value}h",
       },
       axisLine: {
-        show: false
+        show: false,
       },
       axisTick: {
-        show: false
+        show: false,
       },
       splitLine: {
         lineStyle: {
-          color: '#27272a',
-          type: 'dashed'
-        }
-      }
+          color: "#27272a",
+          type: "dashed",
+        },
+      },
     },
     series: [
       {
         data: weeklyData.map((week, index) => ({
           value: week.hours,
           itemStyle: {
-            color: index === weeklyData.length - 1 
-              ? '#6366f1' // Current week - indigo
-              : '#52525b' // Previous weeks - zinc
-          }
+            color:
+              index === weeklyData.length - 1
+                ? "#6366f1" // Current week - indigo
+                : "#52525b", // Previous weeks - zinc
+          },
         })),
-        type: 'bar',
-        barWidth: '60%',
+        type: "bar",
+        barWidth: "60%",
         itemStyle: {
-          borderRadius: [4, 4, 0, 0]
+          borderRadius: [4, 4, 0, 0],
         },
         emphasis: {
           itemStyle: {
-            color: '#818cf8'
-          }
-        }
-      }
+            color: "#818cf8",
+          },
+        },
+      },
     ],
     tooltip: {
-      trigger: 'axis',
-      backgroundColor: '#18181b',
-      borderColor: '#27272a',
+      trigger: "axis",
+      backgroundColor: "#18181b",
+      borderColor: "#27272a",
       textStyle: {
-        color: '#f4f4f5'
+        color: "#f4f4f5",
       },
-      formatter: function(params: unknown) {
+      formatter: function (params: unknown) {
         const data = (params as Array<{ dataIndex: number }>)[0];
         const weekInfo = weeklyData[data.dataIndex];
         return `
@@ -139,8 +144,8 @@ export default function WeeklyProgressChart() {
             <div style="color: #6366f1; font-weight: 600;">${weekInfo.hours}h logged</div>
           </div>
         `;
-      }
-    }
+      },
+    },
   };
 
   if (isLoading) {

@@ -74,8 +74,8 @@ export default function Sidebar() {
   };
   return (
     <div
-      className={`relative h-screen flex flex-col dark:bg-zinc-900 border border-border transition-all duration-200 ease-in-out  ${
-        isCollapsed ? "w-20" : "w-60"
+      className={`relative h-screen flex flex-col bg-[#F5F5F5] dark:bg-zinc-900  transition-all duration-200 ease-in-out  ${
+        isCollapsed ? "w-16" : "w-56"
       }`}
     >
       <div className="flex items-center justify-between  p-4">

@@ -14,7 +14,7 @@ export default function DashboardLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <div className="flex h-screen">
+      <div className="flex h-screen bg-[#F5F5F5] dark:bg-zinc-900">
         <Sidebar />
         <main className="flex-1 overflow-auto">{children}</main>
         <Toaster position="top-right" />

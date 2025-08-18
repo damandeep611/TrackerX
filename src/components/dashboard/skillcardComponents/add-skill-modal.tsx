@@ -33,12 +33,12 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
   return (
     <>
       {/* Clean Add Button */}
-      <button
-        onClick={openDrawer}
-        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-800 border border-transparent rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-colors"
-      >
-        <Plus size={16} />
-        Add skill
+
+      <button className="cssbuttons-io-button" onClick={openDrawer}>
+        Add Skill
+        <div className="icon">
+          <Plus />
+        </div>
       </button>
 
       {/* Modal */}
