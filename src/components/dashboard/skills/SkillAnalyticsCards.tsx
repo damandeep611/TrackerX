@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { ArrowUp, Hourglass } from "lucide-react";
+import { Calendar, CheckCircle, Clock, Plus, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
 import { useSkillAnalytics } from "@/hooks/useSkillAnalytics";
 
 interface SkillAnalyticsCardsProps {
@@ -38,89 +39,134 @@ export default function SkillAnalyticsCards({
   // );
 
   return (
-    <div className="p-4  border border-zinc-300 dark:border-zinc-800 rounded-xl m-2">
-      <div className="flex items-start justify-between ">
-        <div className="flex-1">
-          <div className="flex flex-col items-start ">
-            <p className="text-xl font-medium  capitalize tracking-wide">
-              Total Time Spent
-            </p>
-            <div className="flex items-start justify-between gap-3 font-medium text-zinc-400">
-              <span className="text-sm  ">
-                {isLoading
-                  ? "Loading..."
-                  : error
-                  ? "Error"
-                  : analytics.createdAt
-                  ? new Date(analytics.createdAt).toLocaleDateString(
-                      undefined,
-                      {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      }
-                    )
-                  : "Not available"}
-              </span>
-              <span>-</span>
-              <span className="text-sm ">{todayDate}</span>
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <Hourglass size={30} />
-            <div className="flex items-baseline gap-2 my-4">
-              <p className="text-4xl font-bold ">{skillCurrentHours}</p>
-              <p className="text-lg font-medium ">hours</p>
-            </div>
-            <div className="flex items-center justify-between gap-1 mx-2 text-xs">
-              <span className="bg-green-700 p-1 rounded-full">
-                <ArrowUp className=" text-white " size={10} />
-              </span>
-              <span className="text-green-700 font-semibold">10.45%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-2">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col items-start justify-between w-full gap-3 p-2 border-r mx-4">
-            <p className=" font-semibold text-zinc-500">Avg. Time per Day</p>
-            <span className="text-xl font-semibold">
-              {" "}
-              {analytics.averageDailyHours} hours
-            </span>
-          </div>
-          <div className="flex flex-col items-start justify-between w-full gap-3 p-2  border-r mx-4">
-            <p className=" font-semibold text-zinc-500">Days since creation</p>
-            <span className="text-xl font-semibold">
+    <div className=" border border-zinc-300 dark:border-zinc-800 rounded-xl m-2 p-6">
+      <div className="flex  items-center justify-between mb-6 ">
+        <div className="flex flex-col items-start justify-between gap-2 font-medium ">
+          <p className="text-2xl font-semibold  capitalize tracking-wide">
+            Total Time Spent
+          </p>
+          <div className="text-sm text-zinc-500 space-x-1">
+            <span>
               {isLoading
                 ? "Loading..."
                 : error
                 ? "Error"
-                : typeof analytics.daysSinceCreation === "number"
-                ? `${analytics.daysSinceCreation} days`
+                : analytics.createdAt
+                ? new Date(analytics.createdAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
                 : "Not available"}
             </span>
-          </div>
-          <div className="flex flex-col items-start justify-between w-full gap-3 p-2  border-r mx-4">
-            <p className=" font-semibold text-zinc-500">
-              Tasks Comp. this week
-            </p>
-            <span className="text-xl font-semibold">
-              {" "}
-              {analytics.completedTasks}
-            </span>
-          </div>
-          <div className="flex flex-col items-start justify-between w-full gap-3 p-2  border-r mx-4">
-            <p className=" font-semibold text-zinc-500">
-              Tasks created this week
-            </p>
-            <span className="text-xl font-semibold">
-              {analytics.totalTasks}
-            </span>
+            <span>-</span>
+            <span>{todayDate}</span>
           </div>
         </div>
+        <div className="flex items-center gap-1 text-sm text-emerald-600">
+          <TrendingUp className="w-4 h-4" />
+          <span className="font-medium">10.45%</span>
+        </div>
+      </div>
+      <div className="mb-8">
+        <div className="flex items-baseline gap-2 mb-2">
+          <span className="text-5xl font-bold ">{skillCurrentHours}</span>
+          <span className="text-lg text-gray-500 font-medium">
+            hours in{" "}
+            {isLoading
+              ? "Loading..."
+              : error
+              ? "Error"
+              : typeof analytics.daysSinceCreation === "number"
+              ? `${analytics.daysSinceCreation} days`
+              : "Not available"}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-2 grid grid-cols-2 lg:grid-cols-4 gap-4 ">
+        {/* avg time per day */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="group border-r mx-2"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-blue-50/70 dark:bg-zinc-700 rounded-md ">
+              <Clock className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="text-xs font-medium  uppercase tracking-wide">
+              Recent Avg. per Day
+            </div>
+          </div>
+          <div className="text-xl font-semibold ">
+            {analytics.averageDailyHours} Hours
+          </div>
+        </motion.div>
+        {/* days since creation  */}
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="group border-r mx-2"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-purple-50/70 dark:bg-zinc-700 rounded-md ">
+              <Calendar className="w-4 h-4 text-purple-600" />
+            </div>
+            <div className="text-xs font-medium  uppercase tracking-wide">
+              Days Active
+            </div>
+          </div>
+          <div className="text-xl font-semibold ">
+            {isLoading
+              ? "Loading..."
+              : error
+              ? "Error"
+              : typeof analytics.daysSinceCreation === "number"
+              ? `${analytics.daysSinceCreation} days`
+              : "Not available"}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="group border-r mx-2"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-emerald-50/70 dark:bg-zinc-700 rounded-md ">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div className="text-xs font-medium  uppercase tracking-wide">
+              This week
+            </div>
+          </div>
+          <div className="text-xl font-semibold ">
+            {analytics.completedTasks} Task Completed
+          </div>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+          className="group "
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-amber-50/70 dark:bg-zinc-700 rounded-md ">
+              <Plus className="w-4 h-4 text-amber-600" />
+            </div>
+            <div className="text-xs font-medium uppercase tracking-wide">
+              This week
+            </div>
+          </div>
+          <div className="text-xl font-semibold ">
+            {analytics.totalTasks} Task created
+          </div>
+        </motion.div>
       </div>
 
       {/* <div className="flex items-center justify-between gap-2">

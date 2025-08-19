@@ -191,7 +191,7 @@ export default function SkillTodoCard({
         }}
         className={` relative ml-6 rounded-xl p-2   shadow-sm  hover:shadow-lg  border  transition-all duration-300 group ${
           todo.done
-            ? "bg-emerald-50/75  dark:bg-zinc-950 border-emerald-200/50 dark:border-emerald-800/30 opacity-80  "
+            ? " border-emerald-200/50 dark:border-emerald-800/30   "
             : " bg-white  dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
         }`}
       >
@@ -200,7 +200,6 @@ export default function SkillTodoCard({
             todo.done ? "p-2 space-y-2" : "p-3 space-y-3"
           }`}
         >
-          {/* top section of edit delete and tag  */}
           <div className="flex justify-between items-center gap-4">
             {/* left side of the top section  */}
             <div className="flex items-center justify-between">
@@ -215,7 +214,7 @@ export default function SkillTodoCard({
                         transition={{ delay: index * 0.1 }}
                         className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full capitalize border transition-all duration-300 ${
                           todo.done
-                            ? "text-emerald-400/70 dark:text-emerald-700/70 bg-emerald-100/50 dark:bg-emerald-900/20 border-emerald-300/50 dark:border-emerald-700/50"
+                            ? "text-emerald-400/70 dark:text-emerald-700/70 "
                             : "dark:text-zinc-300 dark:bg-zinc-800 text-zinc-700 bg-zinc-100 border-zinc-300 dark:border-zinc-600"
                         }`}
                       >
@@ -352,7 +351,7 @@ export default function SkillTodoCard({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <h3
-                className={`text-base leading-tight font-semibold transition-all duration-300 ${
+                className={`text-lg capitalize leading-tight font-semibold transition-all duration-300 ${
                   todo.done
                     ? " text-emerald-900/70 dark:text-emerald-800/70"
                     : "text-gray-900 dark:text-gray-100"
@@ -384,7 +383,7 @@ export default function SkillTodoCard({
                 className={` break-words whitespace-pre-line transition-all duration-300 ${
                   todo.done
                     ? " text-xs  text-emerald-900/70 dark:text-emerald-800/80"
-                    : " text-sm text-gray-600 dark:text-gray-300"
+                    : " text-xs text-gray-600 dark:text-gray-300"
                 }`}
               >
                 {todo.description}

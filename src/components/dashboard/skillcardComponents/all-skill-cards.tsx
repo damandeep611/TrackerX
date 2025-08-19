@@ -37,7 +37,7 @@ export default function SkillDashboard() {
 
   if (isLoading) {
     return (
-      <div className="dark:bg-zinc-950 min-h-screen flex flex-col items-center justify-center space-y-4 p-4 m-3 border border-gray-300 dark:border-gray-800 rounded-2xl">
+      <div className="dark:bg-zinc-950 min-h-screen flex flex-col items-center justify-center space-y-4 p-4  border border-gray-300 dark:border-gray-800 rounded-2xl">
         <BouncingBarsLoader />
         <p className="text-sm text-zinc-600 dark:text-zinc-400 font-medium">
           Fetching skill data...
