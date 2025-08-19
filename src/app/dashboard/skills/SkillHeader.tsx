@@ -22,7 +22,7 @@ interface SkillHeaderProps {
 export default function SkillHeader({ skillSlug, skillId }: SkillHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
-    <div className=" dark:bg-zinc-900  flex items-center justify-between gap-6 p-3 px-6">
+    <div className=" bg-[#F5F5F5] dark:bg-zinc-950  flex items-center justify-between gap-6 p-3 px-6">
       <div>
         <Breadcrumb>
           <BreadcrumbList>

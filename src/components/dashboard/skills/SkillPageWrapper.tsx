@@ -33,7 +33,7 @@ export default function SkillPageWrapper({
     <>
       {/* Main Content Area (Scrollable) */}
       <div className="flex  justify-between">
-        <div className="flex flex-col w-full ">
+        <div className="flex flex-col w-full bg-[#F5F5F5] dark:bg-zinc-950 ">
           <SkillAnalyticsCards
             key={refreshKey}
             skillId={skillId}

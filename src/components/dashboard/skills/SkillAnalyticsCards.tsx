@@ -39,7 +39,7 @@ export default function SkillAnalyticsCards({
   // );
 
   return (
-    <div className=" border border-zinc-300 dark:border-zinc-800 rounded-xl m-2 p-6">
+    <div className=" dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl m-2 p-6">
       <div className="flex  items-center justify-between mb-6 ">
         <div className="flex flex-col items-start justify-between gap-2 font-medium ">
           <p className="text-2xl font-semibold  capitalize tracking-wide">

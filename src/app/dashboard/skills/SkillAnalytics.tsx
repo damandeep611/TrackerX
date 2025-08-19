@@ -61,7 +61,7 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
         initial={{ x: 320, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.5 }}
-        className="w-96 p-2  dark:bg-zinc-900"
+        className="w-96 p-2  "
       >
         <div className="flex items-center justify-center p-4">
           <h3 className="text-xl font-bold">Skill Analytics</h3>
@@ -87,7 +87,7 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
 
   if (error) {
     return (
-      <div className="w-96 p-2  dark:bg-zinc-900">
+      <div className="w-96 p-2  ">
         <div className="flex items-center justify-center p-4">
           <h3 className="text-xl font-bold">Skill Analytics</h3>
         </div>
@@ -114,7 +114,7 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
         initial={{ x: 320, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.5 }}
-        className=" w-96 p-2  dark:bg-zinc-900"
+        className=" w-96 p-2  "
       >
         <div className="flex items-center justify-center p-4">
           <h3 className="text-xl font-bold">Skill Analytics</h3>
@@ -143,7 +143,7 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
       initial={{ x: 320, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.4, delay: 0.5 }}
-      className=" w-96 p-2  dark:bg-zinc-900 "
+      className=" w-96 p-2  bg-[#F5F5F5] dark:bg-zinc-950  "
     >
       <div className=" p-4">
         <h3 className="text-xl font-semibold"> Analytics</h3>
