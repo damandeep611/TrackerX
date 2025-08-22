@@ -26,7 +26,8 @@ const colorMap: Record<Feature["color"], string> = {
 
 export default function MarqueeSection() {
   return (
-    <div
+    <motion.div
+      viewport={{ once: true, amount: 0.2 }}
       className="relative rounded-2xl max-w-5/6 my-12 pb-12 mx-auto overflow-hidden"
       aria-label="Scrolling list of product features"
     >
@@ -53,7 +54,7 @@ export default function MarqueeSection() {
           ))}
         </Marquee>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
