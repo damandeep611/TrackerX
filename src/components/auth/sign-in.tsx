@@ -30,7 +30,6 @@ export default function SignIn() {
         callbackURL: "/dashboard",
       });
     } catch (error) {
-      // Handle error if needed
       console.log(error);
       clearInterval(timer);
       setIsLoading(false);
