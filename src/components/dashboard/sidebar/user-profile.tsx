@@ -46,7 +46,7 @@ export default function UserProfile({
       <motion.div
         whileHover={{ y: -2 }}
         onClick={toggleDropdown}
-        className="flex items-center p-2 rounded-lg cursor-pointer  transition-colors"
+        className="flex items-center p-2 rounded-lg cursor-pointer  transition-colors border border-border"
       >
         <div
           className={`w-10 h-10 rounded-md overflow-hidden mr-3 ${
@@ -54,11 +54,11 @@ export default function UserProfile({
           }`}
         >
           <img
-            src={avatarUrl || "/placeholder.svg"}
-            alt={`${name}'s avatar`}
+            src={
+              avatarUrl || "https://robohash.org/DF9.png?set=set4&size=150x150"
+            }
+            alt={`${name}`}
             className="w-full h-full object-cover"
-            width={30}
-            height={30}
           />
         </div>
         {!isCollapsed && (
@@ -86,7 +86,7 @@ export default function UserProfile({
               duration: 0.15,
               ease: [0.4, 0, 0.2, 1],
             }}
-            className="absolute top-full left-0 right-0 mt-2 rounded-lg shadow-xl overflow-hidden z-50 border border-gray-700/50 bg-white dark:bg-zinc-900"
+            className="absolute top-full left-0 right-0 mt-2 rounded-lg shadow-xl overflow-hidden z-50 border border-border bg-background"
           >
             <div className="py-1">
               <UserProfileMenuItem

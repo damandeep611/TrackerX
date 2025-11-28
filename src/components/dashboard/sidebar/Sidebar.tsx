@@ -1,5 +1,6 @@
 "use client";
 import {
+  Box,
   ChartPie,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -75,9 +76,17 @@ export default function Sidebar() {
   return (
     <div
       className={`relative h-screen flex flex-col bg-[#F5F5F5] dark:bg-zinc-900  transition-all duration-200 ease-in-out  ${
-        isCollapsed ? "w-16" : "w-56"
+        isCollapsed ? "w-16" : "w-64"
       }`}
     >
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between gap-2">
+          <Box size={20} />
+          {!isCollapsed && (
+            <span className="text-lg font-semibold">BuildxSkill</span>
+          )}
+        </div>
+      </div>
       <div className="flex items-center justify-between  p-4">
         <div className={`flex items-center justify-between gap-2`}>
           {!isCollapsed && (
@@ -88,7 +97,7 @@ export default function Sidebar() {
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-5 bg-white text-black hover:bg-black hover:text-white p-1 border border-gray-200 rounded-full"
+          className="absolute -right-10 top-5 bg-white text-black hover:bg-black hover:text-white p-1 border border-gray-200 rounded-full"
         >
           {isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </button>

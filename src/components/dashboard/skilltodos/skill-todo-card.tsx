@@ -390,7 +390,6 @@ export default function SkillTodoCard({
               </p>
             )}
           </div>
-
           <AnimatePresence>
             {!todo.done && (
               <motion.div

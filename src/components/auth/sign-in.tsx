@@ -39,7 +39,7 @@ export default function SignIn() {
 
   return (
     <Button
-      className={cn("w-full gap-2 relative   ")}
+      className={cn(" cursor-pointer gap-2 relative   ")}
       onClick={handleSignIn}
       disabled={isLoading}
     >
@@ -71,7 +71,7 @@ export default function SignIn() {
         </>
       ) : (
         <>
-          <div className="  flex items-center justify-center gap-4">
+          <div className="  flex items-center justify-center   gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="0.98em"
@@ -95,7 +95,7 @@ export default function SignIn() {
                 d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0C79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
               ></path>
             </svg>
-            Sign in with Google
+            Sign in
           </div>
         </>
       )}

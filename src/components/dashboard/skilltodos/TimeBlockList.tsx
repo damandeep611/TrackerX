@@ -53,7 +53,7 @@ export default function TimeBlockList({
   );
 
   return (
-    <div className="w-full  p-3 rounded-xl bg-zinc-200  dark:bg-zinc-900">
+    <div className="w-full  p-3 rounded-md bg-zinc-200  dark:bg-zinc-900 ">
       <div className="flex items-center justify-between">
         {/* Time Spent Display */}
         <div className="flex items-center space-x-2">
@@ -62,7 +62,10 @@ export default function TimeBlockList({
           </div>
           <div className="mr-2">
             <p className="text-sm font-medium ">
-               {formatDuration(currentMinutes)} <span className="text-xs text-zinc-700 dark:text-zinc-500 ml-2">logged </span>
+              {formatDuration(currentMinutes)}{" "}
+              <span className="text-xs text-zinc-700 dark:text-zinc-500 ml-2">
+                logged{" "}
+              </span>
               {isUpdating && (
                 <span className="ml-1 text-blue-500 animate-pulse">●</span>
               )}

@@ -1,20 +1,20 @@
-import HeroSection from "@/components/layout/HeroSection";
-import FeatureGrid from "@/components/layout/landingPage/FeatureGrid";
-import FeaturesSection from "@/components/layout/landingPage/FeaturesSection";
+import FaqSection from "@/components/layout/landingPage/faq-section";
+import FeatureSection from "@/components/layout/landingPage/feature-section/FeatureSection";
 import Footer from "@/components/layout/landingPage/Footer";
-import MarqueeSection from "@/components/layout/landingPage/MarqueeSection";
+import Hero from "@/components/layout/landingPage/Hero";
+import HeroFoot from "@/components/layout/landingPage/HeroFoot";
+import ShowcaseCards from "@/components/layout/landingPage/showcase-cards/ShowcaseCards";
 import TestimonialSection from "@/components/layout/landingPage/testimonial-section";
-import Navigation from "@/components/layout/Navigation";
 
 export default function Home() {
   return (
     <div>
-      <Navigation />
-      <HeroSection />
-      <MarqueeSection />
-      <FeatureGrid />
-      <FeaturesSection />
+      <Hero />
+      <HeroFoot />
+      <FeatureSection />
+      <ShowcaseCards />
       <TestimonialSection />
+      <FaqSection />
       <Footer />
     </div>
   );

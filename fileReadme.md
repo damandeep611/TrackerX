@@ -1,3 +1,10 @@
+### Todo features to add 
+
+1. let the use also share the learning journey as a page so that others can also see what the user is learning and how much 
+time the user has been spending so the user should be able to share the buildxskill.com/username/react/learning and then 
+a page would show the canvas style graph or a simple analytics page with used resources of github projects 
+
+
 1. the getUserID async funciton is in skillTaskAction so move that to utility later for more cleaner code
 2.  Input validation is missing in server actions which opens security vulnerabilities, so implement input sanitation and length limit on input fields and format validation as data is being rendered unsafely there is risk of XSS,  
 3. Implementation of rate limiting to avoid DDos attacks , so can also use @upstash ratelimiting 
@@ -36,4 +43,18 @@
 3. add data validation at database level 
 4. Implement sessions for users in auth 
 
+-- remove components 
+1. featureGrid component
 -- 
+
+
+### Todos for performance 
+
+#### Caching and performance related 
+
+1. Currently the analytics section queries are aggregation (count , sum , avg) across potentially hundered/thousands of rows , so 
+they are doing full scans of the table, processing many rows and computing results on the fly , these are making the UI and responses lag as unnecessary computation is being done, 
+
+
+#### Schema problems and indexing 
+1. 
