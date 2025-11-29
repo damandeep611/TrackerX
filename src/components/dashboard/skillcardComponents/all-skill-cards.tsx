@@ -8,6 +8,8 @@ import { useAddSkillCard, useSkillCards } from "@/hooks/useSkillCardsHook";
 import { toast } from "react-hot-toast";
 
 import BouncingBarsLoader from "@/components/ui/BouncingBars";
+import AddSkillModal from "./add-skill-modal";
+import { LayoutGrid, ListIcon } from "lucide-react";
 
 export default function SkillDashboard() {
   const { data: skills = [], isLoading, error } = useSkillCards();
@@ -59,34 +61,54 @@ export default function SkillDashboard() {
   }
 
   return (
-    <div className=" dark:bg-zinc-950 p-4 ">
-      <DashboardHeader onAddSkill={handleAddSkill} />
-      <div className="p-4">
-        <h3 className="text-xl text-zinc-700 dark:text-zinc-300 font-semibold">
-          Welcome Back,👋{" "}
-        </h3>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 ">
-          Overview of Learning Patterns and Productivity Insights
-        </p>
+    <div className=" dark:bg-zinc-950  ">
+      <DashboardHeader />
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between p-4 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+            Overview of your productivity and time analytics.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <AddSkillModal onAddSkill={handleAddSkill} />
+        </div>
       </div>
       <OverviewCards />
       <InsightsCards />
 
-      <div className="p-4 my-2">
-        <div className="mb-2">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-zinc-200 mb-2">
-            Project Dashboard
-          </h1>
-          <p className="text-gray-600 dark:text-zinc-400">
-            Track progress across all your active projects
-          </p>
+      <div>
+        <div className="p-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Active Projects
+          </h2>
+          <div className="flex items-center gap-3">
+            <AddSkillModal onAddSkill={handleAddSkill} />
+            <div className="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
+            {/* View Toggle */}
+            <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex items-center">
+              <button
+                className={`p-1.5 rounded-md transition-all text-gray-900 dark:text-white shadow-sm`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                className={`p-1.5 rounded-md transition-all   text-gray-900 dark:text-white shadow-sm`}
+              >
+                <ListIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-        {skills.map((skill) => (
-          <SkillCard key={skill.id} skill={skill} />
-        ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+          {skills.map((skill) => (
+            <SkillCard key={skill.id} skill={skill} />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -43,7 +43,7 @@ export default function InsightsCards() {
   const activeDays = weeklyData.filter((day) => day.hasActivity).length;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 p-2 gap-6">
       {/* Weekly Progress Chart - New ECharts Component */}
       <WeeklyProgressChart />
 
