@@ -2,21 +2,21 @@
 import {
   Box,
   ChartPie,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   GoalIcon,
   HelpCircle,
   House,
   ListTodo,
+  PanelLeft,
+  PanelRight,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 
 import SidebarSection from "./sidebar-section";
 import SidebarItem from "./sidebar-item";
 import { usePathname } from "next/navigation";
-import { ModeToggle } from "../../layout/mode-toggle";
-import SidebarProfile from "./SidebarProfile";
+import UserProfile from "./user-profile";
 
 const navigation = {
   quicklinks: [
@@ -75,32 +75,27 @@ export default function Sidebar() {
   };
   return (
     <div
-      className={`relative h-screen flex flex-col bg-[#F5F5F5] dark:bg-zinc-900  transition-all duration-200 ease-in-out  ${
+      className={`relative h-screen flex flex-col p-2 border-r border-gray-200 dark:border-gray-800  transition-all duration-200 ease-in-out  ${
         isCollapsed ? "w-16" : "w-64"
       }`}
     >
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center justify-between gap-2">
-          <Box size={20} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between ">
           {!isCollapsed && (
-            <span className="text-lg font-semibold">BuildxSkill</span>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center justify-between  p-4">
-        <div className={`flex items-center justify-between gap-2`}>
-          {!isCollapsed && (
-            <div className="flex items-center">
-              <SidebarProfile />
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <Box size={20} />
+              <span className="text-lg font-semibold">BuildxSkill</span>
             </div>
           )}
         </div>
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-10 top-5 bg-white text-black hover:bg-black hover:text-white p-1 border border-gray-200 rounded-full"
-        >
-          {isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-        </button>
+        <div className="flex items-center justify-between  ">
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200  rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors "
+          >
+            {isCollapsed ? <PanelRight size={20} /> : <PanelLeft size={20} />}
+          </button>
+        </div>
       </div>
       {/* sidebar menu items */}
 
@@ -131,12 +126,36 @@ export default function Sidebar() {
           ))}
         </SidebarSection>
       </div>
-      {/* Sidebar Projects Section */}
-      <div className="p-4 flex items-center justify-end ">
-        <span className="">
-          <ModeToggle />
-        </span>
-      </div>
+
+      <UserProfile />
+
+      {/* Upgrade to Pro Button */}
+      <button
+        className={`mt-4 w-full relative overflow-hidden group bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-md shadow-lg shadow-indigo-200 dark:shadow-none transition-all duration-300
+            ${
+              isCollapsed
+                ? "p-2 aspect-square flex items-center justify-center"
+                : "py-2 px-4"
+            }`}
+      >
+        <div className="absolute inset-0 bg-white/20 group-hover:bg-white/10 transition-colors" />
+        <div
+          className={`relative flex items-center ${
+            isCollapsed ? "justify-center" : "justify-center gap-2.5"
+          }`}
+        >
+          <Sparkles
+            className={`text-yellow-200 ${isCollapsed ? "w-4 h-4" : "w-4 h-4"}`}
+          />
+          {!isCollapsed && (
+            <div className="text-left">
+              <span className="block text-sm font-bold leading-none">
+                Upgrade to Pro
+              </span>
+            </div>
+          )}
+        </div>
+      </button>
     </div>
   );
 }

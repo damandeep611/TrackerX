@@ -16,7 +16,7 @@ export default function DashboardLayout({
     >
       <div className="flex h-screen bg-[#F5F5F5] dark:bg-zinc-900">
         <Sidebar />
-        <main className="flex-1 overflow-auto mt-3 mr-3 border border-gray-300 dark:border-gray-800 rounded-t-2xl scrollbar-hide">
+        <main className="flex-1 overflow-auto mt-2 mr-2  scrollbar-hide">
           {children}
         </main>
         <Toaster position="top-right" />
