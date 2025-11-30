@@ -51,7 +51,7 @@ export default function AddSkillModal({ onAddSkill }: AddSkillModalProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed w-full inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity duration-200"
+              className="fixed w-full inset-0 z-50  bg-black/50 backdrop-blur-xs transition-opacity duration-200"
               onClick={openDrawer}
             />
 

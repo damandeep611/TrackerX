@@ -61,22 +61,9 @@ export default function SkillDashboard() {
   }
 
   return (
-    <div className=" dark:bg-zinc-950  ">
+    <div className="  ">
       <DashboardHeader />
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between p-4 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-            Dashboard
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
-            Overview of your productivity and time analytics.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <AddSkillModal onAddSkill={handleAddSkill} />
-        </div>
-      </div>
+
       <OverviewCards />
       <InsightsCards />
 
