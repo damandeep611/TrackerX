@@ -61,12 +61,10 @@ export default function SkillDashboard() {
   }
 
   return (
-    <div className="  ">
+    <div className=" p-4 ">
       <DashboardHeader />
-
       <OverviewCards />
       <InsightsCards />
-
       <div>
         <div className="p-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">

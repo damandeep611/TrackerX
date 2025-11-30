@@ -75,7 +75,7 @@ export default function Sidebar() {
   };
   return (
     <div
-      className={`relative h-screen flex flex-col p-2 border-r border-gray-200 dark:border-gray-800  transition-all duration-200 ease-in-out  ${
+      className={`relative h-screen flex flex-col p-2 border-r border-border bg-background  transition-all duration-200 ease-in-out  ${
         isCollapsed ? "w-16" : "w-64"
       }`}
     >

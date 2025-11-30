@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import QueryProvider from "./providers/QueryProvider";
 
-const geist = Geist({
+const inter = Inter({
   subsets: ["latin"],
   display: "auto",
-  variable: "--font-geist",
+  variable: "--font-inter",
 });
 export const metadata: Metadata = {
   title: "buildxSkill",
@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={` ${geist.variable} antialiased`}>
+      <body className={` ${inter.variable} antialiased`}>
         <QueryProvider>
           <main className="">{children}</main>
         </QueryProvider>

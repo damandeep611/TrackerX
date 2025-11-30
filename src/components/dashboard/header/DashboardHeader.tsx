@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 
 export default function DashboardHeader() {
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between  bg-background/50 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none px-6 py-4  border-b border-border/50 lg:border-none">
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between  bg-background/50 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none p-4  border-b border-border/50 lg:border-none">
       {/* Title Block */}
       <div>
         <motion.h1
@@ -75,10 +75,13 @@ export default function DashboardHeader() {
 
           {/* Data Toggle */}
           <button
-            className={`flex flex-shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all whitespace-nowrap border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20
+            className={` group flex flex-shrink-0 items-center cursor-pointer gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all whitespace-nowrap border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20
                         `}
           >
-            <RefreshCw size={14} />
+            <RefreshCw
+              size={14}
+              className="cursor-pointer group-hover:animate-spin"
+            />
             <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>

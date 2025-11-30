@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { motion } from 'framer-motion';
-import { TrendingUpIcon } from 'lucide-react';
-import { getLastSevenWeeksProgress } from '@/actions/timeLogAction';
+import { TrendingUp, TrendingUpIcon } from "lucide-react";
+import { getLastSevenWeeksProgress } from "@/actions/timeLogAction";
 
 interface WeeklyProgressData {
   weekLabel: string;
@@ -23,7 +23,7 @@ export default function WeeklyProgressChart() {
         const data = await getLastSevenWeeksProgress();
         setWeeklyData(data);
       } catch (error) {
-        console.error('Failed to fetch weekly progress:', error);
+        console.error("Failed to fetch weekly progress:", error);
         // Fallback to empty data
         setWeeklyData([]);
       } finally {
@@ -37,9 +37,12 @@ export default function WeeklyProgressChart() {
   // Calculate statistics
   const currentWeekHours = weeklyData[weeklyData.length - 1]?.hours || 0;
   const previousWeekHours = weeklyData[weeklyData.length - 2]?.hours || 0;
-  const weeklyChange = previousWeekHours > 0 
-    ? ((currentWeekHours - previousWeekHours) / previousWeekHours) * 100 
-    : currentWeekHours > 0 ? 100 : 0;
+  const weeklyChange =
+    previousWeekHours > 0
+      ? ((currentWeekHours - previousWeekHours) / previousWeekHours) * 100
+      : currentWeekHours > 0
+      ? 100
+      : 0;
 
   // ECharts options
   const chartOptions = {
@@ -172,41 +175,39 @@ export default function WeeklyProgressChart() {
 
   return (
     <motion.div
-      className=" p-4 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50  dark:bg-zinc-900 "
+      className=" relative flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-surface p-6 transition-colors hover:border-text-tertiary/50"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center justify-between gap-2 ">
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.5, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="w-14 h-14 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-900/20"
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex gap-4">
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-xl bg-surface-highlight  border border-border text-text-tertiary`}
           >
-            <TrendingUpIcon className="w-7 h-7 text-white" />
-          </motion.div>
+            <TrendingUp size={20} />
+          </div>
           <div>
-            <span className="text-sm font-semibold text-slate-500 uppercase tracking-[0.2em] block mb-1">
-              Weekly Comparision
-            </span>
-            <span className="text-xs text-slate-400 font-medium">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-text-tertiary">
+              Weekly Comparison
+            </h3>
+            <p className="text-xs font-medium text-text-secondary mt-0.5">
               Last 7 week analysis
-            </span>
+            </p>
           </div>
         </div>
-        {/* trend  */}
-        <div className="flex flex-col items-end justify-between gap-2">
-          <span className="text-xs text-slate-400 font-medium">
+
+        <div className="text-right">
+          <p className="text-[10px] text-text-tertiary mb-1">
             Compared to last week
-          </span>
+          </p>
           <span
-            className={`  text-sm font-medium p-0.5 px-2 rounded-sm ${
+            className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-bold ${
               weeklyChange >= 0
-                ? "text-emerald-200 bg-emerald-700 "
+                ? "bg-emerald-500/10 text-emerald-500"
                 : "text-red-700 bg-red-300 "
-            }`}
+            } `}
           >
             {weeklyChange >= 0 ? "+" : ""}
             {weeklyChange.toFixed(0)}%
@@ -223,27 +224,29 @@ export default function WeeklyProgressChart() {
         />
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t ">
-        {/* Additional insights */}
-        <div className="  ">
-          <p className="text-xs dark:text-zinc-400">
-            {currentWeekHours === 0
-              ? "No hours logged this week yet"
-              : weeklyChange > 20
-              ? "Great improvement this week! 📈"
-              : weeklyChange < -20
-              ? "Consider increasing your weekly hours 📊"
-              : "Steady progress! Keep it up 💪"}
-          </p>
-        </div>
-        <div className="flex items-center justify-between gap-6 text-xs">
-          <div className="flex items-center justify-between gap-2">
+      {/* Legend / Footer */}
+      <div className="flex items-center justify-between border-t border-border pt-4 mt-2">
+        <p className="text-xs text-text-secondary">
+          {currentWeekHours === 0
+            ? "No hours logged this week yet"
+            : weeklyChange > 20
+            ? "Great improvement this week! 📈"
+            : weeklyChange < -20
+            ? "Consider increasing your weekly hours 📊"
+            : "Steady progress! Keep it up 💪"}
+        </p>
+        <div className="flex gap-4">
+          <div className="flex items-center gap-2">
             <div className="h-2 w-4 rounded-xs bg-blue-500" />
-            <span>Past weeks</span>
+            <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wide">
+              Past Weeks
+            </span>
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <div className="h-2 w-4 rounded-xs bg-emerald-500 " />
-            <span>Current Week</span>
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-4 rounded-xs bg-emerald-500" />
+            <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wide">
+              Current Week
+            </span>
           </div>
         </div>
       </div>
