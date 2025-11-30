@@ -6,12 +6,16 @@ import OverviewCards from "../analytics-components/OverviewCards";
 import InsightsCards from "../analytics-components/InsightsCards";
 import { useAddSkillCard, useSkillCards } from "@/hooks/useSkillCardsHook";
 import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
 
 import BouncingBarsLoader from "@/components/ui/BouncingBars";
 import AddSkillModal from "./add-skill-modal";
-import { LayoutGrid, ListIcon } from "lucide-react";
+import { Plus, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 
 export default function SkillDashboard() {
+  const [filter, setFilter] = useState("All");
   const { data: skills = [], isLoading, error } = useSkillCards();
   const addSkillMutation = useAddSkillCard();
 
@@ -67,32 +71,54 @@ export default function SkillDashboard() {
       <InsightsCards />
       <div>
         <div className="p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-            Active Projects
-          </h2>
+          <div className="flex items-center gap-1 bg-surfaceHighlight/50 p-1 rounded-lg border border-border">
+            {["All", "Active", "Not Started", "Paused"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  filter === f
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5"
+                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
           <div className="flex items-center gap-3">
             <AddSkillModal onAddSkill={handleAddSkill} />
             <div className="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
-            {/* View Toggle */}
-            <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex items-center">
-              <button
-                className={`p-1.5 rounded-md transition-all text-gray-900 dark:text-white shadow-sm`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                className={`p-1.5 rounded-md transition-all   text-gray-900 dark:text-white shadow-sm`}
-              >
-                <ListIcon className="w-4 h-4" />
-              </button>
-            </div>
+            <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+              <SlidersHorizontal size={14} />
+              Filter
+            </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-          {skills.map((skill) => (
-            <SkillCard key={skill.id} skill={skill} />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {skills.map((skill) => (
+              <SkillCard key={skill.id} skill={skill} />
+            ))}
+          </AnimatePresence>
+          {/* Add New Ghost Card */}
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="group relative flex flex-col items-center justify-center p-6 border border-dashed border-border rounded-xl hover:bg-surfaceHighlight/50 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300 min-h-[200px]"
+          >
+            <div className="w-10 h-10 rounded-full bg-surfaceHighlight flex items-center justify-center border border-border group-hover:scale-110 group-hover:border-zinc-400 dark:group-hover:border-zinc-600 transition-all duration-300">
+              <Plus
+                size={20}
+                className="text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
+              />
+            </div>
+            <span className="mt-3 text-xs font-medium text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300">
+              Create new project
+            </span>
+          </motion.button>
         </div>
       </div>
     </div>

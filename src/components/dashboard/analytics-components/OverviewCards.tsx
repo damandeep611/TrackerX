@@ -128,10 +128,10 @@ export default function OverviewCards() {
           subtitle={`${analytics.mostActiveSkill.hoursSpent}h this week`}
           icon={<Activity size={16} strokeWidth={2} />}
           visualContent={
-            <div className="flex h-full w-full items-center justify-end">
+            <div className=" group flex h-full w-full items-center justify-end">
               <div className="relative h-8 w-8 flex items-center justify-center rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400">
                 <span className="text-[10px] font-bold">{shortFormName}</span>
-                <div className="absolute inset-0 animate-ping rounded-full border border-blue-500/20" />
+                <div className="absolute inset-0 group-hover:animate-ping rounded-full border border-blue-500/20" />
               </div>
             </div>
           }
