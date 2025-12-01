@@ -22,33 +22,33 @@ interface SkillHeaderProps {
 export default function SkillHeader({ skillSlug, skillId }: SkillHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
-    <div className=" bg-[#F5F5F5] dark:bg-zinc-950  flex items-center justify-between gap-6 p-3 px-6">
+    <div className="   flex items-center justify-between gap-6 p-3 px-6">
       <div>
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard"
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 text-xs"
               >
                 {" "}
-                <House size={15} /> Dashboard
+                <House size={12} /> Dashboard
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard"
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 text-xs"
               >
-                <Cpu size={15} />
+                <Cpu size={12} />
                 Skills
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage className="flex items-center justify-center gap-2">
-                <FolderCheck size={15} />
+              <BreadcrumbPage className="flex items-center justify-center gap-2 text-sm">
+                <FolderCheck size={12} />
                 {skillSlug}
               </BreadcrumbPage>
             </BreadcrumbItem>

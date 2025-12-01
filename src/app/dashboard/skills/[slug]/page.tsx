@@ -37,6 +37,7 @@ export default async function SkillOverview({
     const currentSkill = skill[0];
     const skillId = currentSkill.id;
     const currentSkillSlug = currentSkill.slug; //slug for revalidation
+    const currentSkillName = currentSkill.skillName;
     const skillTodoData = await getSkillTasksForSkill(skillId);
     const skillCurrentHours = await getCurrentHours(skillSlug);
 
@@ -44,6 +45,7 @@ export default async function SkillOverview({
       <div className="flex flex-col overflow-hidden">
         <SkillHeader skillSlug={currentSkillSlug} skillId={skillId} />
         <SkillPageWrapper
+          skillName={currentSkillName}
           initialSkillTodos={skillTodoData}
           skillId={skillId}
           skillCurrentHours={skillCurrentHours}

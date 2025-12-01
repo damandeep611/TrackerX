@@ -10,12 +10,14 @@ interface SkillPageWrapperProps {
   initialSkillTodos: skillTodo[];
   skillId: string;
   skillCurrentHours: string;
+  skillName: string;
 }
 
 export default function SkillPageWrapper({
   initialSkillTodos,
   skillId,
   skillCurrentHours,
+  skillName,
 }: SkillPageWrapperProps) {
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -33,8 +35,9 @@ export default function SkillPageWrapper({
     <>
       {/* Main Content Area (Scrollable) */}
       <div className="flex  justify-between">
-        <div className="flex flex-col w-full bg-[#F5F5F5] dark:bg-zinc-950 ">
+        <div className="flex flex-col w-full  ">
           <SkillAnalyticsCards
+            skillName={skillName}
             key={refreshKey}
             skillId={skillId}
             skillCurrentHours={skillCurrentHours}

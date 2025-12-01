@@ -8,6 +8,7 @@ import { taskCardVariants } from "@/components/animations/taskCardAnimations";
 import { useSkillTodoManager } from "@/hooks/useSkillTodoManager";
 import { getTotalTimeForTasks } from "@/actions/timeLogAction";
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
@@ -151,7 +152,20 @@ export default function SkillTodoList({
     <div className=" mx-10 ">
       <div>
         {/* show todo form only when isAdding state is true */}
-
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-semibold text-white">Tasks</h2>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="px-2.5 py-0.5 rounded-md bg-neutral-800 text-neutral-400 border border-white/5">
+                {skillTodos.length} Total
+              </span>
+            </div>
+          </div>
+          <button className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black font-medium text-sm hover:bg-neutral-200 transition-colors">
+            <Plus size={16} className={`transition-transform duration-300 `} />
+            <span>New Task</span>
+          </button>
+        </div>
         <div className={`relative   ${isAddingTodo ? "border-green-600" : ""}`}>
           <SkillTodoForm
             onAddSkillTodo={handleAddTodo}
@@ -169,7 +183,6 @@ export default function SkillTodoList({
       ) : (
         <>
           <div>
-            <h2 className="text-xl font-semibold">Recent Activity</h2>
             {/* Tabs for filtering */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 mb-2 w-full">
               <div
@@ -190,7 +203,7 @@ export default function SkillTodoList({
                     onClick={() =>
                       setSelectedTab(tab.value as typeof selectedTab)
                     }
-                    className={`px-5 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 text-sm font-semibold shadow-sm
+                    className={`px-4 py-1 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 text-xs font-semibold shadow-sm
                       ${
                         selectedTab === tab.value
                           ? "bg-green-600 text-white shadow-md border border-green-700"
@@ -202,23 +215,6 @@ export default function SkillTodoList({
                   </button>
                 ))}
               </div>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold shadow-sm border border-green-200 dark:border-green-800">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 6h16M4 12h16M4 18h7"
-                  />
-                </svg>
-                Total: {skillTodos.length}
-              </span>
             </div>
           </div>
           <div className="relative">
