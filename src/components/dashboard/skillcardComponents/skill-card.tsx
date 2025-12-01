@@ -1,25 +1,25 @@
 "use client";
 import { Skill } from "@/types/skillDashboardTypes";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { Timer } from "lucide-react";
-import { useTheme } from "next-themes";
+import { ArrowUpRight, Clock, Layers, MoreHorizontal, Zap } from "lucide-react";
 
 interface SkillCardProps {
   skill: Skill;
 }
 
 export default function SkillCard({ skill }: SkillCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const percentage = (skill.currentHours / skill.targetHours) * 100;
   const totalSegments = 38;
   const completedSegments = Math.round((percentage / 100) * totalSegments);
+
   // const remainingHours = Math.max(0, skill.targetHours - skill.currentHours);
   //use this remaining hours of skill in the skill overview with tasks list
-  const { resolvedTheme } = useTheme();
-  const segmentBg = resolvedTheme === "dark" ? "#27272a" : "#f3f4f6";
+  const segmentBg = "#27272a";
   const navigate = useRouter();
+  // skill.skillColor
+  const activeColor = skill.skillColor;
 
   // Original formatting time function
   const formatTime = (hours: number) => {
@@ -38,19 +38,12 @@ export default function SkillCard({ skill }: SkillCardProps) {
   };
 
   const getMotivationTags = (progress: number) => {
-    if (progress === 0) return "Not Started ";
-    if (progress < 5) return "Building Momentum";
-    if (progress < 20) return "Making Progress";
+    if (progress === 0) return "Stalled ";
+    if (progress < 5) return "Low";
+    if (progress < 20) return "Progress⚡";
     if (progress < 50) return "Halfway There!";
     if (progress < 80) return "Almost There!";
     return "On Fire 🔥";
-  };
-
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 90) return "#059669"; // emerald-500
-    if (percentage >= 70) return "#3b82f6"; // blue-500
-    if (percentage >= 40) return "#f59e42"; // amber-500
-    return "#fde047"; // yellow-500
   };
 
   // Dynamic category color generator with dark theme support
@@ -76,6 +69,8 @@ export default function SkillCard({ skill }: SkillCardProps) {
     return colors[Math.abs(hash) % colors.length];
   };
 
+  const getSkillColor = getCategoryColor(skill.category);
+
   return (
     <motion.div
       className="group relative"
@@ -85,91 +80,126 @@ export default function SkillCard({ skill }: SkillCardProps) {
     >
       <motion.div
         onClick={() => navigate.push(`/dashboard/skills/${skill.slug}`)}
-        className="relative bg-white dark:bg-zinc-900 backdrop-blur-sm rounded-xl p-6 border border-gray-300 dark:border-gray-800  cursor-pointer overflow-hidden transition-all duration-300"
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-        whileHover={{
-          y: -4,
-          transition: { duration: 0.2, ease: [0.25, 0.25, 0, 1] },
-        }}
+        className="relative flex flex-col p-5  bg-[#09090b] dark:bg-[#050505] border border-border/60 rounded-xl transition-all duration-300 shadow-sm cursor-pointer overflow-hidden"
       >
-        {/* Header Section */}
+        <div
+          className={`absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-current to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${getSkillColor}`}
+        />
+
         <div className="relative pb-2">
-          <div className="flex items-start justify-between ">
-            <h2 className="text-lg font-semibold capitalize  leading-tight   transition-colors">
-              {skill.skillName}
-            </h2>
-            <motion.span
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs uppercase font-medium border backdrop-blur-sm ${getCategoryColor(
-                skill.category
-              )} mb-3`}
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
-              {skill.category}
-            </motion.span>
+          {/* Header */}
+          <div className="flex justify-between items-start mb-4 z-10">
+            <div className="flex gap-3">
+              <div
+                className={`w-10 h-10 rounded-lg flex items-center justify-center bg-zinc-900 shadow-inner border border-white/5 transition-colors duration-300 `}
+              >
+                <Layers
+                  size={18}
+                  strokeWidth={1.5}
+                  className={`${getSkillColor} bg-zinc-800`}
+                />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold text-zinc-100 leading-tight  transition-colors">
+                  {skill.skillName}
+                </h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
+                    {skill.category}
+                  </span>
+                  <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700"></span>
+                  {percentage > 0 && (
+                    <div className="flex items-center justify-baseline gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                      <span className="text-xs text-emerald-400 font-medium">
+                        Active
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <button className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+              <MoreHorizontal size={16} />
+            </button>
           </div>
 
           {/* Progress Bar with glassmorphism effect */}
-          <div className="relative mb-4 flex items-center justify-between">
-            <div className="flex gap-1 items-center">
-              {Array.from({ length: totalSegments }, (_, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ backgroundColor: segmentBg }}
-                  animate={{
-                    backgroundColor:
-                      index < completedSegments
-                        ? getProgressColor(percentage)
-                        : segmentBg,
-                  }}
-                  transition={{
-                    duration: 0.3,
-                    delay: 0.3 + index * 0.05,
-                    ease: "easeOut",
-                  }}
-                  className="w-1 h-10 rounded-full"
-                />
-              ))}
-            </div>
-            <motion.div
-              className="text-sm font-medium "
-              animate={{ scale: isHovered ? 1.05 : 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              {percentage.toFixed(0)}%
-            </motion.div>
-          </div>
-          {/* Modern Stats Grid */}
-          <div className="flex items-center justify-between py-2 font-medium">
-            <div className="flex items-center justify-between gap-2">
-              <Timer size={12} className="text-green-600" />
-              <span className="text-xs">Total time spend</span>
-            </div>
-            <div className="flex items-center gap-1 text-zinc-400">
-              <div className="flex items-center justify-between ">
-                <span className="text-sm">
-                  {formatTime(skill.currentHours)}
+          <div className="relative mb-2 flex flex-col justify-between">
+            {/* percentage text show */}
+            <div className="flex justify-between items-end mb-2">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-widest font-semibold text-zinc-500 dark:text-zinc-600 mb-1">
+                  Progress
+                </span>
+                <span className="text-2xl font-medium   text-zinc-200 tabular-nums tracking-tight">
+                  {percentage.toFixed(0)}%
+                  <span className="text-zinc-400 dark:text-zinc-600 text-lg">
+                    %
+                  </span>
                 </span>
               </div>
-              <span>/</span>
-              <span className="text-sm">{formatTime(skill.targetHours)}</span>
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface border border-border text-[10px] font-medium text-zinc-500 dark:text-zinc-300">
+                  <Zap
+                    size={10}
+                    className={`text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400`}
+                  />
+                  {getMotivationTags(percentage)}
+                </div>
+              </div>
             </div>
-          </div>
-          {/* bottom section  */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-zinc-400">
-              {getMotivationTags(percentage)}
-            </span>
 
-            {percentage > 0 && (
-              <div className="flex items-center justify-baseline gap-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-xs text-emerald-400 font-medium">
-                  Active
-                </span>
-              </div>
-            )}
+            <div className="w-full flex items-center justify-between gap-[1px] h-6 relative pt-4">
+              {Array.from({ length: totalSegments }).map((_, index) => {
+                const isActiveSegement = index < completedSegments;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ height: "6px", opacity: 1 }}
+                    animate={{
+                      height: isActiveSegement ? "30px" : "10px",
+                      backgroundColor:
+                        index < completedSegments ? activeColor : segmentBg,
+                    }}
+                    transition={{
+                      duration: 0.4,
+                      delay: index * 0.015,
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 20,
+                      ease: "easeOut",
+                    }}
+                    className="w-1.5 h-10 rounded-xs"
+                    style={{
+                      backgroundColor: isActiveSegement
+                        ? activeColor
+                        : segmentBg,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Stats Footer */}
+          <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400">
+            <div className="flex items-center gap-1.5 text-zinc-400 ">
+              <Clock size={12} strokeWidth={2} />
+              <span className="font-mono">
+                {formatTime(skill.currentHours)}
+              </span>
+              <span className="text-zinc-300 dark:text-zinc-700">/</span>
+              <span className="font-mono">{formatTime(skill.targetHours)}</span>
+            </div>
+
+            {/* details */}
+            <button
+              className={`flex items-center gap-1 cursor-pointer text-[10px] ${getSkillColor} bg-zinc-900 font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0`}
+            >
+              Open Project <ArrowUpRight size={12} />
+            </button>
           </div>
         </div>
       </motion.div>
