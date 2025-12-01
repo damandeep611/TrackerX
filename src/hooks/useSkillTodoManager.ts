@@ -3,10 +3,9 @@ import {
   deleteSkillTask,
   editSkillTask,
   toggleTaskDone,
-  updateTaskResource,
 } from "@/actions/skillTaskAction";
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 
 interface useSkillTodoManagerProps {
@@ -28,14 +27,9 @@ export const useSkillTodoManager = ({
   //all states - remove it and use state management for clean look
   const [skillTodos, setSkillTodos] = useState<skillTodo[]>(initialSkillTodos);
   const [isAddingTodo, setIsAddingTodo] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [updatingTodoId, setUpdatingTodoId] = useState<string | null>(null);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
-  const [showResourceModal, setShowResourceModal] = useState(false);
-  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
-  const [isAddingResource, setIsAddingResource] = useState(false);
-
   // event Handlers
   const handleAddTodo = async (newTodoData: Omit<newSkillTodo, "skillId">) => {
     setIsSubmittingForm(true);
@@ -46,8 +40,6 @@ export const useSkillTodoManager = ({
       id: tempId,
       skill_id: skillId,
       ...newTodoData,
-      resourceLink: null,
-      resourceLinkTitle: null,
       date: new Date().toISOString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -116,10 +108,6 @@ export const useSkillTodoManager = ({
       description:
         updatedFields.description !== undefined
           ? updatedFields.description
-          : null,
-      resourceLink:
-        updatedFields.resourceLink !== undefined
-          ? updatedFields.resourceLink
           : null,
       tags: updatedFields.tags || [],
     };
@@ -214,77 +202,24 @@ export const useSkillTodoManager = ({
         setDeletingTodoId(null);
       });
   };
-  // adding resources link on the task card
-  const handleAddResource = async (resourceTitle: string, url: string) => {
-    if (!selectedTodoId) return;
 
-    setIsAddingResource(true);
-    const originalTodos = skillTodos;
-
-    // Optimistic update
-    setSkillTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === selectedTodoId
-          ? {
-              ...todo,
-              resourceLink: url,
-              resourceLinkTitle: resourceTitle,
-              updatedAt: new Date().toISOString(),
-            }
-          : todo
-      )
-    );
-
-    startTransition(async () => {
-      try {
-        const result = await updateTaskResource(selectedTodoId, {
-          resourceLink: url,
-          resourceLinkTitle: resourceTitle,
-        });
-
-        if (!result.success) {
-          console.error("Failed to add resource:", result.error);
-          setSkillTodos(originalTodos);
-        }
-      } catch (error) {
-        console.error("Error adding resource:", error);
-        setSkillTodos(originalTodos);
-      } finally {
-        setIsAddingResource(false);
-        setSelectedTodoId(null);
-      }
-    });
-  };
-
-  const handleOpenResourceModal = (todoId: string) => {
-    setSelectedTodoId(todoId);
-    setShowResourceModal(true);
-  };
-  const handleCloseResourceModal = () => {
-    setShowResourceModal(false);
-    setSelectedTodoId(null);
-  };
   //To handle the submission of the skillTodos from the form
   return {
     //states
     skillTodos,
     isAddingTodo,
-    isPending,
+
     updatingTodoId,
     deletingTodoId,
     isSubmittingForm,
-    showResourceModal,
-    selectedTodoId,
-    isAddingResource,
+
     //state actions
     setIsAddingTodo,
     handleAddTodo,
 
     handleEditTodo,
     handleToggleTodo,
-    handleAddResource,
+
     handleDeleteTodo,
-    handleOpenResourceModal,
-    handleCloseResourceModal,
   };
 };

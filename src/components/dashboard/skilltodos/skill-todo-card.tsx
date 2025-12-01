@@ -1,14 +1,6 @@
 "use client";
 import { skillTodo } from "@/types/skillDashboardTypes";
-import {
-  CalendarIcon,
-  CheckSquareIcon,
-  ChevronRight,
-  EditIcon,
-  Hourglass,
-  LinkIcon,
-  SquareIcon,
-} from "lucide-react";
+import { CheckSquareIcon, EditIcon, Hourglass, SquareIcon } from "lucide-react";
 import React, { useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,7 +12,6 @@ import {
 } from "@/components/animations/taskCardAnimations";
 import { useSkillTodoCard } from "../TodoCard/useSkillTodoCard";
 import SkillTodoEditor from "../TodoCard/SkillTodoEditor";
-import ResourceExpand from "../TodoCard/ResourceExpand";
 import TimeBlockList from "./TimeBlockList";
 import { createTimeLog } from "@/actions/timeLogAction";
 import toast from "react-hot-toast";
@@ -36,7 +27,6 @@ interface SkillTodoCardProps {
   //optional props to indicate loading states controlled by the parent component
   isUpdating?: boolean;
   isDeleting?: boolean;
-  onOpenModal: () => void;
   onTimeLogCreated?: () => void; // Callback to refresh time data after successful time log creation
 }
 
@@ -48,15 +38,14 @@ export default function SkillTodoCard({
   onEditTodo,
   onDeleteTodo,
   toggleIsdone,
-  onOpenModal,
+
   isUpdating = false,
   isDeleting = false,
   onTimeLogCreated,
 }: SkillTodoCardProps) {
   const {
     isEditing,
-    isExpanded,
-    toggleExpand,
+
     startEdit,
     cancelEdit,
     finishEdit,
@@ -70,6 +59,11 @@ export default function SkillTodoCard({
   // Use time data from props if available, otherwise fallback to 0
   const timeLogMinutes = propTimeLogMinutes ?? 0;
   const isLoadingTime = propIsLoadingTime ?? false;
+  // dates of todos
+  const date = new Date(todo.date);
+  const taskday = date.toLocaleDateString("en-US", { day: "2-digit" });
+  const taskmonth = date.toLocaleDateString("en-US", { month: "short" });
+  // const taskyear = date.toLocaleDateString("en-US", { year: "numeric" });
 
   // Use optimistic updates if available, otherwise use time logs
   // Legacy duration is handled separately in TimeBlockList component
@@ -177,10 +171,17 @@ export default function SkillTodoCard({
   return (
     <>
       <motion.div
-        className="absolute -left-5 flex  items-center justify-center w-10 h-10 rounded-2xl bg-white dark:bg-zinc-800  shadow-md  "
+        className="absolute -left-5 flex  items-center justify-center  rounded-2xl bg-white dark:bg-zinc-800  shadow-md  "
         variants={dateIndicatorVariants}
       >
-        <CalendarIcon size={16} className="text-zinc-400 " />
+        <div className="flex h-10 w-10 flex-col items-center justify-center rounded-lg border border-neutral-200 bg-white shadow-sm transition-transform hover:scale-105 dark:border-neutral-800 dark:bg-neutral-900">
+          <span className="text-[8px] font-bold uppercase leading-none text-red-500 mb-0.5">
+            {taskmonth}
+          </span>
+          <span className="text-lg font-bold leading-none tracking-tight text-gray-900 dark:text-white">
+            {taskday}
+          </span>
+        </div>
       </motion.div>
 
       <motion.div
@@ -191,8 +192,8 @@ export default function SkillTodoCard({
         }}
         className={` relative ml-6 rounded-xl p-2   shadow-sm  hover:shadow-lg  border  transition-all duration-300 group ${
           todo.done
-            ? " border-emerald-200/50 dark:border-emerald-800/30   "
-            : " bg-white  dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+            ? " border-black/5 bg-gray-50 opacity-60 dark:border-white/5 dark:bg-[#0a0a0b]   "
+            : " border-black/10 bg-white shadow-sm hover:border-black/20 hover:shadow-md dark:border-white/10 dark:bg-[#121214] dark:hover:border-white/20"
         }`}
       >
         <div
@@ -253,65 +254,7 @@ export default function SkillTodoCard({
                   <SquareIcon size={16} />
                 )}
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onOpenModal}
-                className={`p-2 rounded-xl transition-all duration-300 ${
-                  todo.done
-                    ? "text-emerald-600/70 dark:text-emerald-400/70 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/20"
-                    : "dark:text-zinc-400 text-zinc-500 dark:hover:bg-zinc-800 hover:bg-zinc-100"
-                }`}
-                title="Add resources"
-              >
-                <LinkIcon size={16} />
-              </motion.button>
 
-              {/* resource expand button  */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={toggleExpand}
-                className={`flex items-center p-2 rounded-md transition-all duration-300 ${
-                  todo.done
-                    ? "text-emerald-600/70 dark:text-emerald-400/70 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/20"
-                    : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                }`}
-                title={`${isExpanded ? "Hide" : "Show"} resources`}
-                aria-expanded={isExpanded}
-              >
-                <motion.div
-                  animate={{ rotate: isExpanded ? 90 : 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                >
-                  {todo.resourceLink ? (
-                    <motion.div
-                      key="resource"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="relative"
-                    >
-                      <ChevronRight size={18} />
-
-                      <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] leading-none font-semibold px-1.5 py-0.5 rounded-full">
-                        {Array.isArray(todo.resourceLink)
-                          ? todo.resourceLink.length
-                          : 1}
-                      </span>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="chevron"
-                      initial={{ opacity: 0, x: -5 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 5 }}
-                    >
-                      <ChevronRight size={16} />
-                    </motion.div>
-                  )}
-                </motion.div>
-              </motion.button>
               <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1"></div>
               {/* secondary action buttons */}
               <div className="flex space-x-2">
@@ -333,19 +276,6 @@ export default function SkillTodoCard({
                 <DeleteModal onDelete={handleDelete} />
               </div>
             </div>
-            {/* <AnimatePresence>
-              {todo.done && (
-                <motion.div
-                  className="flex items-center space-x-1 text-green-600"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                >
-                  <CheckCheck size={10} />
-                  <span className="text-xs font-medium">Done</span>
-                </motion.div>
-              )}
-            </AnimatePresence> */}
           </div>
           {/* main content title and description */}
           <div className="space-y-3">
@@ -408,8 +338,6 @@ export default function SkillTodoCard({
               </motion.div>
             )}
           </AnimatePresence>
-          {/* Expandable resources section with improved animation */}
-          <ResourceExpand todo={todo} isExpanded={isExpanded} />
         </div>
       </motion.div>
     </>

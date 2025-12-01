@@ -71,7 +71,7 @@ export default function SkillDashboard() {
       <InsightsCards />
       <div>
         <div className="p-4 flex items-center justify-between">
-          <div className="flex items-center gap-1 bg-surfaceHighlight/50 p-1 rounded-lg border border-border">
+          <div className="flex items-center gap-1 bg-surface-highlight/50 p-1 rounded-lg border border-border">
             {["All", "Active", "Not Started", "Paused"].map((f) => (
               <button
                 key={f}

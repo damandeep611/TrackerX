@@ -27,10 +27,8 @@ export default function SkillAnalyticsCards({
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
             Active
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">
-            {skillName}
-          </h1>
-          <p className="text-neutral-400 mt-2 max-w-xl">
+          <h1 className="text-4xl font-bold  tracking-tight">{skillName}</h1>
+          <p className="text-text-tertiary mt-2 max-w-xl">
             Architecting the scalable backend and frontend infrastructure for
             the new SaaS platform.
           </p>

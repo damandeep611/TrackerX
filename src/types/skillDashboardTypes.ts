@@ -21,8 +21,6 @@ export interface skillTodo {
   description: string | null;
   done: boolean;
   tags: string[];
-  resourceLink: string | null;
-  resourceLinkTitle: string | null;
   date: string;
   createdAt: string;
   updatedAt: string;

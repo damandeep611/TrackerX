@@ -50,7 +50,9 @@ export async function updateSkillCardHours(skillId: string): Promise<void> {
 //----------- now the server action CRUD operations
 
 //ACTION: Get tasks for a specific skill-----------
-export async function getSkillTasksForSkill(skillId: string): Promise<skillTodo[]> {
+export async function getSkillTasksForSkill(
+  skillId: string
+): Promise<skillTodo[]> {
   const userId = await getUserId();
 
   const skillTasks = await db
@@ -66,8 +68,6 @@ export async function getSkillTasksForSkill(skillId: string): Promise<skillTodo[
     description: t.description || "",
     done: t.done,
     tags: t.tags || [],
-    resourceLink: t.resourceLink,
-    resourceLinkTitle: t.resource_link_title || null,
     date: t.date.toISOString(),
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
@@ -124,8 +124,6 @@ export async function addSkillTasks(
       description: createdSkillTask.description || "",
       done: createdSkillTask.done,
       tags: createdSkillTask.tags || [],
-      resourceLink: createdSkillTask.resourceLink,
-      resourceLinkTitle: createdSkillTask.resource_link_title || null,
       date: createdSkillTask.date.toISOString(),
       createdAt: createdSkillTask.createdAt.toISOString(),
       updatedAt: createdSkillTask.updatedAt.toISOString(),
@@ -144,7 +142,7 @@ export async function editSkillTask(
   updatedFields: {
     title: string;
     description: string | null;
-    resourceLink: string | null;
+
     tags: string[];
   }
 ): Promise<{ success: boolean; error?: string }> {
@@ -162,7 +160,6 @@ export async function editSkillTask(
       .set({
         title: updatedFields.title.trim(),
         description: updatedFields.description?.trim() || null,
-        resourceLink: updatedFields.resourceLink?.trim() || null,
         tags: updatedFields.tags || [],
         updatedAt: new Date(),
       })
@@ -282,64 +279,6 @@ export async function deleteSkillTask(
   }
 }
 
-//ACTION: Update task resource
-export async function updateTaskResource(
-  taskId: string,
-  resourceData: {
-    resourceLink: string;
-    resourceLinkTitle: string;
-  }
-): Promise<{ success: boolean; error?: string }> {
-  const userId = await getUserId();
-
-  if (!resourceData.resourceLink?.trim()) {
-    return { success: false, error: "Resource URL is required" };
-  }
-
-  try {
-    const result = await db
-      .update(skillTask)
-      .set({
-        resourceLink: resourceData.resourceLink.trim(),
-        resource_link_title: resourceData.resourceLinkTitle.trim() || null,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(skillTask.id, taskId), eq(skillTask.user_id, userId)));
-
-    if (result.rowCount === 0) {
-      return {
-        success: false,
-        error: "Task not found or you don't have permission to update it",
-      };
-    }
-
-    // Revalidate
-    const taskData = await db
-      .select({ skill_id: skillTask.skill_id })
-      .from(skillTask)
-      .where(eq(skillTask.id, taskId))
-      .limit(1);
-
-    if (taskData[0]?.skill_id) {
-      const parentSkill = await db
-        .select({ slug: skillCard.slug })
-        .from(skillCard)
-        .where(eq(skillCard.id, taskData[0].skill_id))
-        .limit(1);
-      if (parentSkill[0]?.slug) {
-        revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
-      }
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to update task resource:", error);
-    return {
-      success: false,
-      error: "Failed to update resource. Please try again",
-    };
-  }
-}
 
 // ACTION: Get today's total time spent across all skills
 export async function getTodayTotalTimeSpent(): Promise<number> {

@@ -2,13 +2,12 @@
 import { skillTodo } from "@/types/skillDashboardTypes";
 import SkillTodoForm from "./skill-todo-form";
 import SkillTodoCard from "./skill-todo-card";
-import ResourceModal from "./resource-modal";
 import { motion, AnimatePresence } from "framer-motion";
 import { taskCardVariants } from "@/components/animations/taskCardAnimations";
 import { useSkillTodoManager } from "@/hooks/useSkillTodoManager";
 import { getTotalTimeForTasks } from "@/actions/timeLogAction";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { ClipboardList, Plus } from "lucide-react";
 
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
@@ -60,23 +59,19 @@ export default function SkillTodoList({
     //states
     skillTodos,
     isAddingTodo,
-    isPending,
+
     updatingTodoId,
     deletingTodoId,
     isSubmittingForm,
-    showResourceModal,
 
-    isAddingResource,
     //actions state
     setIsAddingTodo,
     handleAddTodo,
 
     handleEditTodo,
     handleToggleTodo,
-    handleAddResource,
+
     handleDeleteTodo,
-    handleCloseResourceModal,
-    handleOpenResourceModal,
   } = useSkillTodoManager({
     initialSkillTodos,
     skillId,
@@ -151,21 +146,6 @@ export default function SkillTodoList({
   return (
     <div className=" mx-10 ">
       <div>
-        {/* show todo form only when isAdding state is true */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-semibold text-white">Tasks</h2>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="px-2.5 py-0.5 rounded-md bg-neutral-800 text-neutral-400 border border-white/5">
-                {skillTodos.length} Total
-              </span>
-            </div>
-          </div>
-          <button className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black font-medium text-sm hover:bg-neutral-200 transition-colors">
-            <Plus size={16} className={`transition-transform duration-300 `} />
-            <span>New Task</span>
-          </button>
-        </div>
         <div className={`relative   ${isAddingTodo ? "border-green-600" : ""}`}>
           <SkillTodoForm
             onAddSkillTodo={handleAddTodo}
@@ -176,17 +156,17 @@ export default function SkillTodoList({
       </div>
 
       {/* to show the tasks if there are any and showing no tasks title if there are 0 tasks */}
-      {skillTodos.length === 0 && !isPending ? (
+      {skillTodos.length === 0 ? (
         <div>
           <p>No tasks added yet , add to get started</p>
         </div>
       ) : (
         <>
-          <div>
+          <div className="flex items-center justify-between">
             {/* Tabs for filtering */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 mb-2 w-full">
+            <div className="p-4 flex items-center justify-between">
               <div
-                className="flex flex-wrap gap-2"
+                className="flex items-center gap-1 bg-surface-highlight/50 p-1 rounded-lg border border-border"
                 role="tablist"
                 aria-label="Task filter tabs"
               >
@@ -203,17 +183,32 @@ export default function SkillTodoList({
                     onClick={() =>
                       setSelectedTab(tab.value as typeof selectedTab)
                     }
-                    className={`px-4 py-1 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 text-xs font-semibold shadow-sm
+                    className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all
                       ${
                         selectedTab === tab.value
-                          ? "bg-green-600 text-white shadow-md border border-green-700"
-                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-green-100 dark:hover:bg-green-900 border border-transparent"
+                          ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5"
+                          : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5"
                       }
                     `}
                   >
                     {tab.label}
                   </button>
                 ))}
+              </div>
+            </div>
+            {/* show todo form only when isAdding state is true */}
+            <div className="flex items-center justify-between  gap-3">
+              <button className="flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-xs font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-all active:scale-95 shadow-lg shadow-black/5">
+                <Plus size={14} />
+                <span>New Task</span>
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
+                <button className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                  <ClipboardList size={14} />
+                  {skillTodos.length} Total
+                </button>
               </div>
             </div>
           </div>
@@ -245,7 +240,6 @@ export default function SkillTodoList({
                       onEditTodo={handleEditTodo}
                       onDeleteTodo={handleDeleteTodo}
                       toggleIsdone={handleToggleTodo}
-                      onOpenModal={() => handleOpenResourceModal(skillTodo.id)}
                       isUpdating={updatingTodoId === skillTodo.id}
                       isDeleting={deletingTodoId === skillTodo.id}
                       onTimeLogCreated={() =>
@@ -255,13 +249,7 @@ export default function SkillTodoList({
                   </motion.div>
                 ))}
               </AnimatePresence>
-              {showResourceModal && (
-                <ResourceModal
-                  onClose={handleCloseResourceModal}
-                  onAddResource={handleAddResource}
-                  isSubmitting={isAddingResource}
-                />
-              )}
+
               {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div
