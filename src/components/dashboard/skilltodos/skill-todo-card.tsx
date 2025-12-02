@@ -1,11 +1,11 @@
 "use client";
 import { skillTodo } from "@/types/skillDashboardTypes";
-import { CheckSquareIcon, EditIcon, Hourglass, SquareIcon } from "lucide-react";
+import { CheckCircle, PencilLine, Tag, Timer } from "lucide-react";
 import React, { useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import DeleteModal from "@/components/modals/DeleteModal";
-import { formatDate, formatDuration } from "@/utils/format-time";
+import { formatDuration } from "@/utils/format-time";
 import {
   dateIndicatorVariants,
   taskCardVariants,
@@ -184,27 +184,76 @@ export default function SkillTodoCard({
         </div>
       </motion.div>
 
+      {/* ----------------------------task card ---------------------------- */}
       <motion.div
         variants={taskCardVariants}
         animate={{
           scale: todo.done ? 0.98 : 1,
           transition: { duration: 0.3, ease: "easeInOut" },
         }}
-        className={` relative ml-6 rounded-xl p-2   shadow-sm  hover:shadow-lg  border  transition-all duration-300 group ${
+        className={` relative ml-6 rounded-xl p-2    transition-all duration-300 group ${
           todo.done
-            ? " border-black/5 bg-gray-50 opacity-60 dark:border-white/5 dark:bg-[#0a0a0b]   "
-            : " border-black/10 bg-white shadow-sm hover:border-black/20 hover:shadow-md dark:border-white/10 dark:bg-[#121214] dark:hover:border-white/20"
+            ? "  border-black/5 bg-gray-50 opacity-60 dark:border-white/5 dark:bg-[#0a0a0b]   "
+            : " border border-black/10 bg-white shadow-sm hover:border-black/20 hover:shadow-md dark:border-white/10 dark:bg-[#121214] dark:hover:border-white/20"
         }`}
       >
         <div
-          className={` transition-all duration-300 ${
-            todo.done ? "p-2 space-y-2" : "p-3 space-y-3"
-          }`}
+          className={` group  flex items-start gap-4 transition-all duration-300 p-2  `}
         >
-          <div className="flex justify-between items-center gap-4">
-            {/* left side of the top section  */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 flex-wrap">
+          {/* toggle check/uncheck task */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleToggleDone(!todo.done)}
+            className={` mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all duration-200 ${
+              todo.done
+                ? "bg-emerald-600 text-white"
+                : "border-neutral-300 bg-transparent text-transparent hover:border-emerald-500 dark:border-neutral-600"
+            }`}
+          >
+            <CheckCircle size={14} />
+          </motion.button>
+
+          {/* -----------main content of task card */}
+          <div className="min-w-0 flex-1  ">
+            <div className="flex items-start justify-between space-x-2 p-2 ">
+              <h3
+                className={`text-sm font-medium transition-all  ${
+                  todo.done
+                    ? " text-neutral-500 line-through decoration-neutral-400"
+                    : "text-primary"
+                }`}
+              >
+                {todo.title}
+              </h3>
+
+              {/* secondary action buttons */}
+              <div className="flex space-x-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleEdit}
+                  disabled={isUpdating}
+                  className={`flex items-center px-2 py-2 rounded-lg opacity-0 group-hover:opacity-100 hover:text-blue-500 transition-all duration-300 cursor-pointer  `}
+                  aria-label="Edit task"
+                  title="Edit task details"
+                >
+                  <PencilLine size={14} />
+                </motion.button>
+
+                <DeleteModal onDelete={handleDelete} />
+              </div>
+            </div>
+            {todo.description && (
+              <p
+                className={` mt-1 whitespace-pre-line  text-xs text-neutral-500 `}
+              >
+                {todo.description}
+              </p>
+            )}
+
+            <div className="flex flex-wrap justify-between gap-4 pt-4">
+              <div className="flex items-center justify-between">
                 {todo.tags && todo.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {todo.tags.map((tag, index) => (
@@ -213,131 +262,55 @@ export default function SkillTodoCard({
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 }}
-                        className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full capitalize border transition-all duration-300 ${
-                          todo.done
-                            ? "text-emerald-400/70 dark:text-emerald-700/70 "
-                            : "dark:text-zinc-300 dark:bg-zinc-800 text-zinc-700 bg-zinc-100 border-zinc-300 dark:border-zinc-600"
-                        }`}
+                        className={`flex items-center gap-1 rounded-md border border-black/5 bg-black/5 px-2 py-0.5 text-[10px] text-neutral-500 dark:border-white/5 dark:bg-white/5 dark:text-neutral-400`}
                       >
+                        <Tag size={10} />
                         {tag}
                       </motion.span>
                     ))}
                   </div>
                 )}
-                <span
-                  className={`text-xs font-semibold whitespace-nowrap transition-all duration-300 ${
-                    todo.done
-                      ? "text-emerald-400/70 dark:text-emerald-700/70"
-                      : "text-gray-500 dark:text-zinc-500"
-                  }`}
-                >
-                  {formatDate(todo.date)}
-                </span>
               </div>
-            </div>
-            {/* ====================================action buttons================= */}
-            <div className="flex items-center space-x-2 p-2 ">
-              {/* toggle check/uncheck task */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleToggleDone(!todo.done)}
-                className={`p-2 rounded-md transition-all ${
-                  todo.done
-                    ? "bg-emerald-600 text-white"
-                    : "dark:hover:bg-zinc-800 text-zinc-400"
-                }`}
-              >
-                {todo.done ? (
-                  <CheckSquareIcon size={16} />
-                ) : (
-                  <SquareIcon size={16} />
-                )}
-              </motion.button>
 
-              <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1"></div>
-              {/* secondary action buttons */}
-              <div className="flex space-x-2">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleEdit}
-                  disabled={isUpdating}
-                  className={`flex items-center px-2 py-2 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    todo.done
-                      ? "text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/20"
-                      : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                  }`}
-                  aria-label="Edit task"
-                  title="Edit task details"
-                >
-                  <EditIcon size={16} />
-                </motion.button>
-                <DeleteModal onDelete={handleDelete} />
+              {/* time log section  */}
+              <div className=" flex">
+                <div className="flex items-center gap-2">
+                  {/* Compact time display for completed tasks */}
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-border"
+                  >
+                    <Timer size={14} />
+                    <span className="text-xs font-medium ">
+                      {formatDuration(displayMinutes)}
+                    </span>
+                  </motion.div>
+                </div>
+
+                <AnimatePresence>
+                  {!todo.done && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <TimeBlockList
+                        currentMinutes={displayMinutes}
+                        onTimeUpdate={handleTimeUpdate}
+                        isUpdating={isUpdating || isLoadingTime}
+                        isDeleting={isDeleting}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
-          {/* main content title and description */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <h3
-                className={`text-lg capitalize leading-tight font-semibold transition-all duration-300 ${
-                  todo.done
-                    ? " text-emerald-900/70 dark:text-emerald-800/70"
-                    : "text-gray-900 dark:text-gray-100"
-                }`}
-              >
-                {todo.title}
-              </h3>
-              {/* Compact time display for completed tasks */}
-              {todo.done && displayMinutes > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-100/70 dark:bg-emerald-900/30 border border-emerald-200/50 dark:border-emerald-800/50"
-                >
-                  <Hourglass
-                    size={12}
-                    className="text-emerald-600/80 dark:text-emerald-400/80"
-                  />
-                  <span className="text-xs font-medium text-emerald-700/80 dark:text-emerald-300/80">
-                    {formatDuration(displayMinutes)}
-                  </span>
-                </motion.div>
-              )}
-            </div>
-
-            {todo.description && (
-              <p
-                className={` break-words whitespace-pre-line transition-all duration-300 ${
-                  todo.done
-                    ? " text-xs  text-emerald-900/70 dark:text-emerald-800/80"
-                    : " text-xs text-gray-600 dark:text-gray-300"
-                }`}
-              >
-                {todo.description}
-              </p>
-            )}
-          </div>
-          <AnimatePresence>
-            {!todo.done && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="overflow-hidden"
-              >
-                <TimeBlockList
-                  currentMinutes={displayMinutes}
-                  onTimeUpdate={handleTimeUpdate}
-                  isUpdating={isUpdating || isLoadingTime}
-                  isDeleting={isDeleting}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </motion.div>
     </>

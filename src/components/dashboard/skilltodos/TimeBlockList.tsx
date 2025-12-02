@@ -1,8 +1,7 @@
 "use client";
-import { Hourglass } from "lucide-react";
 import React, { useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { formatDuration } from "@/utils/format-time";
+import { Play } from "lucide-react";
 
 interface TimeBlockListProps {
   currentMinutes: number; // Total minutes from time logs
@@ -53,26 +52,8 @@ export default function TimeBlockList({
   );
 
   return (
-    <div className="w-full  p-3 rounded-md bg-zinc-200  dark:bg-zinc-900 ">
+    <div className="   ">
       <div className="flex items-center justify-between">
-        {/* Time Spent Display */}
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 text-purple-500 rounded-md flex items-center justify-center shadow-sm">
-            <Hourglass size={12} />
-          </div>
-          <div className="mr-2">
-            <p className="text-sm font-medium ">
-              {formatDuration(currentMinutes)}{" "}
-              <span className="text-xs text-zinc-700 dark:text-zinc-500 ml-2">
-                logged{" "}
-              </span>
-              {isUpdating && (
-                <span className="ml-1 text-blue-500 animate-pulse">●</span>
-              )}
-            </p>
-          </div>
-        </div>
-
         {/* Time Block List */}
         <div className="flex items-center gap-2">
           {[...Array(5)].map((_, index) => {
@@ -87,14 +68,14 @@ export default function TimeBlockList({
                 disabled={isUpdating || isDeleting || (!isActive && !isNext)}
                 whileHover={{ scale: isUpdating ? 1 : 1.1 }}
                 whileTap={{ scale: isUpdating ? 1 : 0.95 }}
-                className={`relative text-xs font-medium   px-3 p-1  rounded-md border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 ${
+                className={`relative flex items-center gap-1 rounded  px-2 py-1 text-[10px] font-medium cursor-pointer  border transition-all duration-300 focus:outline-none  ${
                   isUpdating
                     ? " cursor-wait"
                     : isActive
-                    ? " shadow-sm bg-emerald-600"
+                    ? " opacity-20"
                     : isNext
-                    ? "border-emerald-400 hover:border-emerald-500-500 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer"
-                    : "border-gray-300 dark:border-gray-600 opacity-40 cursor-not-allowed"
+                    ? "border border-black/10 bg-black/5  text-gray-900 transition-colors hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    : "border-gray-300 dark:border-gray-600 opacity-50 cursor-not-allowed"
                 }`}
                 aria-label={`${minuteLabel} minute milestone ${
                   isUpdating
@@ -107,6 +88,7 @@ export default function TimeBlockList({
                 }`}
                 title={isUpdating ? "Updating..." : `${minuteLabel} minutes`}
               >
+                <Play size={12} className="fill-gray-900 dark:fill-white" />{" "}
                 +30m
                 {isActive && (
                   <motion.div

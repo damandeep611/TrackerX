@@ -213,8 +213,9 @@ export default function SkillTodoList({
             </div>
           </div>
           <div className="relative">
+            {/* --------------------------timeline line--------------- */}
             <motion.div
-              className="absolute   top-0 bottom-0 w-0.5 bg-gradient-to-b from-zinc-200 to-zinc-300 dark:from-gray-500 dark:to-gray-500 rounded-full "
+              className="absolute   top-0 bottom-0 w-px bg-gradient-to-b from-zinc-200 to-zinc-300 dark:from-gray-500 dark:to-gray-500 rounded-full "
               initial={{ height: 0 }}
               animate={{ height: "100%" }}
               transition={{ duration: 0.5 }}
