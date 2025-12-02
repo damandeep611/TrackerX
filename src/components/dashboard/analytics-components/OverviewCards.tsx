@@ -93,7 +93,7 @@ export default function OverviewCards() {
           title="Time spend last 7 days"
           value={`${analytics.weeklyTime.totalHours}h`}
           subtitle={`${analytics.weeklyTime.daysWithActivity} days active`}
-          subtitle2=" across all skills"
+          subtitle2=" Across All Skills"
           icon={<Box size={16} strokeWidth={2} />}
           visualContent={
             <div className="w-full flex gap-1 h-10 items-end">
@@ -111,7 +111,7 @@ export default function OverviewCards() {
           title="Total spend last 30 days"
           value={`${analytics.monthlyTime.totalHours}h`}
           subtitle={`${analytics.monthlyTime.daysWithActivity} days active`}
-          subtitle2=" total time logged this month"
+          subtitle2=" Total Time Logged "
           icon={<Layers size={16} strokeWidth={2} />}
         />
         {/* !todo --- use widgetcharts component to show the analytics on widgets======================  */}

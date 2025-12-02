@@ -129,33 +129,18 @@ export default function Sidebar() {
 
       <UserProfile />
 
-      {/* Upgrade to Pro Button */}
-      <button
-        className={`mt-4 w-full relative overflow-hidden group bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-md shadow-lg shadow-indigo-200 dark:shadow-none transition-all duration-300
-            ${
-              isCollapsed
-                ? "p-2 aspect-square flex items-center justify-center"
-                : "py-2 px-4"
-            }`}
-      >
-        <div className="absolute inset-0 bg-white/20 group-hover:bg-white/10 transition-colors" />
-        <div
-          className={`relative flex items-center ${
-            isCollapsed ? "justify-center" : "justify-center gap-2.5"
-          }`}
-        >
-          <Sparkles
-            className={`text-yellow-200 ${isCollapsed ? "w-4 h-4" : "w-4 h-4"}`}
-          />
-          {!isCollapsed && (
-            <div className="text-left">
-              <span className="block text-sm font-bold leading-none">
-                Upgrade to Pro
-              </span>
-            </div>
-          )}
-        </div>
-      </button>
+      {/* Upgrade Card - Hide when collapsed */}
+      {!isCollapsed && (
+        <button className="w-full group relative overflow-hidden rounded-md p-0.5    shadow-lg shadow-indigo-500/10">
+          <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative bg-surface rounded-md px-3 py-2.5 flex items-center justify-center gap-2 group-hover:bg-surface/90 transition-colors">
+            <Sparkles size={16} className="text-indigo-400" />
+            <span className="text-xs font-semibold text-primary">
+              Upgrade to Pro
+            </span>
+          </div>
+        </button>
+      )}
     </div>
   );
 }

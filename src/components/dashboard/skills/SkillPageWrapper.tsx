@@ -35,7 +35,7 @@ export default function SkillPageWrapper({
     <>
       {/* Main Content Area (Scrollable) */}
       <div className="flex  justify-between">
-        <div className="flex flex-col w-full  ">
+        <div className="flex flex-col  ">
           <SkillAnalyticsCards
             skillName={skillName}
             key={refreshKey}

@@ -1,6 +1,6 @@
 "use client"
 
-import { CreditCard, MessageSquarePlus, User } from "lucide-react";
+import { MessageSquarePlus, User } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SignOutButton } from "@/components/auth/sign-out";
@@ -39,7 +39,7 @@ export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
     <div ref={dropdownRef} className="relative">
       <motion.div
         onClick={toggleDropdown}
-        className={`flex items-center  rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-700 ${
+        className={`flex items-center mb-1  rounded-lg cursor-pointer hover:bg-surface-highlight transition-colors border  hover:border-border ${
           isCollapsed ? "justify-center p-1" : "gap-3 p-2"
         }`}
       >
@@ -74,30 +74,25 @@ export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
               duration: 0.15,
               ease: [0.4, 0, 0.2, 1],
             }}
-            className={`absolute w-full  bottom-14 mt-2   shadow-xl overflow-hidden z-50 border border-border bg-white dark:bg-gray-900 rounded-2xl ${
+            className={`absolute w-full  bottom-14 mt-2   shadow-xl overflow-hidden z-50 border border-border bg-background rounded-2xl ${
               isCollapsed ? "left-16" : "left-0"
             }`}
           >
-            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800 mb-1">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Signed in as
-              </p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+            <div className="px-3 py-2 border-b border-border mb-1">
+              <p className="text-xs text-text-tertiary">Signed in as</p>
+              <p className="text-sm font-bold text-primary truncate">
                 {data?.user.email}
               </p>
             </div>
             <div className="py-1">
-              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                <User className="w-4 h-4 text-gray-400" />
+              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-primary hover:bg-surface-highlight rounded-lg transition-colors">
+                <User className="w-4 h-4 " />
                 My Profile
               </button>
-              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                <CreditCard className="w-4 h-4 text-gray-400" />
-                Billing
-              </button>
+
               <ModeToggle />
-              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                <MessageSquarePlus className="w-4 h-4 text-gray-400" />
+              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-primary hover:bg-surface-highlight rounded-lg transition-colors">
+                <MessageSquarePlus className="w-4 h-4" />
                 Feedback
               </button>
             </div>

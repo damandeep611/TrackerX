@@ -228,12 +228,12 @@ export default function WeeklyProgressChart() {
       <div className="flex items-center justify-between border-t border-border pt-4 mt-2">
         <p className="text-xs text-text-secondary">
           {currentWeekHours === 0
-            ? "No hours logged this week yet"
+            ? "No hours logged , bitch ass"
             : weeklyChange > 20
-            ? "Great improvement this week! 📈"
+            ? "slow ass work , Lock in more ! "
             : weeklyChange < -20
-            ? "Consider increasing your weekly hours 📊"
-            : "Steady progress! Keep it up 💪"}
+            ? "Consider increasing your weekly hours"
+            : "Steady progress! Keep it up "}
         </p>
         <div className="flex gap-4">
           <div className="flex items-center gap-2">

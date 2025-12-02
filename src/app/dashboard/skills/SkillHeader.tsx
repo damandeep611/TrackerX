@@ -8,10 +8,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Cpu, Ellipsis, FolderCheck, House } from "lucide-react";
-import { PiShareFat } from "react-icons/pi";
+import { Cpu, FolderCheck, House, MoreHorizontal, Share2 } from "lucide-react";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import SkillDropdownMenu from "./SkillDropdownMenu";
 
 interface SkillHeaderProps {
@@ -57,21 +56,21 @@ export default function SkillHeader({ skillSlug, skillId }: SkillHeaderProps) {
       </div>
       {/* Header Actions */}
       <div className="flex items-center space-x-4">
-        <div>
-          <PiShareFat size={20} />
-        </div>
+        <button className="p-2 hover:bg-surfaceHighlight rounded-md text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-border">
+          <Share2 size={18} />
+        </button>
         {/* three dots menu */}
         <div>
-          <motion.button
+          <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className={`relative p-2 flex items-center justify-between gap-2 rounded-full cursor-pointer border border-zinc-300 dark:border-zinc-500 ${
+            className={`p-2 rounded-md transition-colors border ${
               isDropdownOpen
-                ? "bg-zinc-300 dark:bg-zinc-800"
-                : "text-zinc-700 dark:text-zinc-400"
+                ? "bg-surfaceHighlight text-white border-border"
+                : "text-zinc-400 hover:text-white hover:bg-surfaceHighlight border-transparent hover:border-border"
             }`}
           >
-            <Ellipsis size={20} />
-          </motion.button>
+            <MoreHorizontal size={18} />
+          </button>
           {/* dropdown skill menu */}
           <AnimatePresence>
             {isDropdownOpen && (

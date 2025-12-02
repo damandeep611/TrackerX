@@ -216,7 +216,7 @@ export default function SkillTodoCard({
 
           {/* -----------main content of task card */}
           <div className="min-w-0 flex-1  ">
-            <div className="flex items-start justify-between space-x-2 p-2 ">
+            <div className="flex items-start justify-between   ">
               <h3
                 className={`text-sm font-medium transition-all  ${
                   todo.done
@@ -245,9 +245,7 @@ export default function SkillTodoCard({
               </div>
             </div>
             {todo.description && (
-              <p
-                className={` mt-1 whitespace-pre-line  text-xs text-neutral-500 `}
-              >
+              <p className={`  whitespace-pre-line  text-xs text-neutral-500 `}>
                 {todo.description}
               </p>
             )}

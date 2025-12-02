@@ -114,10 +114,11 @@ const SkillStatCard: React.FC<{
 }> = ({ label, value, subValue, icon, accent }) => {
   return (
     <div
-      className="p-5 flex flex-col justify-between h-32 hover:border-white/20 transition-colors  relative overflow-hidden rounded-3xl 
-        bg-[#0e0e0f] 
-        border border-white/[0.06]
-        shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_8px_20px_-4px_rgba(0,0,0,0.3)]"
+      className="relative overflow-hidden rounded-3xl p-5 flex flex-col justify-between h-32 hover:border-black/20 dark:hover:border-white/20 transition-colors   
+        dark:bg-[#0e0e0f] bg-white
+        border dark:border-white/[0.06] border-black/[0.06]
+        shadow-[0px_0px_0px_1px_rgba(0,0,0,0.05),0px_8px_20px_-4px_rgba(0,0,0,0.1)]
+        dark:shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_8px_20px_-4px_rgba(0,0,0,0.3)]"
     >
       {/* Subtle top sheen/gradient for depth */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent" />
@@ -131,7 +132,7 @@ const SkillStatCard: React.FC<{
       <div>
         <div
           className={`text-2xl font-semibold ${
-            accent ? "text-accent" : "text-white"
+            accent ? "text-accent" : "text-gray-900 dark:text-white"
           }`}
         >
           {value}
