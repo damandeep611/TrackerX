@@ -1,4 +1,6 @@
-export const taskCardVariants = {
+import { Variants } from "framer-motion";
+
+export const taskCardVariants: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
   show: {
     opacity: 1,
@@ -11,7 +13,7 @@ export const taskCardVariants = {
   },
 };
 
-export const taskCardContainerVariants = {
+export const taskCardContainerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -22,8 +24,7 @@ export const taskCardContainerVariants = {
   },
 };
 
-
-export const dateIndicatorVariants = {
+export const dateIndicatorVariants: Variants = {
   hidden: { opacity: 0, scale: 0.5, y: -10 },
   show: {
     opacity: 1,
