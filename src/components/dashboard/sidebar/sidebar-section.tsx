@@ -12,13 +12,13 @@ export default function SidebarSection({
   isCollapsed,
 }: SidebarSectionProps) {
   return (
-    <div className={`${isCollapsed ? "mt-6 pt-4" : ""}`}>
+    <div className={`${isCollapsed ? "mt-4 pt-2" : "mt-4"}`}>
       {!isCollapsed && (
-        <h3 className=" px-3  mb-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-6 animate-in fade-in duration-300">
+        <h3 className="px-4 mb-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest animate-in fade-in duration-300">
           {title}
         </h3>
       )}
-      <div className="space-y-1">{children}</div>
+      <div className="space-y-0.5">{children}</div>
     </div>
   );
 }

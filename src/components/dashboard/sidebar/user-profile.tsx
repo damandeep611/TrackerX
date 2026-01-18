@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { MessageSquarePlus, User } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
@@ -36,29 +36,38 @@ export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
   }, []);
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={dropdownRef} className="relative px-2 mb-2">
       <motion.div
         onClick={toggleDropdown}
-        className={`flex items-center mb-1  rounded-lg cursor-pointer hover:bg-surface-highlight transition-colors border  hover:border-border ${
-          isCollapsed ? "justify-center p-1" : "gap-3 p-2"
-        }`}
-      >
-        <img
-          src={
-            data?.user.image ||
-            "https://robohash.org/DF9.png?set=set4&size=150x150"
+        className={`flex items-center rounded-xl cursor-pointer transition-all duration-200 border 
+          ${
+            isOpen
+              ? "bg-zinc-800 border-zinc-700"
+              : "bg-zinc-800/40 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700"
           }
-          alt={`${data?.user.name}`}
-          className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-        />
+          ${isCollapsed ? "justify-center p-1.5" : "gap-3 p-2.5"}
+        `}
+      >
+        <div className="relative shrink-0">
+          <img
+            src={
+              data?.user.image ||
+              "https://robohash.org/DF9.png?set=set4&size=150x150"
+            }
+            alt={`${data?.user.name}`}
+            className={`rounded-lg object-cover bg-zinc-900 ${
+              isCollapsed ? "w-8 h-8" : "w-9 h-9"
+            }`}
+          />
+        </div>
 
         {!isCollapsed && (
-          <div className="flex-1 overflow-hidden animate-in fade-in duration-200">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+          <div className="flex-1 overflow-hidden min-w-0">
+            <p className="text-[13px] font-medium text-zinc-200 truncate leading-none mb-1">
               {data?.user.name}
             </p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
-              User Profile
+            <p className="text-[11px] text-zinc-500 truncate leading-none">
+              {data?.user.email}
             </p>
           </div>
         )}
@@ -67,37 +76,38 @@ export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{
               duration: 0.15,
               ease: [0.4, 0, 0.2, 1],
             }}
-            className={`absolute w-full  bottom-14 mt-2   shadow-xl overflow-hidden z-50 border border-border bg-background rounded-2xl ${
-              isCollapsed ? "left-16" : "left-0"
+            className={`absolute w-full top-full mt-2 shadow-2xl overflow-hidden z-50 border border-zinc-800 bg-[#18181b] rounded-xl p-1 ${
+              isCollapsed ? "left-14 w-56" : "left-0"
             }`}
           >
-            <div className="px-3 py-2 border-b border-border mb-1">
-              <p className="text-xs text-text-tertiary">Signed in as</p>
-              <p className="text-sm font-bold text-primary truncate">
-                {data?.user.email}
-              </p>
+            <div className="px-2 py-2 border-b border-zinc-800 mb-1">
+              <p className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold pl-2">My Account</p>
             </div>
-            <div className="py-1">
-              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-primary hover:bg-surface-highlight rounded-lg transition-colors">
-                <User className="w-4 h-4 " />
-                My Profile
+            
+            <div className="space-y-0.5">
+              <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 rounded-lg transition-colors">
+                <User className="w-3.5 h-3.5" />
+                Profile
               </button>
 
-              <ModeToggle />
-              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-primary hover:bg-surface-highlight rounded-lg transition-colors">
-                <MessageSquarePlus className="w-4 h-4" />
+              <div className="px-1">
+                 <ModeToggle />
+              </div>
+              
+              <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 rounded-lg transition-colors">
+                <MessageSquarePlus className="w-3.5 h-3.5" />
                 Feedback
               </button>
             </div>
-            <div className="py-1">
-              <div className="border-t border-gray-700/50 my-1"></div>
+            
+            <div className="mt-1 pt-1 border-t border-zinc-800">
               <SignOutButton />
             </div>
           </motion.div>

@@ -4,12 +4,14 @@ import {
   ChartPie,
   GoalIcon,
   HelpCircle,
+  Hourglass,
   House,
   ListTodo,
   PanelLeft,
   PanelRight,
   Settings,
   Sparkles,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -34,7 +36,7 @@ const navigation = {
     },
     {
       id: "Help",
-      title: "Help",
+      title: "Help Center",
       icon: HelpCircle,
       path: "/dashboard/help",
     },
@@ -51,6 +53,12 @@ const navigation = {
       title: "Goals List",
       icon: GoalIcon,
       path: "/dashboard/goals",
+    },
+    {
+      id: "80-hour-goals",
+      title: "80 Hour Goals",
+      icon: Hourglass,
+      path: "/dashboard/80-hour-goals",
     },
     {
       id: "tasks0",
@@ -75,51 +83,60 @@ export default function Sidebar() {
   };
   return (
     <div
-      className={`relative h-screen flex flex-col p-2 border-r border-border bg-background  transition-all duration-200 ease-in-out  ${
-        isCollapsed ? "w-16" : "w-64"
+      className={`relative h-screen flex flex-col border-r border-zinc-800 bg-[#09090b] text-zinc-400 transition-all duration-300 ease-in-out ${
+        isCollapsed ? "w-[72px]" : "w-[260px]"
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center justify-between ">
-          {!isCollapsed && (
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <Box size={20} />
-              <span className="text-lg font-semibold">BuildxSkill</span>
+      {/* Header / Logo Area */}
+      <div className={`flex items-center justify-between mb-4 pt-5 px-4 ${isCollapsed ? "flex-col gap-4 px-2" : ""}`}>
+        {!isCollapsed ? (
+          <div className="flex items-center gap-3">
+            <div className="bg-white text-black p-1 rounded-md">
+              <Box size={18} strokeWidth={3} />
             </div>
-          )}
-        </div>
-        <div className="flex items-center justify-between  ">
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200  rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors "
-          >
-            {isCollapsed ? <PanelRight size={20} /> : <PanelLeft size={20} />}
-          </button>
-        </div>
+            <span className="text-[15px] font-bold tracking-tight text-white">
+              BuildxSkill
+            </span>
+          </div>
+        ) : (
+           <div className="bg-white text-black p-1 rounded-md">
+              <Box size={20} strokeWidth={3} />
+            </div>
+        )}
+        
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="text-zinc-500 hover:text-zinc-300 transition-colors"
+        >
+          {isCollapsed ? <PanelRight size={18} /> : <PanelLeft size={18} />}
+        </button>
       </div>
-      {/* sidebar menu items */}
 
-      <div className="flex-1">
+      {/* User Profile */}
+      <UserProfile isCollapsed={isCollapsed} />
+
+      {/* Navigation Items */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-2 scrollbar-hide py-2 px-2">
         <SidebarSection title="Main Menu" isCollapsed={isCollapsed}>
           {navigation.mainMenu.map((item) => (
             <SidebarItem
               href={item.path}
               key={item.id}
               label={item.title}
-              icon={<item.icon size={16} />}
+              icon={<item.icon size={18} strokeWidth={2} />}
               isActive={isActive(item.path)}
               isCollapsed={isCollapsed}
             />
           ))}
         </SidebarSection>
 
-        <SidebarSection title="Quick Links" isCollapsed={isCollapsed}>
+        <SidebarSection title="Support" isCollapsed={isCollapsed}>
           {navigation.quicklinks.map((item) => (
             <SidebarItem
               href={item.path}
               key={item.id}
               label={item.title}
-              icon={<item.icon size={16} />}
+              icon={<item.icon size={18} strokeWidth={2} />}
               isActive={isActive(item.path)}
               isCollapsed={isCollapsed}
             />
@@ -127,19 +144,33 @@ export default function Sidebar() {
         </SidebarSection>
       </div>
 
-      <UserProfile />
-
-      {/* Upgrade Card - Hide when collapsed */}
+      {/* Compact Upgrade Card */}
       {!isCollapsed && (
-        <button className="w-full group relative overflow-hidden rounded-md p-0.5    shadow-lg shadow-indigo-500/10">
-          <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative bg-surface rounded-md px-3 py-2.5 flex items-center justify-center gap-2 group-hover:bg-surface/90 transition-colors">
-            <Sparkles size={16} className="text-indigo-400" />
-            <span className="text-xs font-semibold text-primary">
-              Upgrade to Pro
-            </span>
+        <div className="p-3 mt-auto">
+          <div className="relative group overflow-hidden rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 p-3 shadow-lg">
+            {/* Subtle Gradient Glow */}
+            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 blur-xl rounded-full"></div>
+            
+            <div className="relative z-10 flex flex-col gap-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-white font-semibold text-[11px] leading-tight">
+                    Access Pro Features
+                  </h3>
+                  <p className="text-zinc-500 text-[10px] leading-tight mt-1">
+                    Upgrade for exclusive tools & analytics.
+                  </p>
+                </div>
+                {/* <Zap size={14} className="text-yellow-400 fill-yellow-400" /> */}
+              </div>
+              
+              <button className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-white hover:bg-zinc-100 text-black text-[10px] font-bold uppercase tracking-wide rounded-md transition-all shadow-sm">
+                <Zap size={10} className="fill-black" />
+                Upgrade to Pro
+              </button>
+            </div>
           </div>
-        </button>
+        </div>
       )}
     </div>
   );
