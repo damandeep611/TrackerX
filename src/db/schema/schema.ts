@@ -103,11 +103,9 @@ export const goals = pgTable("goals", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 255 }).notNull(),
+  slug: text("slug").notNull().unique(),
   startDate: timestamp("start_date"),
   completedDate: timestamp("completed_date"),
-  daysToComplete: integer("days_to_complete"),
-  reflectionNote: text("reflection_note"),
-  isCompleted: boolean("is_completed").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -85,6 +85,13 @@
       "when": 1764596143621,
       "tag": "0011_dark_whiplash",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1768750785230,
+      "tag": "0012_youthful_talisman",
+      "breakpoints": true
     }
   ]
 }

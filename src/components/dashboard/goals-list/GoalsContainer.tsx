@@ -5,18 +5,16 @@ import { motion } from 'framer-motion'
 import { Target } from 'lucide-react'
 import GoalCard from './GoalCard'
 import { differenceInDays } from 'date-fns'
-import { addGoal, addGoalReflection, deleteGoal, toggleGoalCompletion, updateGoalStartDate } from '@/actions/goalActions'
+import { addGoal, deleteGoal, toggleGoalCompletion, updateGoalStartDate } from '@/actions/goalActions'
 import { toast } from 'react-hot-toast'
 
 interface Goal {
   id: string
   userId: string
   title: string
+  slug: string
   startDate?: string | null
   completedDate?: string | null
-  daysToComplete?: number | null
-  reflectionNote?: string | null
-  isCompleted: boolean
   createdAt: string
   updatedAt: string
 }
@@ -34,7 +32,7 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
       id: crypto.randomUUID(), // Temporary ID
       userId: '', // Will be set by server
       title,
-      isCompleted: false,
+      slug: title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -96,17 +94,13 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
     const goal = goals.find(g => g.id === id);
     if (!goal) return;
 
+    const isCurrentlyCompleted = !!goal.completedDate;
     const now = new Date().toISOString();
-    const daysToComplete = goal.startDate 
-      ? differenceInDays(new Date(now), new Date(goal.startDate))
-      : 0;
 
     // Optimistically update UI
     const optimisticUpdate = {
       ...goal,
-      isCompleted: !goal.isCompleted,
-      completedDate: !goal.isCompleted ? now : null,
-      daysToComplete: !goal.isCompleted ? daysToComplete : null
+      completedDate: !isCurrentlyCompleted ? now : null,
     };
 
     setGoals(prev => prev.map(g => 
@@ -117,13 +111,12 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
       const updatedGoal = await toast.promise(
         toggleGoalCompletion({
           id,
-          isCompleted: !goal.isCompleted,
-          completedDate: !goal.isCompleted ? now : undefined,
-          daysToComplete: !goal.isCompleted ? daysToComplete : undefined
+          isCompleted: !isCurrentlyCompleted,
+          completedDate: !isCurrentlyCompleted ? now : undefined,
         }),
         {
           loading: 'Updating goal...',
-          success: !goal.isCompleted ? 'Goal completed!' : 'Goal uncompleted',
+          success: !isCurrentlyCompleted ? 'Goal completed!' : 'Goal uncompleted',
           error: 'Failed to update goal'
         }
       );
@@ -138,38 +131,6 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
         g.id === id ? goal : g
       ));
       console.error('Failed to toggle goal completion:', error);
-    }
-  };
-
-  const handleReflectionAdd = async (id: string, note: string) => {
-    const goal = goals.find(g => g.id === id);
-    if (!goal) return;
-
-    // Optimistically update UI
-    setGoals(prev => prev.map(g => 
-      g.id === id ? { ...g, reflectionNote: note } : g
-    ));
-
-    try {
-      const updatedGoal = await toast.promise(
-        addGoalReflection({ id, reflectionNote: note }),
-        {
-          loading: 'Adding reflection...',
-          success: 'Reflection added!',
-          error: 'Failed to add reflection'
-        }
-      );
-
-      // Update with actual server response
-      setGoals(prev => prev.map(g => 
-        g.id === id ? updatedGoal as Goal : g
-      ));
-    } catch (error) {
-      // Revert optimistic update on error
-      setGoals(prev => prev.map(g => 
-        g.id === id ? { ...g, reflectionNote: goal.reflectionNote } : g
-      ));
-      console.error('Failed to add reflection:', error);
     }
   };
 
@@ -197,9 +158,9 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
   };
 
   // Separate goals into pending, active and completed
-  const pendingGoals = goals.filter(goal => !goal.startDate && !goal.isCompleted);
-  const activeGoals = goals.filter(goal => goal.startDate && !goal.isCompleted);
-  const completedGoals = goals.filter(goal => goal.isCompleted);
+  const pendingGoals = goals.filter(goal => !goal.startDate && !goal.completedDate);
+  const activeGoals = goals.filter(goal => goal.startDate && !goal.completedDate);
+  const completedGoals = goals.filter(goal => !!goal.completedDate);
 
   return (
     <div className='flex-1 p-6 space-y-8'>
@@ -245,7 +206,6 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
                   goal={goal}
                   onStartDateSet={handleStartDateSet}
                   onToggleComplete={handleToggleComplete}
-                  onReflectionAdd={handleReflectionAdd}
                   onDelete={handleDelete}
                 />
               ))}
@@ -273,7 +233,6 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
                   goal={goal}
                   onStartDateSet={handleStartDateSet}
                   onToggleComplete={handleToggleComplete}
-                  onReflectionAdd={handleReflectionAdd}
                   onDelete={handleDelete}
                 />
               ))}
@@ -301,7 +260,6 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
                   goal={goal}
                   onStartDateSet={handleStartDateSet}
                   onToggleComplete={handleToggleComplete}
-                  onReflectionAdd={handleReflectionAdd}
                   onDelete={handleDelete}
                 />
               ))}
