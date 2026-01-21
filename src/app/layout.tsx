@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import QueryProvider from "./providers/QueryProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +25,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={` ${inter.variable} antialiased`}>
         <QueryProvider>
-          <main className="">{children}</main>
+          <main className="">
+            {children}
+            <SpeedInsights />
+            <Analytics />
+          </main>
         </QueryProvider>
         <Toaster
           position="top-right"
