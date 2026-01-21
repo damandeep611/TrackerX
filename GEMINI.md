@@ -48,8 +48,4 @@ The main dashboard is composed of:
 - **Refactoring:** Comments suggest a plan to standardize API interactions, possibly moving more logic to `app/api`.
 - **Styling:** Comprehensive dark mode support using Tailwind classes.
 
-## Feature Implementations
-- **Daily Log Visualization:**
-    - `src/app/dashboard/daily-logs/page.tsx` refactored to support labeled activity colors (e.g., "Work", "Exercise") and gradients (e.g., "Sleep").
-    - Implemented hybrid SVG/CSS gradient support: SVG `<defs>` for the clock visualization and CSS linear-gradients for UI components.
-    - Modal color picker updated to a labeled grid format.
+
