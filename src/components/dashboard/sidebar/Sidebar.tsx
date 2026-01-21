@@ -54,12 +54,6 @@ const navigation = {
       icon: Hourglass,
       path: "/dashboard/80-hour-goals",
     },
-    {
-      id: "tasks0",
-      title: "Tasks",
-      icon: ListTodo,
-      path: "/dashboard/tasks",
-    },
   ],
 };
 
