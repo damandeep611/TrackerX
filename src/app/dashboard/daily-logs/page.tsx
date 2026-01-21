@@ -498,9 +498,22 @@ export default function DailyLogPage() {
                                         <Trash2 className="w-3 h-3" />
                                     </button>
                                 </div>
-                                <div className="font-medium text-primary flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full" style={{ background: MODAL_COLORS.find(c => c.value === entry.color)?.css || entry.color }} />
-                                    {entry.title}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <div 
+                                            className="w-2 h-2 rounded-full" 
+                                            style={{ background: MODAL_COLORS.find(c => c.value === entry.color)?.css || entry.color }} 
+                                        />
+                                        <span className="font-medium text-primary">{entry.title}</span>
+                                    </div>
+                                    {(() => {
+                                        const colorObj = MODAL_COLORS.find(c => c.value === entry.color);
+                                        return colorObj && (
+                                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-surface border border-border text-text-tertiary font-bold uppercase tracking-wider">
+                                                {colorObj.label}
+                                            </span>
+                                        );
+                                    })()}
                                 </div>
                                 <div className="text-xs text-text-secondary">
                                     {entry.slots.map(s => `${formatTime(s.start)} - ${formatTime(s.end)}`).join(', ')}
