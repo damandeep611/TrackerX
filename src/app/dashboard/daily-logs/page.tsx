@@ -87,7 +87,6 @@ export default function DailyLogPage() {
       {/* Header with Date Navigation */}
       <div className="flex items-center justify-between shrink-0">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Daily Log</h1>
           <p className="text-sm text-muted-foreground">
             Track your day, every day.
           </p>
@@ -101,7 +100,7 @@ export default function DailyLogPage() {
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2 px-2 min-w-[140px] justify-center font-mono text-sm">
+          <div className="flex items-center gap-2 px-2 min-w-35 justify-center font-mono text-sm">
             <CalendarIcon className="w-4 h-4 text-muted-foreground" />
             <span
               className={cn(
@@ -136,6 +135,8 @@ export default function DailyLogPage() {
         {/* Left Panel: Stats */}
         <DailyStats
           totalActivityMinutes={stats.totalActivityMinutes}
+          totalFocusedMinutes={stats.totalFocusedMinutes}
+          totalSleepMinutes={stats.totalSleepMinutes}
           totalLogNotes={stats.totalLogNotes}
         />
 

@@ -184,8 +184,27 @@ export function useDailyLog(date: Date = new Date()) {
 
   // --- Derived Stats ---
   const stats = useMemo(() => {
-    const totalActivityMinutes = entries
-      .filter((e): e is ActivityEntry => e.type === 'activity')
+    const workColor = MODAL_COLORS.find(c => c.label === 'Work')?.value
+    const deepWorkColor = MODAL_COLORS.find(c => c.label === 'Deep Work')?.value
+    const sleepColor = MODAL_COLORS.find(c => c.label === 'Sleep')?.value
+
+    const activityEntries = entries.filter((e): e is ActivityEntry => e.type === 'activity')
+
+    const totalActivityMinutes = activityEntries
+      .reduce((acc, activity) => {
+        const activityDuration = activity.slots.reduce((sAcc, slot) => sAcc + (slot.end - slot.start), 0)
+        return acc + activityDuration
+      }, 0)
+    
+    const totalFocusedMinutes = activityEntries
+      .filter(e => e.color === workColor || e.color === deepWorkColor)
+      .reduce((acc, activity) => {
+        const activityDuration = activity.slots.reduce((sAcc, slot) => sAcc + (slot.end - slot.start), 0)
+        return acc + activityDuration
+      }, 0)
+
+    const totalSleepMinutes = activityEntries
+      .filter(e => e.color === sleepColor)
       .reduce((acc, activity) => {
         const activityDuration = activity.slots.reduce((sAcc, slot) => sAcc + (slot.end - slot.start), 0)
         return acc + activityDuration
@@ -195,6 +214,8 @@ export function useDailyLog(date: Date = new Date()) {
 
     return {
       totalActivityMinutes,
+      totalFocusedMinutes,
+      totalSleepMinutes,
       totalLogNotes,
       entryCount: entries.length
     }
@@ -225,7 +246,9 @@ function transformFromDb(dbEntry: DbEntry): Entry {
         };
         return logNote
     } else {
-        const colorObj = MODAL_COLORS.find(c => c.label === dbEntry.colorLabel)
+        // Backward compatibility: map 'Health' to 'Yoga' color
+        const labelToFind = dbEntry.colorLabel === 'Health' ? 'Yoga' : dbEntry.colorLabel
+        const colorObj = MODAL_COLORS.find(c => c.label === labelToFind)
         const colorValue = colorObj ? colorObj.value : '#0ea5e9'; // Default to blue if unknown
 
         const activity: ActivityEntry = {

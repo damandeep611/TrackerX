@@ -1,15 +1,22 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Calendar } from 'lucide-react'
+import { Calendar, Moon } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DailyStatsProps {
   totalActivityMinutes: number
+  totalFocusedMinutes: number
+  totalSleepMinutes: number
   totalLogNotes: number
 }
 
-export function DailyStats({ totalActivityMinutes, totalLogNotes }: DailyStatsProps) {
-  const isMounted = true // Assuming client-side hydration is handled by parent or useEffect
+export function DailyStats({ 
+  totalActivityMinutes, 
+  totalFocusedMinutes, 
+  totalSleepMinutes, 
+  totalLogNotes 
+}: DailyStatsProps) {
+  const isMounted = true 
 
   return (
     <motion.div 
@@ -25,16 +32,33 @@ export function DailyStats({ totalActivityMinutes, totalLogNotes }: DailyStatsPr
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
+        {/* Total Focused Work */}
         <div className="p-4 rounded-xl bg-surface/50 border border-border backdrop-blur-sm">
-          <div className="text-sm text-text-tertiary uppercase tracking-wider mb-1">Total Focused</div>
+          <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">Total Focused Work</div>
           <div className="text-4xl font-extralight text-primary">
-            {Math.floor(totalActivityMinutes / 60)}<span className="text-lg text-text-tertiary">h</span> {totalActivityMinutes % 60}<span className="text-lg text-text-tertiary">m</span>
+            {Math.floor(totalFocusedMinutes / 60)}<span className="text-lg text-text-tertiary">h</span> {totalFocusedMinutes % 60}<span className="text-lg text-text-tertiary">m</span>
           </div>
         </div>
 
+        {/* Sleep Widget */}
+        {totalSleepMinutes > 0 && (
+          <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-sm flex items-center gap-3">
+             <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+               <Moon className="w-4 h-4" />
+             </div>
+             <div>
+                <div className="text-[10px] text-indigo-400/80 uppercase tracking-wider">Sleep</div>
+                <div className="text-xl font-light text-indigo-300">
+                   {Math.floor(totalSleepMinutes / 60)}<span className="text-sm opacity-60">h</span> {totalSleepMinutes % 60}<span className="text-sm opacity-60">m</span>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {/* Log Notes */}
         <div className="p-4 rounded-xl bg-surface/50 border border-border backdrop-blur-sm">
-          <div className="text-sm text-text-tertiary uppercase tracking-wider mb-1">Log Notes</div>
+          <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">Log Notes</div>
           <div className="text-4xl font-extralight text-primary flex items-baseline gap-2">
             {totalLogNotes}
             <span className="text-sm text-text-tertiary font-normal">captured</span>
