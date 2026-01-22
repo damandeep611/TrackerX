@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Clock, Trash2 } from 'lucide-react'
-import { TimeSlot, EntryType, MODAL_COLORS, Entry } from '@/types/dailyLogTypes'
+import { TimeSlot, EntryType, MODAL_COLORS } from "@/types/dailyLogTypes";
 import { formatTime } from '@/utils/dailyLogUtils'
 import { cn } from '@/lib/utils'
 
@@ -143,7 +143,7 @@ export function EntryModal({ isOpen, onClose, selectedTime, onSave, onPreviewCha
                       value={tempLogNote}
                       onChange={(e) => setTempLogNote(e.target.value)}
                       placeholder="What was on your mind at this moment?"
-                      className="w-full bg-[#161922] border border-[#2e323e] rounded-xl p-4 min-h-[140px] resize-none focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 text-slate-300 placeholder:text-slate-600 transition-all"
+                      className="w-full bg-[#161922] border border-[#2e323e] rounded-xl p-4 min-h-35 resize-none focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 text-slate-300 placeholder:text-slate-600 transition-all"
                     />
                   </div>
                 </>
@@ -202,7 +202,7 @@ export function EntryModal({ isOpen, onClose, selectedTime, onSave, onPreviewCha
                       </label>
                     </div>
 
-                    <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="space-y-3 max-h-55 overflow-y-auto pr-1 custom-scrollbar">
                       {tempActivitySlots.map((slot, idx) => (
                         <div
                           key={slot.id}
@@ -229,12 +229,13 @@ export function EntryModal({ isOpen, onClose, selectedTime, onSave, onPreviewCha
 
                           <div className="flex items-center gap-3">
                             {/* Start Time */}
-                            <div 
-                                onClick={(e) => {
-                                    const input = e.currentTarget.querySelector('input');
-                                    input?.showPicker();
-                                }}
-                                className="flex-1 bg-[#12141a] rounded-lg p-2 border border-[#2e323e] flex items-center gap-3 transition-colors hover:bg-[#161922] hover:border-indigo-500/50 cursor-pointer group/time"
+                            <div
+                              onClick={(e) => {
+                                const input =
+                                  e.currentTarget.querySelector("input");
+                                input?.showPicker();
+                              }}
+                              className="flex-1 bg-[#12141a] rounded-lg p-2 border border-[#2e323e] flex items-center gap-3 transition-colors hover:bg-[#161922] hover:border-indigo-500/50 cursor-pointer group/time"
                             >
                               <div className="p-1.5 bg-[#232634] rounded-md pointer-events-none group-hover/time:bg-[#2e323e] transition-colors">
                                 <Clock className="w-3.5 h-3.5 text-indigo-400" />
@@ -281,12 +282,13 @@ export function EntryModal({ isOpen, onClose, selectedTime, onSave, onPreviewCha
                             </div>
 
                             {/* End Time */}
-                            <div 
-                                onClick={(e) => {
-                                    const input = e.currentTarget.querySelector('input');
-                                    input?.showPicker();
-                                }}
-                                className="flex-1 bg-[#12141a] rounded-lg p-2 border border-[#2e323e] flex items-center gap-3 transition-colors hover:bg-[#161922] hover:border-indigo-500/50 cursor-pointer group/time"
+                            <div
+                              onClick={(e) => {
+                                const input =
+                                  e.currentTarget.querySelector("input");
+                                input?.showPicker();
+                              }}
+                              className="flex-1 bg-[#12141a] rounded-lg p-2 border border-[#2e323e] flex items-center gap-3 transition-colors hover:bg-[#161922] hover:border-indigo-500/50 cursor-pointer group/time"
                             >
                               <div className="p-1.5 bg-[#232634] rounded-md pointer-events-none group-hover/time:bg-[#2e323e] transition-colors">
                                 <Clock className="w-3.5 h-3.5 text-pink-400" />

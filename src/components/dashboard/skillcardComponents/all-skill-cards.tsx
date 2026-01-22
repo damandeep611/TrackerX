@@ -107,7 +107,7 @@ export default function SkillDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="group relative flex flex-col items-center justify-center p-6 border border-dashed border-border rounded-xl hover:bg-surfaceHighlight/50 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300 min-h-[200px]"
+            className="group relative flex flex-col items-center justify-center p-6 border border-dashed border-border rounded-xl hover:bg-surfaceHighlight/50 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-300 min-h-50"
           >
             <div className="w-10 h-10 rounded-full bg-surfaceHighlight flex items-center justify-center border border-border group-hover:scale-110 group-hover:border-zinc-400 dark:group-hover:border-zinc-600 transition-all duration-300">
               <Plus

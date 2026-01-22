@@ -89,7 +89,7 @@ export function LogTimeline({ entries, onDelete }: LogTimelineProps) {
                               </div>
                           </div>
                       )}
-                      <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-border group-hover:bg-accent transition-colors" />
+                      <div className="absolute -left-1.25 top-0 w-2 h-2 rounded-full bg-border group-hover:bg-accent transition-colors" />
                   </motion.div>
               ))}
               

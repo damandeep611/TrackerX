@@ -88,7 +88,7 @@ export default function GoalDetailPage() {
       try {
         const foundGoal = await getGoalBySlug(params.goalId as string);
         if (foundGoal) {
-          setGoal(foundGoal as any);
+          setGoal(foundGoal as unknown as Goal);
         }
       } catch (error) {
         console.error("Error fetching goal:", error);
@@ -106,7 +106,7 @@ export default function GoalDetailPage() {
   if (!goal) return <div className="p-8 text-center text-muted-foreground">Goal not found.</div>;
 
   return (
-    <div className="max-w-[1200px] mx-auto p-4 md:p-6 lg:p-8 min-h-screen space-y-6">
+    <div className="max-w-300 mx-auto p-4 md:p-6 lg:p-8 min-h-screen space-y-6">
       
       {/* Ultra Compact Navigation Header */}
       <div className="flex items-center gap-2 pb-2 border-b border-border/50">
@@ -122,7 +122,7 @@ export default function GoalDetailPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto w-full min-h-[500px]"
+        className="max-w-2xl mx-auto w-full min-h-125"
       >
         <GoalListBlock />
       </motion.div>

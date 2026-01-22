@@ -3,8 +3,7 @@ import React, { useState } from 'react'
 import GoalsForm from './GoalsForm'
 import { motion } from 'framer-motion'
 import { Target } from 'lucide-react'
-import GoalCard from './GoalCard'
-import { differenceInDays } from 'date-fns'
+import GoalCard from "./GoalCard";
 import { addGoal, deleteGoal, toggleGoalCompletion, updateGoalStartDate } from '@/actions/goalActions'
 import { toast } from 'react-hot-toast'
 
@@ -163,7 +162,7 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
   const completedGoals = goals.filter(goal => !!goal.completedDate);
 
   return (
-    <div className='flex-1 p-6 space-y-8'>
+    <div className="flex-1 p-6 space-y-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -171,23 +170,25 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
         className="space-y-3"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl border border-purple-500/20">
+          <div className="p-2 bg-linear-to-br from-purple-500/20 to-purple-600/20 rounded-xl border border-purple-500/20">
             <Target className="w-6 h-6 text-purple-400" />
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Goal List</h1>
-            <p className="text-zinc-400 mt-1">Track and complete your personal goals over time</p>
+            <p className="text-zinc-400 mt-1">
+              Track and complete your personal goals over time
+            </p>
           </div>
         </div>
       </motion.div>
 
       <div>
-        <GoalsForm onSubmit={handleAddGoal}/>
+        <GoalsForm onSubmit={handleAddGoal} />
       </div>
 
       <div className="space-y-8">
         {pendingGoals.length > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -200,7 +201,7 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
               </span>
             </div>
             <div className="space-y-4">
-              {pendingGoals.map(goal => (
+              {pendingGoals.map((goal) => (
                 <GoalCard
                   key={goal.id}
                   goal={goal}
@@ -214,7 +215,7 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
         )}
 
         {activeGoals.length > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -227,7 +228,7 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
               </span>
             </div>
             <div className="space-y-4">
-              {activeGoals.map(goal => (
+              {activeGoals.map((goal) => (
                 <GoalCard
                   key={goal.id}
                   goal={goal}
@@ -241,7 +242,7 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
         )}
 
         {completedGoals.length > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -254,7 +255,7 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
               </span>
             </div>
             <div className="space-y-4">
-              {completedGoals.map(goal => (
+              {completedGoals.map((goal) => (
                 <GoalCard
                   key={goal.id}
                   goal={goal}
@@ -268,5 +269,5 @@ export default function GoalsContainer({ initialGoals }: GoalsContainerProps) {
         )}
       </div>
     </div>
-  )
+  );
 }

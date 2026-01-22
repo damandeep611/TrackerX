@@ -10,7 +10,6 @@ import {
   TimeSlot 
 } from '@/types/dailyLogTypes'
 import {
-  MINUTES_PER_DAY,
   OUTER_RADIUS,
   INNER_RADIUS,
   CENTER,

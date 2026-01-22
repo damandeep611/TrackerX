@@ -62,20 +62,6 @@ export const timeLog = pgTable("timelog", {
   tracked_at: timestamp("tracked_at").defaultNow().notNull(),
 });
 
-// Daily routine schema for tracking available hours
-export const dailyRoutine = pgTable("daily_routine", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  totalHoursAvailable: numeric("total_hours_available", {
-    precision: 5,
-    scale: 2,
-  }).notNull(),
-  routineDate: timestamp("routine_date").defaultNow().notNull(),
-  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
-});
-
 // Goals schema for tracking personal goals
 export const goals = pgTable("goals", {
   id: uuid("id").primaryKey().defaultRandom(),

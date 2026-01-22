@@ -24,7 +24,6 @@ TrackerX is a productivity and skill-tracking dashboard built with **Next.js 15 
 - **`skillTask`**: Tasks linked to a specific `skillCard`.
 - **`task`**: Standalone tasks (not linked to a skill).
 - **`timeLog`**: Tracks time spent. Links to `skillTask` OR `skillCard`.
-- **`dailyRoutine`**: Tracks daily available hours.
 - **`goals`**: Long-term user goals.
 
 ### Dashboard Structure (`src/app/dashboard/`)

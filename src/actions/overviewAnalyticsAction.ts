@@ -17,48 +17,7 @@ async function getUserId(): Promise<string> {
   return session.user.id;
 }
 
-// Get total time available today (assuming 8 hours workday)
-export async function getTotalTimeAvailableToday(): Promise<{
-  availableHours: number;
-  remainingHours: number;
-}> {
-  const userId = await getUserId();
 
-  try {
-    const today = new Date();
-    const todayString = today.toISOString().split("T")[0];
-
-    // Get total time spent today
-    const result = await db
-      .select({
-        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(
-          Number
-        ),
-      })
-      .from(timeLog)
-      .where(
-        and(
-          eq(timeLog.user_id, userId),
-          sql`DATE(${timeLog.logged_date}) = ${todayString}`
-        )
-      );
-
-    const totalMinutesSpent = result[0]?.totalMinutes || 0;
-    const totalMinutesAvailable = 8 * 60; // 8 hours in minutes
-    const remainingMinutes = Math.max(
-      0,
-      totalMinutesAvailable - totalMinutesSpent
-    );
-
-    return {
-      availableHours: totalMinutesAvailable / 60,
-      remainingHours: Math.round((remainingMinutes / 60) * 10) / 10,
-    };
-  } catch (error) {
-    console.error("Failed to get total time available today:", error);
-    return { availableHours: 8, remainingHours: 8 };
-  }
-}
 
 // Get time spent yesterday
 export async function getTimeSpentYesterday(): Promise<{
@@ -238,7 +197,6 @@ export async function getMostActiveSkill(): Promise<{
 
 // Get comprehensive overview data
 export async function getOverviewAnalytics(): Promise<{
-  totalTimeAvailable: { availableHours: number; remainingHours: number };
   timeSpentYesterday: { hoursSpent: number; tasksCompleted: number };
   weeklyTime: { totalHours: number; daysWithActivity: number };
   monthlyTime: {totalHours: number; daysWithActivity: number};
@@ -246,13 +204,11 @@ export async function getOverviewAnalytics(): Promise<{
 }> {
   try {
     const [
-      totalTimeAvailable,
       timeSpentYesterday,
       weeklyTime,
       monthlyTime,
       mostActiveSkill,
     ] = await Promise.all([
-      getTotalTimeAvailableToday(),
       getTimeSpentYesterday(),
       getWeeklyTimeSpent(),
       getMontlyTimeSpent(),
@@ -260,7 +216,6 @@ export async function getOverviewAnalytics(): Promise<{
     ]);
 
     return {
-      totalTimeAvailable,
       timeSpentYesterday,
       weeklyTime,
       monthlyTime,
@@ -269,7 +224,6 @@ export async function getOverviewAnalytics(): Promise<{
   } catch (error) {
     console.error("Failed to get overview analytics:", error);
     return {
-      totalTimeAvailable: { availableHours: 8, remainingHours: 8 },
       timeSpentYesterday: { hoursSpent: 0, tasksCompleted: 0 },
       weeklyTime: { totalHours: 0, daysWithActivity: 0 },
       monthlyTime: {totalHours: 0, daysWithActivity: 0},

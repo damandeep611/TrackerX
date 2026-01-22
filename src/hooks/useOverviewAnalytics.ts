@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { getOverviewAnalytics } from "@/actions/overviewAnalyticsAction";
 
 interface OverviewAnalytics {
-  totalTimeAvailable: { availableHours: number; remainingHours: number };
   timeSpentYesterday: { hoursSpent: number; tasksCompleted: number };
   weeklyTime: { totalHours: number; daysWithActivity: number };
   monthlyTime: {totalHours: number; daysWithActivity: number};
@@ -20,7 +19,6 @@ interface UseOverviewAnalyticsReturn {
 
 export function useOverviewAnalytics(): UseOverviewAnalyticsReturn {
   const [analytics, setAnalytics] = useState<OverviewAnalytics>({
-    totalTimeAvailable: { availableHours: 8, remainingHours: 8 },
     timeSpentYesterday: { hoursSpent: 0, tasksCompleted: 0 },
     weeklyTime: { totalHours: 0, daysWithActivity: 0 },
     monthlyTime: {totalHours: 0, daysWithActivity: 0},
