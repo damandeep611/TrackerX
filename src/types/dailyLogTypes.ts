@@ -36,10 +36,10 @@ export const MODAL_COLORS = [
     css: "linear-gradient(135deg, #1e3a8a 0%, #6366f1 50%, #a78bfa 100%)",
     type: "gradient",
   }, // Twilight gradient
-  { label: "Deep Work", value: "#7c3aed", type: "solid" }, // Rich Violet - creative depth
-  { label: "Yoga", value: "#059669", type: "solid" }, // Light green - flexibility, balance
-  { label: "Learning", value: "#eab308", type: "solid" }, // Dark Green - depth, growth
-  { label: "Relax", value: "#a78bfa", type: "solid" }, // Soft Purple - peaceful, gentle
+  { label: "Deep Work", value: "#7c3aed", type: "solid" },
+  { label: "Yoga", value: "#059669", type: "solid" },
+  { label: "Learning", value: "#eab308", type: "solid" },
+  { label: "Relax", value: "#a78bfa", type: "solid" },
 ];
 
 

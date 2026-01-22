@@ -134,7 +134,7 @@ export default function DailyLogPage() {
       <div className="flex flex-1 gap-6 overflow-hidden min-h-0">
         {/* Left Panel: Stats */}
         <DailyStats
-          totalActivityMinutes={stats.totalActivityMinutes}
+          date={currentDate}
           totalFocusedMinutes={stats.totalFocusedMinutes}
           totalSleepMinutes={stats.totalSleepMinutes}
           totalLogNotes={stats.totalLogNotes}
