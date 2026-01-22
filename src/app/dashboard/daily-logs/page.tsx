@@ -40,30 +40,29 @@ export default function DailyLogPage() {
     setIsModalOpen(true);
   };
 
-  const handleSaveEntry = (data: any) => {
-    const newEntryPayload: any = {
-      type: data.type,
-      // For log-note
-      ...(data.type === "log-note"
+  const handleSaveEntry = (data: {
+    type: EntryType;
+    content?: string;
+    title?: string;
+    slots?: TimeSlot[];
+    color?: string;
+  }) => {
+    const newEntryPayload = (
+      data.type === "log-note"
         ? {
+            type: "log-note",
             time: selectedTime,
-            content: data.content,
+            content: data.content || "",
           }
         : {
-            // For activity
-            title: data.title,
-            slots: data.slots,
-            color: data.color,
-          }),
-    };
+            type: "activity",
+            title: data.title || "",
+            slots: data.slots || [],
+            color: data.color || "",
+          }
+    ) as Entry;
 
     addEntry(newEntryPayload);
-    // Modal closes automatically via its own logic or we close it here?
-    // The previous code had `setIsModalOpen(false)` implicitly or handled by parent?
-    // Ah, previous code: `addEntry(newEntry)` then nothing. But `EntryModal` calls `onSave` then `onClose`.
-    // Wait, `EntryModal` implementation:
-    // `handleSave = () => { ... onSave(...) ; onClose() }`
-    // So we don't need to close it here.
   };
 
   const navigateDate = (direction: "prev" | "next") => {
