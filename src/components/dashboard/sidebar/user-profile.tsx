@@ -42,8 +42,8 @@ export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
         className={`flex items-center rounded-xl cursor-pointer transition-all duration-200 border 
           ${
             isOpen
-              ? "bg-zinc-800 border-zinc-700"
-              : "bg-zinc-800/40 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700"
+              ? "bg-surface-highlight border-border"
+              : "bg-surface/50 border-transparent hover:bg-surface-highlight hover:border-border"
           }
           ${isCollapsed ? "justify-center p-1.5" : "gap-3 p-2.5"}
         `}
@@ -55,7 +55,7 @@ export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
               "https://robohash.org/DF9.png?set=set4&size=150x150"
             }
             alt={`${data?.user.name}`}
-            className={`rounded-lg object-cover bg-zinc-900 ${
+            className={`rounded-lg object-cover bg-surface-highlight border border-border ${
               isCollapsed ? "w-8 h-8" : "w-9 h-9"
             }`}
           />
@@ -63,10 +63,10 @@ export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
 
         {!isCollapsed && (
           <div className="flex-1 overflow-hidden min-w-0">
-            <p className="text-[13px] font-medium text-zinc-200 truncate leading-none mb-1">
+            <p className="text-[13px] font-medium text-primary truncate leading-none mb-1">
               {data?.user.name}
             </p>
-            <p className="text-[11px] text-zinc-500 truncate leading-none">
+            <p className="text-[11px] text-text-secondary truncate leading-none">
               {data?.user.email}
             </p>
           </div>
@@ -83,31 +83,33 @@ export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
               duration: 0.15,
               ease: [0.4, 0, 0.2, 1],
             }}
-            className={`absolute w-full top-full mt-2 shadow-2xl overflow-hidden z-50 border border-zinc-800 bg-[#18181b] rounded-xl p-1 ${
+            className={`absolute w-full top-full mt-2 shadow-2xl overflow-hidden z-50 border border-border bg-popover rounded-xl p-1 ${
               isCollapsed ? "left-14 w-56" : "left-0"
             }`}
           >
-            <div className="px-2 py-2 border-b border-zinc-800 mb-1">
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold pl-2">My Account</p>
+            <div className="px-2 py-2 border-b border-border mb-1">
+              <p className="text-[10px] uppercase tracking-wider text-text-tertiary font-bold pl-2">
+                My Account
+              </p>
             </div>
-            
+
             <div className="space-y-0.5">
-              <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 rounded-lg transition-colors">
+              <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-primary hover:bg-surface-highlight rounded-lg transition-colors">
                 <User className="w-3.5 h-3.5" />
                 Profile
               </button>
 
               <div className="px-1">
-                 <ModeToggle />
+                <ModeToggle />
               </div>
-              
-              <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 rounded-lg transition-colors">
+
+              <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-primary hover:bg-surface-highlight rounded-lg transition-colors">
                 <MessageSquarePlus className="w-3.5 h-3.5" />
                 Feedback
               </button>
             </div>
-            
-            <div className="mt-1 pt-1 border-t border-zinc-800">
+
+            <div className="mt-1 pt-1 border-t border-border">
               <SignOutButton />
             </div>
           </motion.div>

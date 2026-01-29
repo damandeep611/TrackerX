@@ -27,6 +27,7 @@ export default async function SkillOverview({
         id: skillCard.id,
         skillName: skillCard.skillName,
         slug: skillCard.slug,
+        createdAt: skillCard.createdAt,
       })
       .from(skillCard)
       .where(and(eq(skillCard.slug, skillSlug), eq(skillCard.userId, userId)))
@@ -43,7 +44,12 @@ export default async function SkillOverview({
 
     return (
       <div className="flex flex-col overflow-hidden">
-        <SkillHeader skillSlug={currentSkillSlug} skillId={skillId} />
+        <SkillHeader
+          skillSlug={currentSkillSlug}
+          skillId={skillId}
+          skillName={currentSkillName}
+          createdAt={currentSkill.createdAt}
+        />
         <SkillPageWrapper
           skillName={currentSkillName}
           initialSkillTodos={skillTodoData}

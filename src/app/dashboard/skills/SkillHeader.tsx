@@ -1,14 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Cpu, FolderCheck, House, MoreHorizontal, Share2 } from "lucide-react";
+import { FolderCheck, MoreHorizontal, Share2 } from "lucide-react";
 
 import { AnimatePresence } from "framer-motion";
 import SkillDropdownMenu from "./SkillDropdownMenu";
@@ -16,43 +8,33 @@ import SkillDropdownMenu from "./SkillDropdownMenu";
 interface SkillHeaderProps {
   skillSlug: string;
   skillId: string;
+  skillName: string;
+  createdAt: Date | null;
 }
 
-export default function SkillHeader({ skillSlug, skillId }: SkillHeaderProps) {
+export default function SkillHeader({
+  skillSlug,
+  skillId,
+  skillName,
+  createdAt,
+}: SkillHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
     <div className="   flex items-center justify-between gap-6 p-3 px-6">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                href="/dashboard"
-                className="flex items-center justify-center gap-2 text-xs"
-              >
-                {" "}
-                <House size={12} /> Dashboard
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                href="/dashboard"
-                className="flex items-center justify-center gap-2 text-xs"
-              >
-                <Cpu size={12} />
-                Skills
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="flex items-center justify-center gap-2 text-sm">
-                <FolderCheck size={12} />
-                {skillSlug}
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      <div className="flex items-center gap-2">
+        <div className="p-2 bg-surfaceHighlight rounded-lg border border-border">
+          <FolderCheck size={16} className="text-accent" />
+        </div>
+        <div>
+          <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
+            {skillName}
+          </h1>
+          {createdAt && (
+            <p className="text-[10px] text-zinc-500">
+              Created {createdAt.toLocaleDateString()}
+            </p>
+          )}
+        </div>
       </div>
       {/* Header Actions */}
       <div className="flex items-center space-x-4">

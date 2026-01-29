@@ -20,38 +20,6 @@ export default function SkillAnalyticsCards({
 
   return (
     <div className="  rounded-xl m-2 p-4 space-y-4">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-2 text-accent text-sm font-medium mb-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-            Active
-          </div>
-          <h1 className="text-4xl font-bold  tracking-tight">{skillName}</h1>
-          <p className="text-text-tertiary mt-2 max-w-xl">
-            Architecting the scalable backend and frontend infrastructure for
-            the new SaaS platform.
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="px-4 py-2 rounded-lg bg-neutral-900 border border-white/10 text-xs text-neutral-400">
-            Created:{" "}
-            <span className="text-white ml-1">
-              {isLoading
-                ? "Loading..."
-                : error
-                ? "Error"
-                : analytics.createdAt
-                ? new Date(analytics.createdAt).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })
-                : "Not available"}
-            </span>
-          </div>
-        </div>
-      </div>
       {/* skill analytics widgets */}
 
       <div className="p-2 grid grid-cols-2 lg:grid-cols-4 gap-4 ">

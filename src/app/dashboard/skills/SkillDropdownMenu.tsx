@@ -53,9 +53,9 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
           description: "Remove skill permanently",
           icon: Trash2,
           action: () => setShowConfirm(true),
-          className: isDeleting 
-            ? "opacity-50 cursor-not-allowed hover:bg-red-50 hover:text-red-700" 
-            : "hover:bg-red-50 hover:text-red-700",
+          className: isDeleting
+            ? "opacity-50 cursor-not-allowed hover:bg-destructive/10 text-text-secondary hover:text-destructive"
+            : "hover:bg-destructive/10 text-text-secondary hover:text-destructive",
           isLoading: isDeleting,
           confirmDelete: true,
         },
@@ -66,7 +66,7 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
           action: () => {
             console.log("Skill data reseted");
           },
-          className: " hover:bg-yellow-50 hover:text-yellow-700",
+          className: "hover:bg-accent/10 text-text-secondary hover:text-accent",
         },
       ],
     },
@@ -80,25 +80,25 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
           action: () => {
             console.log("account signed out");
           },
-          className: " hover:bg-blue-50 hover:text-blue-700",
+          className: "hover:bg-surface-highlight text-text-secondary hover:text-primary",
         },
       ],
     },
   ];
 
   return (
-    <div className="absolute right-0 mt-3 w-72 bg-white/95 dark:bg-zinc-900 backdrop-blur-xl border border-border rounded-xl shadow-2xl py-2 z-50 overflow-hidden">
-      <div className=" py-4">
+    <div className="absolute right-0 mt-3 w-64 bg-popover/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl z-50 overflow-hidden">
+      <div className="py-2">
         {SkillDropdownItems.map((section, sectionIndex) => (
-          <div key={sectionIndex}>
+          <div key={sectionIndex} className={sectionIndex > 0 ? "mt-1 pt-1 border-t border-border" : ""}>
             {section.title && (
-              <div className="px-4 py-2">
-                <p className="text-zinc-700 dark:text-zinc-400 text-xs font-medium uppercase tracking-wider">
+              <div className="px-4 py-1.5">
+                <p className="text-text-tertiary text-[10px] font-bold uppercase tracking-wider">
                   {section.title}
                 </p>
               </div>
             )}
-            <div className="space-y-1 px-2">
+            <div className="space-y-0.5 px-1.5">
               {section.items.map((item, itemIndex) => (
                 <button
                   key={itemIndex}
@@ -111,39 +111,39 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
                     }
                   }}
                   disabled={item.isLoading}
-                  className={`w-full cursor-pointer text-left group rounded-md flex items-center py-2.5 px-3 ${item.className}`}
+                  className={`w-full cursor-pointer text-left group rounded-lg flex items-center py-2 px-2.5 transition-all ${item.className}`}
                 >
                   <div className="flex items-center space-x-3 w-full">
-                    <div>
+                    <div className="w-full">
                       <AnimatePresence mode="wait">
                         {item.confirmDelete && showConfirm ? (
                           <motion.div
                             className="flex items-center justify-between w-full"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
+                            initial={{ opacity: 0, x: 5 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -5 }}
+                            transition={{ duration: 0.15 }}
                           >
-                            <span className="text-sm">Are you sure?</span>
-                            <div className="flex gap-2">
-                              <div
+                            <span className="text-xs font-semibold">Delete?</span>
+                            <div className="flex gap-1.5">
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteSkill();
                                 }}
-                                className="p-1 hover:bg-red-100 rounded-md"
+                                className="p-1 hover:bg-destructive hover:text-white rounded-md transition-colors"
                               >
-                                <Check className="w-4 h-4 text-red-600" />
-                              </div>
-                              <div
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setShowConfirm(false);
                                 }}
-                                className="p-1 hover:bg-gray-100 rounded-md"
+                                className="p-1 hover:bg-surface-highlight text-text-secondary rounded-md transition-colors"
                               >
-                                <X className="w-4 h-4" />
-                              </div>
+                                <X className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </motion.div>
                         ) : (
@@ -152,15 +152,15 @@ export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
+                            transition={{ duration: 0.15 }}
                           >
-                            <item.icon className="w-4 h-4" />
+                            <item.icon className="w-3.5 h-3.5 shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm">
+                              <p className="text-xs font-medium">
                                 {item.isLoading ? "Processing..." : item.label}
                               </p>
                               {item.description && (
-                                <p className="text-xs text-zinc-700 dark:text-zinc-500">
+                                <p className="text-[10px] text-text-tertiary group-hover:text-inherit/70">
                                   {item.description}
                                 </p>
                               )}

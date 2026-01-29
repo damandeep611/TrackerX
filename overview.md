@@ -97,3 +97,24 @@ Check `src/db/schema/schema.ts` to understand the relationships.
 1.  **Refactor Data Fetching**: Prioritize fixing the N+1 query in `skillCardAction.ts`. This is the most critical performance bottleneck.
 2.  **Centralize Data Logic**: Ensure that logic for calculating "hours spent" lives in one place (preferably the database query or a dedicated service function) to avoid inconsistency.
 3.  **Validation**: Add input validation (using Zod) for all Server Actions to ensure data integrity before it reaches the database.
+
+---
+
+## Recent Implementation: 80-Hour Sprint Dashboard
+
+A specialized module for tracking deep-work sprints ("Reactor Core" theme) has been added.
+
+### Key Components
+*   **`SprintGauge.tsx`**: A large (500px), interactive radial visualizer with 80 ticks and milestone markers (20h, 40h, 60h).
+*   **`SprintSessionModal.tsx`**: A simplified modal for logging activity sessions (Title, Start Time, End Time).
+*   **`SprintHistory.tsx`**: A chronological feed of recent logs displaying duration velocity (e.g., +2.5h).
+*   **Page**: `src/app/dashboard/80-hour-goals/[goalId]/page.tsx` features a split layout (Gauge left, History right).
+
+### Database Changes
+*   **New Table**: `goal_logs` (Linked to `goals` via `goalId`).
+    *   Fields: `id`, `goalId`, `userId`, `title`, `startTime`, `endTime`, `durationMinutes`, `createdAt`.
+*   **Logic**: Duration is calculated server-side in `goalLogActions.ts` to ensure consistency.
+
+### Styling
+*   **Theming**: Fully compatible with Light/Dark modes using global CSS variables (`text-primary`, `bg-background`).
+*   **Design**: High-contrast "Mission Control" aesthetic with neon glows and cinematic typography.

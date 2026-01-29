@@ -24,18 +24,18 @@ export function ModeToggle() {
       {/* new theme switcher */}
       <button
         onClick={toggleTheme}
-        className="w-full flex items-center justify-between cursor-pointer px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors group"
+        className="w-full flex items-center justify-between cursor-pointer px-3 py-1.5 text-xs text-text-secondary hover:text-primary hover:bg-surface-highlight rounded-lg transition-colors group"
       >
-        <div className="flex items-center gap-2.5">
-          {resolvedTheme ? (
-            <Sun className="w-4 h-4 text-gray-400" />
+        <div className="flex items-center gap-2">
+          {resolvedTheme === "dark" ? (
+            <Moon className="w-3.5 h-3.5 text-text-tertiary group-hover:text-primary" />
           ) : (
-            <Moon className="w-4 h-4 text-gray-400" />
+            <Sun className="w-3.5 h-3.5 text-text-tertiary group-hover:text-primary" />
           )}
-          <span>Theme</span>
+          <span className="font-medium">Theme</span>
         </div>
-        <span className="text-[10px] font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 group-hover:bg-white dark:group-hover:bg-gray-700 transition-colors">
-          {resolvedTheme ? "Dark" : "Light"}
+        <span className="text-[10px] font-medium bg-surface dark:bg-surface-highlight border border-border px-1.5 py-0.5 rounded text-text-tertiary group-hover:text-primary group-hover:border-primary/20 transition-all">
+          {resolvedTheme === "dark" ? "Dark" : "Light"}
         </span>
       </button>
     </div>
