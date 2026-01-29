@@ -75,3 +75,18 @@ export const goals = pgTable("goals", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const goalLogs = pgTable("goal_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  goalId: uuid("goal_id")
+    .notNull()
+    .references(() => goals.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  durationMinutes: integer("duration_minutes").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
