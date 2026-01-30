@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface KanbanTaskCardProps {
   todo: skillTodo;
@@ -21,6 +22,7 @@ interface KanbanTaskCardProps {
   onEditTodo: (todoId: string, updatedTodo: Partial<skillTodo>) => void;
   onDeleteTodo: (todoId: string) => void;
   onTimeLogCreated?: () => void;
+  onToggleDone: (todoId: string, isDone: boolean) => void;
   isOverlay?: boolean;
 }
 
@@ -30,6 +32,7 @@ export default function KanbanTaskCard({
   onEditTodo,
   onDeleteTodo,
   onTimeLogCreated,
+  onToggleDone,
   isOverlay = false,
 }: KanbanTaskCardProps) {
   const {
@@ -101,14 +104,26 @@ export default function KanbanTaskCard({
       }`}
     >
       {/* Header: Tags & Actions */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-wrap gap-1.5">
+      <div className="flex items-start justify-between gap-2">
+        <div 
+          className="pt-0.5"
+          onPointerDown={(e) => e.stopPropagation()} 
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Checkbox 
+            checked={todo.status === 'done' || todo.done}
+            onCheckedChange={(checked) => onToggleDone(todo.id, checked as boolean)}
+            className="h-4 w-4 rounded-[4px] border-muted-foreground/40 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-1.5 mr-auto">
           {todo.tags?.slice(0, 3).map((tag, i) => (
              <span
               key={i}
               className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-secondary text-secondary-foreground border border-black/5 dark:border-white/5"
             >
-              #{tag}
+              {tag}
             </span>
           ))}
         </div>

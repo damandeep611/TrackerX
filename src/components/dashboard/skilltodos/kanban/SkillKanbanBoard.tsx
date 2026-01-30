@@ -53,6 +53,7 @@ export default function SkillKanbanBoard({
     handleEditTodo,
     handleDeleteTodo,
     handleUpdateStatus,
+    handleToggleTodo,
     isSubmittingForm,
     setSkillTodos,
   } = useSkillTodoManager({
@@ -310,6 +311,7 @@ export default function SkillKanbanBoard({
                   onEditTodo={openEditModal} // Pass the opener function
                   onDeleteTodo={handleDeleteTodo}
                   onTimeLogCreated={(taskId) => refreshTimeData([taskId])}
+                  onToggleDone={handleToggleTodo}
                   onAddClick={() => setIsAddingTodo(true)}
                 />
               </div>
@@ -324,6 +326,7 @@ export default function SkillKanbanBoard({
                   timeLogMinutes={timeData[activeTask.id] || 0}
                   onEditTodo={() => { }}
                   onDeleteTodo={() => { }}
+                  onToggleDone={() => { }}
                   isOverlay
                 />
               ) : null}

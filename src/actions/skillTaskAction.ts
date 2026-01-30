@@ -228,6 +228,18 @@ export async function toggleTaskDone(
       };
     }
 
+    // Revalidate path to ensure server-side data consistency
+    const parentSkill = await db
+      .select({ slug: skillCard.slug })
+      .from(skillCard)
+      .where(eq(skillCard.id, skillId))
+      .limit(1);
+
+    if (parentSkill[0]?.slug) {
+      revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
+    }
+    revalidatePath("/dashboard");
+
     return { success: true };
   } catch (err) {
     console.log(err);
@@ -266,6 +278,18 @@ export async function updateTaskStatus(
         error: "Task not found or you don't have permission to update it",
       };
     }
+
+    // Revalidate path to ensure server-side data consistency
+    const parentSkill = await db
+      .select({ slug: skillCard.slug })
+      .from(skillCard)
+      .where(eq(skillCard.id, skillId))
+      .limit(1);
+
+    if (parentSkill[0]?.slug) {
+      revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
+    }
+    revalidatePath("/dashboard");
 
     return { success: true };
   } catch (err) {

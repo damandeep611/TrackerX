@@ -14,6 +14,7 @@ interface KanbanColumnProps {
   onEditTodo: (todoId: string, updatedTodo: Partial<skillTodo>) => void;
   onDeleteTodo: (todoId: string) => void;
   onTimeLogCreated: (taskId: string) => void;
+  onToggleDone: (todoId: string, isDone: boolean) => void;
   onAddClick?: () => void;
 }
 
@@ -25,6 +26,7 @@ export default function KanbanColumn({
   onEditTodo,
   onDeleteTodo,
   onTimeLogCreated,
+  onToggleDone,
   onAddClick,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
@@ -76,6 +78,7 @@ export default function KanbanColumn({
               onEditTodo={onEditTodo}
               onDeleteTodo={onDeleteTodo}
               onTimeLogCreated={() => onTimeLogCreated(task.id)}
+              onToggleDone={onToggleDone}
             />
           ))}
           {tasks.length === 0 && (
