@@ -67,6 +67,7 @@ export async function getSkillTasksForSkill(
     title: t.title,
     description: t.description || "",
     done: t.done,
+    status: t.status || (t.done ? "done" : "todo"), // Fallback/Sync for existing data
     tags: t.tags || [],
     date: t.date.toISOString(),
     createdAt: t.createdAt.toISOString(),
@@ -96,6 +97,7 @@ export async function addSkillTasks(
         title: newTodo.title.trim(),
         description: newTodo.description?.trim() || null,
         tags: newTodo.tags || [],
+        status: newTodo.status || "todo",
       })
       .returning();
 
@@ -123,6 +125,7 @@ export async function addSkillTasks(
       title: createdSkillTask.title,
       description: createdSkillTask.description || "",
       done: createdSkillTask.done,
+      status: createdSkillTask.status || "todo",
       tags: createdSkillTask.tags || [],
       date: createdSkillTask.date.toISOString(),
       createdAt: createdSkillTask.createdAt.toISOString(),
@@ -206,9 +209,10 @@ export async function toggleTaskDone(
   }
 
   try {
+    const status = done ? "done" : "todo";
     const result = await db
       .update(skillTask)
-      .set({ done })
+      .set({ done, status })
       .where(
         and(
           eq(skillTask.id, taskId),
@@ -228,6 +232,45 @@ export async function toggleTaskDone(
   } catch (err) {
     console.log(err);
     return { success: false, error: "Server error while toggling task" };
+  }
+}
+
+// ACTION: Update task status (Drag and Drop)
+export async function updateTaskStatus(
+  taskId: string,
+  skillId: string,
+  status: string
+): Promise<{ success: boolean; error?: string }> {
+  const userId = await getUserId();
+
+  if (!skillId) {
+    return { success: false, error: "Skill ID is missing for status update" };
+  }
+
+  try {
+    const done = status === "done";
+    const result = await db
+      .update(skillTask)
+      .set({ status, done })
+      .where(
+        and(
+          eq(skillTask.id, taskId),
+          eq(skillTask.skill_id, skillId),
+          eq(skillTask.user_id, userId)
+        )
+      );
+
+    if (result.rowCount === 0) {
+      return {
+        success: false,
+        error: "Task not found or you don't have permission to update it",
+      };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.log(err);
+    return { success: false, error: "Server error while updating task status" };
   }
 }
 

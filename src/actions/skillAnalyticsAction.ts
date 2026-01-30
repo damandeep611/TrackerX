@@ -211,3 +211,47 @@ export async function getSkillAnalytics(skillId: string): Promise<{
     };
   }
 }
+
+// Get unique tags sorted by frequency for a skill (for suggestions)
+export async function getUniqueTagsForSkill(
+  skillId: string,
+  limit: number = 7
+): Promise<string[]> {
+  const userId = await getUserId();
+
+  try {
+    // Get all tasks for this skill with their tags
+    const tasks = await db
+      .select({
+        tags: skillTask.tags,
+      })
+      .from(skillTask)
+      .where(
+        and(eq(skillTask.skill_id, skillId), eq(skillTask.user_id, userId))
+      );
+
+    // Count tag frequencies
+    const tagCounts: Record<string, number> = {};
+
+    tasks.forEach((task) => {
+      if (task.tags && Array.isArray(task.tags)) {
+        task.tags.forEach((tag) => {
+          if (tag && typeof tag === "string") {
+            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+          }
+        });
+      }
+    });
+
+    // Convert to array and sort by count (descending)
+    const sortedTags = Object.entries(tagCounts)
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // Return just the tag strings, limited to the requested amount
+    return sortedTags.slice(0, limit).map((item) => item.tag);
+  } catch (error) {
+    console.error("Failed to get unique tags for skill:", error);
+    return [];
+  }
+}

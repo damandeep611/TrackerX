@@ -3,7 +3,6 @@ import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
 import { and, eq } from "drizzle-orm";
 import React from "react";
-import SkillHeader from "../SkillHeader";
 import { getCurrentHours } from "@/actions/skillCardAction";
 import SkillPageWrapper from "@/components/dashboard/skills/SkillPageWrapper";
 
@@ -43,18 +42,14 @@ export default async function SkillOverview({
     const skillCurrentHours = await getCurrentHours(skillSlug);
 
     return (
-      <div className="flex flex-col overflow-hidden">
-        <SkillHeader
-          skillSlug={currentSkillSlug}
-          skillId={skillId}
-          skillName={currentSkillName}
-          createdAt={currentSkill.createdAt}
-        />
+      <div className="flex flex-col">
         <SkillPageWrapper
           skillName={currentSkillName}
           initialSkillTodos={skillTodoData}
           skillId={skillId}
           skillCurrentHours={skillCurrentHours}
+          skillSlug={currentSkillSlug}
+          createdAt={currentSkill.createdAt}
         />
       </div>
     );

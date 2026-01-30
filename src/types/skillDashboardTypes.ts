@@ -20,6 +20,7 @@ export interface skillTodo {
   title: string;
   description: string | null;
   done: boolean;
+  status: string; // "todo" | "in_progress" | "done"
   tags: string[];
   date: string;
   createdAt: string;
@@ -31,6 +32,7 @@ export type newSkillTodo = {
   title: string;
   description: string | null;
   done: boolean;
+  status?: string;
   tags: string[];
   skillId: string;
 };

@@ -118,3 +118,25 @@ A specialized module for tracking deep-work sprints ("Reactor Core" theme) has b
 ### Styling
 *   **Theming**: Fully compatible with Light/Dark modes using global CSS variables (`text-primary`, `bg-background`).
 *   **Design**: High-contrast "Mission Control" aesthetic with neon glows and cinematic typography.
+
+## Recent Implementation: Kanban Board Refactor
+
+The linear task list in the Skill Details page has been replaced with a fully functional Kanban board.
+
+### Key Features
+*   **3-Column Layout**: Tasks are organized into "Todo", "In Progress", and "Done" columns.
+*   **Drag & Drop**: Utilizes `@dnd-kit` for smooth task management. Tasks can be dragged between columns to update their status.
+*   **KanbanTaskCard**: A modern card design featuring:
+    *   Tag pills and "More" menu.
+    *   Quick "+30m" time logging button.
+    *   Optimistic UI updates for immediate feedback.
+*   **Modals**: Unified editing and creation flow using `Modal` and `SkillTodoForm`.
+
+### Technical Details
+*   **Schema**: Added `status` column (varchar) to `skillTask` table to support 'todo', 'in_progress', 'done' states.
+*   **Migration**: Existing tasks were migrated (done: false -> 'todo', done: true -> 'done').
+*   **Components**:
+    *   `SkillKanbanBoard`: Main container managing DND context and state.
+    *   `KanbanColumn`: Scrollable droppable area.
+    *   `KanbanTaskCard`: Draggable sortable item.
+*   **Logic**: Drag-and-drop triggers `updateTaskStatus` server action. Optimistic updates ensure responsiveness.

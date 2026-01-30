@@ -9,6 +9,8 @@ import { getTotalTimeForTasks } from "@/actions/timeLogAction";
 import { useEffect, useState } from "react";
 import { ClipboardList, Plus } from "lucide-react";
 
+import Modal from "@/components/ui/modal";
+
 interface SkillTodoListProps {
   initialSkillTodos?: skillTodo[];
   skillId: string;
@@ -140,24 +142,36 @@ export default function SkillTodoList({
   const totalPages = Math.ceil(totalTasks / TASKS_PER_PAGE);
   const paginatedTodos = filteredSkillTodos.slice(
     (currentPage - 1) * TASKS_PER_PAGE,
-    currentPage * TASKS_PER_PAGE
+    currentPage * TASKS_PER_PAGE,
   );
 
   return (
     <div className=" mx-10 ">
-      <div>
-        <div className={`relative   ${isAddingTodo ? "border-green-600" : ""}`}>
-          <SkillTodoForm
-            onAddSkillTodo={handleAddTodo}
-            onCancel={() => setIsAddingTodo(false)}
-            isSubmitting={isSubmittingForm}
-          />
-        </div>
-      </div>
+      <Modal
+        isOpen={isAddingTodo}
+        onClose={() => setIsAddingTodo(false)}
+        title="Create New Task"
+      >
+        <SkillTodoForm
+          onAddSkillTodo={handleAddTodo}
+          onCancel={() => setIsAddingTodo(false)}
+          isSubmitting={isSubmittingForm}
+          skillId={skillId}
+        />
+      </Modal>
 
       {/* to show the tasks if there are any and showing no tasks title if there are 0 tasks */}
       {skillTodos.length === 0 ? (
         <div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setIsAddingTodo(true)}
+              className="flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-xs font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-all active:scale-95 shadow-lg shadow-black/5"
+            >
+              <Plus size={14} />
+              <span>New Task</span>
+            </button>
+          </div>
           <p>No tasks added yet , add to get started</p>
         </div>
       ) : (
@@ -198,7 +212,10 @@ export default function SkillTodoList({
             </div>
             {/* show todo form only when isAdding state is true */}
             <div className="flex items-center justify-between  gap-3">
-              <button className="flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-xs font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-all active:scale-95 shadow-lg shadow-black/5">
+              <button
+                onClick={() => setIsAddingTodo(true)}
+                className="flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-xs font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-all active:scale-95 shadow-lg shadow-black/5"
+              >
                 <Plus size={14} />
                 <span>New Task</span>
               </button>
@@ -215,7 +232,7 @@ export default function SkillTodoList({
           <div className="relative">
             {/* --------------------------timeline line--------------- */}
             <motion.div
-              className="absolute   top-0 bottom-0 w-px bg-gradient-to-b from-zinc-200 to-zinc-300 dark:from-gray-500 dark:to-gray-500 rounded-full "
+              className="absolute   top-0 bottom-0 w-px bg-linear-to-b from-zinc-200 to-zinc-300 dark:from-gray-500 dark:to-gray-500 rounded-full "
               initial={{ height: 0 }}
               animate={{ height: "100%" }}
               transition={{ duration: 0.5 }}

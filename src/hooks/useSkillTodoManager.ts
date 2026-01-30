@@ -3,6 +3,7 @@ import {
   deleteSkillTask,
   editSkillTask,
   toggleTaskDone,
+  updateTaskStatus,
 } from "@/actions/skillTaskAction";
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
 import { useState } from "react";
@@ -40,6 +41,7 @@ export const useSkillTodoManager = ({
       id: tempId,
       skill_id: skillId,
       ...newTodoData,
+      status: newTodoData.status || "todo",
       date: new Date().toISOString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -144,10 +146,11 @@ export const useSkillTodoManager = ({
   // toggle todo card
   const handleToggleTodo = async (todoId: string, newDone: boolean) => {
     const originalTodos = skillTodos;
+    const newStatus = newDone ? "done" : "todo";
 
     setSkillTodos((prev) =>
       prev.map((todo) =>
-        todo.id === todoId ? { ...todo, done: newDone } : todo
+        todo.id === todoId ? { ...todo, done: newDone, status: newStatus } : todo
       )
     );
 
@@ -171,6 +174,33 @@ export const useSkillTodoManager = ({
         setSkillTodos(originalTodos); // rollback again if needed
       });
   };
+
+  // Handle Drag and Drop status update
+  const handleUpdateStatus = async (todoId: string, newStatus: string) => {
+    const originalTodos = skillTodos;
+    const newDone = newStatus === "done";
+
+    setSkillTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === todoId ? { ...todo, status: newStatus, done: newDone } : todo
+      )
+    );
+
+    // We don't show toast for drag operations typically, unless error
+    try {
+      const result = await updateTaskStatus(todoId, skillId, newStatus);
+      if (!result.success) {
+        console.error("Failed to update status:", result.error);
+        setSkillTodos(originalTodos);
+        toast.error("Failed to move task");
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      setSkillTodos(originalTodos);
+      toast.error("Failed to move task");
+    }
+  };
+
   //---------------- handles deleting a task
   const handleDeleteTodo = async (todoId: string) => {
     const originalTodos = skillTodos;
@@ -219,7 +249,9 @@ export const useSkillTodoManager = ({
 
     handleEditTodo,
     handleToggleTodo,
+    handleUpdateStatus,
 
     handleDeleteTodo,
+    setSkillTodos, // Expose setter for drag-and-drop optimistic UI
   };
 };

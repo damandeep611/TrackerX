@@ -6,11 +6,16 @@ import { motion, AnimatePresence } from "framer-motion";
 interface TagInputProps {
   tags: string[];
   setTags: (tags: string[]) => void;
+  suggestions?: string[];
 }
 
 const MAX_TAGS = 3;
 
-export default function TagInput({ tags, setTags }: TagInputProps) {
+export default function TagInput({
+  tags,
+  setTags,
+  suggestions = [],
+}: TagInputProps) {
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
 
@@ -42,6 +47,18 @@ export default function TagInput({ tags, setTags }: TagInputProps) {
     setError("");
   };
 
+  const addSuggestion = (tag: string) => {
+    if (tags.length >= MAX_TAGS) {
+      setError(`Maximum ${MAX_TAGS} tags allowed`);
+      return;
+    }
+    if (tags.includes(tag)) {
+      return;
+    }
+    setTags([...tags, tag]);
+    setError("");
+  };
+
   const removeTag = (indexToRemove: number) => {
     setTags(tags.filter((_, index) => index !== indexToRemove));
     setError("");
@@ -53,8 +70,11 @@ export default function TagInput({ tags, setTags }: TagInputProps) {
       ? `Add tags (${remainingTags} remaining, press Enter or comma to add)`
       : `Maximum ${MAX_TAGS} tags reached`;
 
+  // Filter out suggestions that are already selected
+  const availableSuggestions = suggestions.filter((s) => !tags.includes(s));
+
   return (
-    <div className="space-y-1 my-2">
+    <div className="space-y-2 my-2">
       <div
         className={`flex flex-wrap items-center gap-2 p-2 border rounded-md focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-transparent ${
           error ? "border-red-500" : "border-border"
@@ -92,12 +112,32 @@ export default function TagInput({ tags, setTags }: TagInputProps) {
             }}
             onKeyDown={handleKeyDown}
             onBlur={addTag}
-            className="flex-grow min-w-[120px] outline-none text-sm"
+            className="flex-grow min-w-[120px] outline-none text-sm bg-transparent"
             placeholder={placeholderText}
           />
         )}
       </div>
       {error && <p className="text-red-500 text-xs">{error}</p>}
+
+      {/* Suggestions */}
+      {availableSuggestions.length > 0 && (
+        <div className="flex flex-wrap gap-2 pt-1">
+          <span className="text-xs text-muted-foreground self-center mr-1">
+            Recent:
+          </span>
+          {availableSuggestions.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => addSuggestion(tag)}
+              disabled={tags.length >= MAX_TAGS}
+              className="text-xs px-2 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

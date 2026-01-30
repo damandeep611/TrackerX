@@ -64,13 +64,13 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
 
   if (isLoading) {
     return (
-      <Card className="w-full max-w-md h-fit border-border bg-card shadow-sm">
+      <Card className="w-full max-w-xs h-fit border-border bg-card shadow-sm">
         <CardHeader className="items-center pb-2">
           <CardTitle className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-[250px]">
+        <CardContent className="flex items-center justify-center h-62.5">
           <div className="text-sm text-muted-foreground">Loading chart...</div>
         </CardContent>
       </Card>
@@ -79,13 +79,13 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
 
   if (error) {
     return (
-      <Card className="w-full max-w-md h-fit border-border bg-card shadow-sm">
+      <Card className="w-full max-w-xs h-fit border-border bg-card shadow-sm">
         <CardHeader className="items-center pb-2">
           <CardTitle className="text-sm font-medium uppercase tracking-widest text-destructive">
             Error
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-[250px]">
+        <CardContent className="flex items-center justify-center h-62.5">
           <div className="text-sm text-muted-foreground">
             Failed to load analytics
           </div>
@@ -96,13 +96,13 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
 
   if (chartData.length === 0) {
     return (
-      <Card className="w-full max-w-md h-fit border-border bg-card shadow-sm">
+      <Card className="w-full max-w-xs h-fit border-border bg-card shadow-sm">
         <CardHeader className="items-center pb-2">
           <CardTitle className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-[250px]">
+        <CardContent className="flex items-center justify-center h-62.5">
           <div className="text-sm text-muted-foreground text-center px-4">
             No tags found. Add tags to your tasks to see the breakdown.
           </div>
@@ -116,7 +116,7 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="w-full max-w-md"
+      className="w-full max-w-xs"
     >
       <Card className="flex flex-col border-border bg-card shadow-sm h-fit overflow-hidden">
         <CardHeader className="items-center pb-0 pt-4 px-3">
@@ -130,7 +130,7 @@ export default function SkillAnalytics({ skillId }: SkillAnalyticsProps) {
         <CardContent className="flex-1 pb-4 pt-0 px-3">
           <ChartContainer
             config={chartConfig}
-            className="mx-auto aspect-square max-h-[220px] w-full"
+            className="mx-auto aspect-square max-h-55 w-full"
           >
             <PieChart>
               <ChartTooltip
