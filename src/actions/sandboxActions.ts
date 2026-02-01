@@ -31,6 +31,21 @@ export async function createSandbox(data: { name: string; targetHours: number })
   return newSandbox;
 }
 
+export async function deleteSandbox(sandboxId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  // Due to cascade delete, this should remove phases and logs too.
+  await db.delete(sandboxes).where(eq(sandboxes.id, sandboxId));
+
+  revalidatePath("/dashboard/sandbox");
+}
+
 export async function getSandboxes() {
   const session = await auth.api.getSession({
     headers: await headers(),

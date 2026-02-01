@@ -52,16 +52,16 @@ export default function SandboxDetailView({ sandbox, initialPhases = [], initial
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between gap-6 p-3 px-6 border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-30">
+      <div className="flex items-center justify-between gap-6 p-3 px-6 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-30">
         <div className="flex items-center gap-2 min-w-50">
-          <div className="p-2 bg-surfaceHighlight rounded-lg border border-border">
-            <Box size={16} className="text-blue-500" />
+          <div className="p-2 bg-accent rounded-lg border border-border">
+            <Box size={16} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
+            <h1 className="text-sm font-semibold tracking-tight text-foreground">
               {sandbox.name}
             </h1>
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-[10px] text-muted-foreground">
               Sandbox • Target {sandbox.targetHours}h
             </p>
           </div>
@@ -103,10 +103,10 @@ export default function SandboxDetailView({ sandbox, initialPhases = [], initial
 
         {/* Header Actions */}
         <div className="flex items-center space-x-4 min-w-50 justify-end">
-          <button className="p-2 hover:bg-surfaceHighlight rounded-md text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-border">
+          <button className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border">
             <Share2 size={18} />
           </button>
-          <button className="p-2 rounded-md text-zinc-400 hover:text-white hover:bg-surfaceHighlight border border-transparent hover:border-border transition-colors">
+          <button className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent border border-transparent hover:border-border transition-colors">
             <MoreHorizontal size={18} />
           </button>
         </div>
@@ -128,7 +128,7 @@ export default function SandboxDetailView({ sandbox, initialPhases = [], initial
              <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto">
                 <span className="text-2xl">📈</span>
             </div>
-            <h2 className="text-xl font-semibold">Sandbox Analytics</h2>
+            <h2 className="text-xl font-semibold text-foreground">Sandbox Analytics</h2>
             <p className="text-muted-foreground max-w-md">
                 Deep insights into your sandbox activity will appear here.
             </p>

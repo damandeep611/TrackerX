@@ -26,8 +26,8 @@ export default function SandboxPageContent({ initialSandboxes }: SandboxPageCont
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Sandbox</h1>
-          <p className="text-zinc-400 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Sandbox</h1>
+          <p className="text-muted-foreground text-sm mt-1">
             Experimental spaces for testing new ideas.
           </p>
         </div>
@@ -43,12 +43,12 @@ export default function SandboxPageContent({ initialSandboxes }: SandboxPageCont
         ))}
         
         {initialSandboxes.length === 0 && (
-          <div className="col-span-full flex flex-col items-center justify-center p-12 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/50">
-            <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mb-4 text-zinc-500">
+          <div className="col-span-full flex flex-col items-center justify-center p-12 border border-dashed border-border rounded-xl bg-muted/20">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4 text-muted-foreground">
               <Plus size={24} />
             </div>
-            <h3 className="text-lg font-medium text-zinc-300">No sandboxes yet</h3>
-            <p className="text-zinc-500 text-sm mt-1 mb-6 text-center max-w-sm">
+            <h3 className="text-lg font-medium text-foreground">No sandboxes yet</h3>
+            <p className="text-muted-foreground text-sm mt-1 mb-6 text-center max-w-sm">
               Create your first sandbox to start experimenting with new features and tracking progress.
             </p>
             <Button onClick={() => setIsModalOpen(true)} variant="outline">

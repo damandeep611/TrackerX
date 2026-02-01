@@ -93,16 +93,16 @@ export default function LogSprintModal({ isOpen, onClose, onSave }: LogSprintMod
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="LOG SPRINT">
       <div className="space-y-6">
-        <p className="text-zinc-500 text-xs -mt-4">Record your deep work block.</p>
+        <p className="text-muted-foreground text-xs -mt-4">Record your deep work block.</p>
 
         <div className="space-y-5">
           {/* Activity Name */}
           <div className="space-y-2">
-            <Label htmlFor="activity-name" className="text-[10px] uppercase text-zinc-500 tracking-widest font-bold">Activity Name</Label>
+            <Label htmlFor="activity-name" className="text-[10px] uppercase text-muted-foreground tracking-widest font-bold">Activity Name</Label>
             <Input
               id="activity-name"
               placeholder="e.g., Read Documentation, Code Feature X"
-              className="bg-zinc-900/50 border-zinc-800 focus:border-blue-500/40 text-white placeholder:text-zinc-700 font-medium h-12 text-sm transition-all focus:ring-1 focus:ring-blue-500/20"
+              className="bg-muted/50 border-border focus:border-primary/40 text-foreground placeholder:text-muted-foreground/50 font-medium h-12 text-sm transition-all focus:ring-1 focus:ring-primary/20"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
@@ -111,16 +111,16 @@ export default function LogSprintModal({ isOpen, onClose, onSave }: LogSprintMod
 
           <div className="grid grid-cols-2 gap-4">
             {/* Start Time Block */}
-            <div className="bg-zinc-900/30 p-3 rounded-xl border border-zinc-800/60 hover:border-zinc-700/80 transition-colors group">
-              <Label htmlFor="start-time" className="text-[10px] uppercase text-zinc-500 tracking-widest font-bold flex items-center gap-1.5 mb-2 group-hover:text-zinc-400 transition-colors">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+            <div className="bg-muted/30 p-3 rounded-xl border border-border/60 hover:border-border transition-colors group">
+              <Label htmlFor="start-time" className="text-[10px] uppercase text-muted-foreground tracking-widest font-bold flex items-center gap-1.5 mb-2 group-hover:text-muted-foreground transition-colors">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                 Start Time
               </Label>
               <div className="relative">
                 <Input
                   id="start-time"
                   type="time"
-                  className="bg-transparent border-none text-white font-mono text-2xl h-auto p-0 focus-visible:ring-0 focus:border-none w-full cursor-pointer hover:text-blue-200 transition-colors"
+                  className="bg-transparent border-none text-foreground font-mono text-2xl h-auto p-0 focus-visible:ring-0 focus:border-none w-full cursor-pointer hover:text-primary/80 transition-colors"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                 />
@@ -128,16 +128,16 @@ export default function LogSprintModal({ isOpen, onClose, onSave }: LogSprintMod
             </div>
 
             {/* End Time Block */}
-            <div className="bg-zinc-900/30 p-3 rounded-xl border border-zinc-800/60 hover:border-zinc-700/80 transition-colors group">
-              <Label htmlFor="end-time" className="text-[10px] uppercase text-zinc-500 tracking-widest font-bold flex items-center gap-1.5 mb-2 group-hover:text-zinc-400 transition-colors">
-                <span className="w-1.5 h-1.5 rounded-full bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.5)]"></span>
+            <div className="bg-muted/30 p-3 rounded-xl border border-border/60 hover:border-border transition-colors group">
+              <Label htmlFor="end-time" className="text-[10px] uppercase text-muted-foreground tracking-widest font-bold flex items-center gap-1.5 mb-2 group-hover:text-muted-foreground transition-colors">
+                <span className="w-1.5 h-1.5 rounded-full bg-chart-3 shadow-[0_0_8px_rgba(236,72,153,0.5)]"></span>
                 End Time
               </Label>
               <div className="relative">
                 <Input
                   id="end-time"
                   type="time"
-                  className="bg-transparent border-none text-white font-mono text-2xl h-auto p-0 focus-visible:ring-0 focus:border-none w-full cursor-pointer hover:text-pink-200 transition-colors"
+                  className="bg-transparent border-none text-foreground font-mono text-2xl h-auto p-0 focus-visible:ring-0 focus:border-none w-full cursor-pointer hover:text-chart-3/80 transition-colors"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                 />
@@ -147,8 +147,8 @@ export default function LogSprintModal({ isOpen, onClose, onSave }: LogSprintMod
 
           {/* Quick Duration Presets */}
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase text-zinc-500 tracking-widest font-bold flex items-center gap-1.5">
-                <Zap size={10} className="text-yellow-500" />
+            <Label className="text-[10px] uppercase text-muted-foreground tracking-widest font-bold flex items-center gap-1.5">
+                <Zap size={10} className="text-chart-5" />
                 Quick Duration
             </Label>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
@@ -159,8 +159,8 @@ export default function LogSprintModal({ isOpen, onClose, onSave }: LogSprintMod
                   variant="outline"
                   onClick={() => setDurationFromStart(preset.value)}
                   className={cn(
-                    "h-8 text-xs font-mono border-zinc-800 bg-zinc-900/30 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-all",
-                    durationMinutes === preset.value && "border-blue-500/50 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
+                    "h-8 text-xs font-mono border-border bg-muted/30 hover:bg-muted hover:text-foreground text-muted-foreground transition-all",
+                    durationMinutes === preset.value && "border-primary/50 bg-primary/10 text-primary hover:bg-primary/20"
                   )}
                 >
                   {preset.label}
@@ -171,19 +171,19 @@ export default function LogSprintModal({ isOpen, onClose, onSave }: LogSprintMod
         </div>
 
         {/* Calculated Duration Display */}
-        <div className="bg-gradient-to-r from-zinc-900 via-zinc-900/80 to-zinc-900 border border-zinc-800/50 rounded-lg py-3 flex items-center justify-between px-4">
+        <div className="bg-muted border border-border/50 rounded-lg py-3 flex items-center justify-between px-4">
             <div className="flex items-center gap-2">
-                <Clock size={14} className="text-zinc-500" />
-                <span className="text-zinc-500 text-xs font-medium">Total Session:</span>
+                <Clock size={14} className="text-muted-foreground" />
+                <span className="text-muted-foreground text-xs font-medium">Total Session:</span>
             </div>
-            <span className="text-white font-mono font-bold text-sm bg-zinc-800/50 px-2 py-0.5 rounded border border-zinc-700/50">
+            <span className="text-foreground font-mono font-bold text-sm bg-background/50 px-2 py-0.5 rounded border border-border/50">
                 {durationStr}
             </span>
         </div>
 
         {/* Save Button */}
         <Button 
-            className="w-full py-6 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider text-xs shadow-lg shadow-blue-900/20 transition-all flex items-center justify-center gap-2 group"
+            className="w-full py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider text-xs shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group"
             onClick={handleSave}
             disabled={!title || !startTime || !endTime}
         >

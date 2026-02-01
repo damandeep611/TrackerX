@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface RadialProgressProps {
@@ -42,14 +41,14 @@ export default function RadialProgress({
             cx={center} 
             cy={center} 
             r={radius - 15} 
-            className="stroke-zinc-900/50 fill-none" 
+            className="stroke-border fill-none" 
             strokeWidth="1"
           />
           <circle 
             cx={center} 
             cy={center} 
             r={radius - 15} 
-            className="stroke-blue-500/10 fill-none transition-all duration-1000" 
+            className="stroke-primary/10 fill-none transition-all duration-1000" 
             strokeWidth="8"
             strokeDasharray={dashArray}
             strokeDashoffset={dashOffset}
@@ -62,7 +61,7 @@ export default function RadialProgress({
             cx={center} 
             cy={center} 
             r={radius - 20} 
-            className="stroke-zinc-800/30 fill-none" 
+            className="stroke-border/50 fill-none" 
             strokeWidth="1"
             strokeDasharray="4 4"
           />
@@ -70,7 +69,7 @@ export default function RadialProgress({
             cx={center} 
             cy={center} 
             r={radius - 20} 
-            className="stroke-blue-600 fill-none transition-all duration-1000" 
+            className="stroke-primary fill-none transition-all duration-1000" 
             strokeWidth="2"
             strokeDasharray={dashArray}
             strokeDashoffset={dashOffset}
@@ -104,8 +103,8 @@ export default function RadialProgress({
                 y2={y2}
                 className={cn(
                   "transition-all duration-700",
-                  isActive ? "stroke-blue-500" : "stroke-zinc-800/50",
-                  isMajor && !isActive && "stroke-zinc-700/50"
+                  isActive ? "stroke-primary" : "stroke-muted-foreground/30",
+                  isMajor && !isActive && "stroke-muted-foreground/50"
                 )}
                 strokeWidth={isMajor ? 2 : 1}
                 strokeLinecap="round"
@@ -127,7 +126,7 @@ export default function RadialProgress({
                       y={y} 
                       textAnchor="middle" 
                       dominantBaseline="middle" 
-                      className="fill-zinc-600 text-[9px] font-bold font-mono tracking-tighter"
+                      className="fill-muted-foreground text-[9px] font-bold font-mono tracking-tighter"
                   >
                       {l.text}
                   </text>
@@ -135,28 +134,28 @@ export default function RadialProgress({
           })}
 
           {/* Decorative Brackets */}
-          <path d={`M ${center - 40} ${center - radius + 50} L ${center - 60} ${center - radius + 50} L ${center - 60} ${center - radius + 70}`} fill="none" className="stroke-zinc-800" strokeWidth="1" />
-          <path d={`M ${center + 40} ${center - radius + 50} L ${center + 60} ${center - radius + 50} L ${center + 60} ${center - radius + 70}`} fill="none" className="stroke-zinc-800" strokeWidth="1" />
-          <path d={`M ${center - 40} ${center + radius - 50} L ${center - 60} ${center + radius - 50} L ${center - 60} ${center + radius - 70}`} fill="none" className="stroke-zinc-800" strokeWidth="1" />
-          <path d={`M ${center + 40} ${center + radius - 50} L ${center + 60} ${center + radius - 50} L ${center + 60} ${center + radius - 70}`} fill="none" className="stroke-zinc-800" strokeWidth="1" />
+          <path d={`M ${center - 40} ${center - radius + 50} L ${center - 60} ${center - radius + 50} L ${center - 60} ${center - radius + 70}`} fill="none" className="stroke-border" strokeWidth="1" />
+          <path d={`M ${center + 40} ${center - radius + 50} L ${center + 60} ${center - radius + 50} L ${center + 60} ${center - radius + 70}`} fill="none" className="stroke-border" strokeWidth="1" />
+          <path d={`M ${center - 40} ${center + radius - 50} L ${center - 60} ${center + radius - 50} L ${center - 60} ${center + radius - 70}`} fill="none" className="stroke-border" strokeWidth="1" />
+          <path d={`M ${center + 40} ${center + radius - 50} L ${center + 60} ${center + radius - 50} L ${center + 60} ${center + radius - 70}`} fill="none" className="stroke-border" strokeWidth="1" />
         </svg>
   
         {/* Center Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em]">{label}</p>
-            <div className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
+            <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.3em]">{label}</p>
+            <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
           </div>
           
           <div className="flex items-baseline mb-3">
-              <span className="text-7xl font-bold text-white tracking-tighter drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">{current.toFixed(1)}</span>
-              <span className="text-xl text-zinc-700 font-bold mb-1 ml-2 tracking-tighter">/ {target}H</span>
+              <span className="text-7xl font-bold text-foreground tracking-tighter">{current.toFixed(1)}</span>
+              <span className="text-xl text-muted-foreground font-bold mb-1 ml-2 tracking-tighter">/ {target}H</span>
           </div>
 
           <div className="flex flex-col items-center gap-1">
-            <div className="bg-blue-600/10 border border-blue-500/20 px-4 py-1.5 rounded-full backdrop-blur-md">
-                 <span className="text-blue-500 text-[10px] font-bold tracking-[0.2em]">{percentage.toFixed(1)}% NOMINAL</span>
+            <div className="bg-primary/5 border border-primary/20 px-4 py-1.5 rounded-full backdrop-blur-md">
+                 <span className="text-primary text-[10px] font-bold tracking-[0.2em]">{percentage.toFixed(1)}% NOMINAL</span>
             </div>
           </div>
         </div>

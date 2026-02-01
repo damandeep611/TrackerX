@@ -145,7 +145,7 @@ export default function SandboxStructure({
       {/* Structure Header */}
       <div className="flex items-end justify-between border-b border-border/50 pb-6 mb-8 mt-2">
         <div>
-          <p className="text-[10px] text-blue-500 font-bold tracking-widest uppercase mb-1">
+          <p className="text-[10px] text-primary font-bold tracking-widest uppercase mb-1">
             System Architecture
           </p>
           <h1 className="text-4xl font-bold text-foreground tracking-tight uppercase">
@@ -156,14 +156,14 @@ export default function SandboxStructure({
         <div className="flex items-center gap-6">
           <button
             onClick={handleOpenAddModal}
-            className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-xs font-medium border border-zinc-700 transition-all"
+            className="flex items-center gap-2 bg-secondary hover:bg-accent text-foreground px-4 py-2 rounded-lg text-xs font-medium border border-border transition-all"
           >
             <Plus size={14} />
             Add Phase
           </button>
-          <div className="flex items-center gap-6 pl-6 border-l border-zinc-800">
+          <div className="flex items-center gap-6 pl-6 border-l border-border">
             <div className="text-right">
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-semibold mb-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">
                 Architecture
               </p>
               <p className="text-xl font-bold text-foreground leading-none">
@@ -171,14 +171,14 @@ export default function SandboxStructure({
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-blue-500 uppercase tracking-widest font-semibold mb-1">
+              <p className="text-[10px] text-primary uppercase tracking-widest font-semibold mb-1">
                 Allocation
               </p>
               <p className="text-xl font-bold text-foreground leading-none">
                 {totalAllocatedHours}
-                <span className="text-zinc-500 text-sm ml-0.5">/</span>
+                <span className="text-muted-foreground text-sm ml-0.5">/</span>
                 {targetHours}
-                <span className="text-zinc-500 text-xs ml-0.5">H</span>
+                <span className="text-muted-foreground text-xs ml-0.5">H</span>
               </p>
             </div>
           </div>
@@ -265,42 +265,42 @@ function PhaseCard({
   return (
     <div
       className={cn(
-        "bg-[#09090b] border border-zinc-800/50 rounded-2xl p-6 flex flex-col gap-6 hover:border-zinc-700/80 transition-all duration-300 ease-in-out group relative overflow-hidden",
+        "bg-card border border-border/50 rounded-2xl p-6 flex flex-col gap-6 hover:border-border transition-all duration-300 ease-in-out group relative overflow-hidden",
         isExpanded ? "col-span-1 md:col-span-2 row-span-2" : "col-span-1",
       )}
     >
       {/* Subtle Gradient Glow */}
-      <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/5 blur-[80px] rounded-full pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
 
       <div className="flex justify-between items-start relative z-10">
         <div className="space-y-1">
-          <p className="text-[9px] text-zinc-500 font-bold tracking-[0.3em] uppercase">
+          <p className="text-[9px] text-muted-foreground font-bold tracking-[0.3em] uppercase">
             PHASE {String(phaseNumber).padStart(2, "0")}
           </p>
-          <p className="text-[9px] text-blue-500/60 font-bold tracking-widest uppercase">
+          <p className="text-[9px] text-primary/60 font-bold tracking-widest uppercase">
             SYSTEM_STABLE
           </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end gap-0.5">
-            <span className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">
+            <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-wider">
               Added Hours
             </span>
-            <div className="bg-blue-600/5 border border-blue-500/10 px-2.5 py-1 rounded-md text-[10px] font-bold text-blue-500/80 flex items-center gap-1.5 font-mono">
+            <div className="bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-md text-[10px] font-bold text-primary flex items-center gap-1.5 font-mono">
               <span>{loggedHours.toFixed(1)}</span>
-              <span className="opacity-20 text-zinc-600">/</span>
+              <span className="opacity-20 text-muted-foreground">/</span>
               <span>{allocatedHours}H</span>
             </div>
           </div>
           <button 
             onClick={onEdit}
-            className="p-1.5 hover:bg-zinc-800 rounded-md transition-colors border border-transparent hover:border-zinc-800 text-zinc-600 hover:text-white"
+            className="p-1.5 hover:bg-accent rounded-md transition-colors border border-transparent hover:border-border text-muted-foreground hover:text-foreground"
           >
             <Edit3 size={12} />
           </button>
           <button 
             onClick={onDelete}
-            className="p-1.5 hover:bg-red-900/20 rounded-md transition-colors border border-transparent hover:border-red-900/30 text-zinc-600 hover:text-red-500"
+            className="p-1.5 hover:bg-destructive/10 rounded-md transition-colors border border-transparent hover:border-destructive/20 text-muted-foreground hover:text-destructive"
           >
             <Trash2 size={12} />
           </button>
@@ -308,12 +308,12 @@ function PhaseCard({
       </div>
 
       <div className="space-y-2.5 relative z-10">
-        <h3 className="text-2xl font-bold text-white leading-tight tracking-tight group-hover:text-blue-500 transition-colors uppercase">
+        <h3 className="text-2xl font-bold text-card-foreground leading-tight tracking-tight group-hover:text-primary transition-colors uppercase">
           {title}
         </h3>
         <p
           className={cn(
-            "text-[12px] text-zinc-500 leading-relaxed font-medium transition-all",
+            "text-[12px] text-muted-foreground leading-relaxed font-medium transition-all",
             isExpanded ? "" : "line-clamp-2",
           )}
         >
@@ -322,7 +322,7 @@ function PhaseCard({
       </div>
 
       <div className="space-y-4 relative z-10 flex-1">
-        <h4 className="text-[9px] text-zinc-600 font-bold tracking-[0.2em] uppercase border-b border-zinc-900/50 pb-2">
+        <h4 className="text-[9px] text-muted-foreground font-bold tracking-[0.2em] uppercase border-b border-border/50 pb-2">
           Operational Milestones
         </h4>
         <ul className="space-y-2.5">
@@ -332,9 +332,9 @@ function PhaseCard({
           ).map((milestone, i) => (
             <li
               key={i}
-              className="flex gap-2.5 text-[11px] text-zinc-400 font-medium leading-snug"
+              className="flex gap-2.5 text-[11px] text-muted-foreground/80 font-medium leading-snug"
             >
-              <span className="text-blue-500/40 mt-0.5 font-mono">
+              <span className="text-primary/40 mt-0.5 font-mono">
                 [{i + 1}]
               </span>
               <span className={isExpanded ? "" : "line-clamp-2"}>
@@ -345,14 +345,14 @@ function PhaseCard({
         </ul>
       </div>
 
-      <div className="mt-auto pt-6 border-t border-zinc-900/50 flex justify-between items-center text-[9px] font-bold tracking-[0.2em] text-zinc-600 uppercase relative z-10">
+      <div className="mt-auto pt-6 border-t border-border/50 flex justify-between items-center text-[9px] font-bold tracking-[0.2em] text-muted-foreground uppercase relative z-10">
         <div className="flex items-center gap-2">
-          <div className="w-1 h-1 rounded-full bg-blue-500/50 animate-pulse" />
+          <div className="w-1 h-1 rounded-full bg-primary/50 animate-pulse" />
           STANDBY_MODE
         </div>
         <button
           onClick={onToggleExpand}
-          className="hover:text-blue-500 transition-colors cursor-pointer tracking-widest flex items-center gap-2 group/btn"
+          className="hover:text-primary transition-colors cursor-pointer tracking-widest flex items-center gap-2 group/btn"
         >
           {isExpanded ? (
             <>
