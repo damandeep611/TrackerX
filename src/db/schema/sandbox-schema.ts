@@ -20,3 +20,30 @@ export const sandboxes = pgTable("sandboxes", {
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const sandboxPhases = pgTable("sandbox_phases", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sandboxId: uuid("sandbox_id")
+    .notNull()
+    .references(() => sandboxes.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  // Storing milestones as a simple array of strings for now.
+  // In Postgres this will be text[]
+  milestones: text("milestones").array(), 
+  allocatedHours: numeric("allocated_hours", { precision: 5, scale: 2 }).notNull(),
+  orderIndex: integer("order_index").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const sandboxLogs = pgTable("sandbox_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  phaseId: uuid("phase_id")
+    .notNull()
+    .references(() => sandboxPhases.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  duration: numeric("duration", { precision: 5, scale: 2 }).notNull(), // stored in hours
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

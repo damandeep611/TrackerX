@@ -6,21 +6,21 @@ import SandboxWorkspace from "./sandbox-workspace";
 import SandboxStructure from "./sandbox-structure";
 
 export interface Phase {
-  id: number;
+  id: string;
   title: string;
-  description: string;
-  milestones: string[];
+  description: string | null;
+  milestones: string[] | null;
   allocatedHours: number;
+  orderIndex: number;
 }
 
 export interface ActivityLog {
   id: string;
-  phaseId: number;
+  phaseId: string;
   title: string;
-  startTime: string;
-  endTime: string;
+  startTime: Date;
+  endTime: Date;
   duration: number; // in hours
-  date: string;
 }
 
 interface Sandbox {
@@ -33,14 +33,21 @@ interface Sandbox {
 
 interface SandboxDetailViewProps {
   sandbox: Sandbox;
+  initialPhases?: Phase[];
+  initialLogs?: ActivityLog[];
 }
 
 type TabType = "workspace" | "analytics" | "structure";
 
-export default function SandboxDetailView({ sandbox }: SandboxDetailViewProps) {
+export default function SandboxDetailView({ sandbox, initialPhases = [], initialLogs = [] }: SandboxDetailViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>("workspace");
-  const [phases, setPhases] = useState<Phase[]>([]);
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  // In a real app with React Query/Server Actions, these might be managed differently, 
+  // but for now we initialize state with server props.
+  const [phases, setPhases] = useState<Phase[]>(initialPhases);
+  const [logs, setLogs] = useState<ActivityLog[]>(initialLogs);
+
+  // Sorting phases by orderIndex
+  const sortedPhases = [...phases].sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -109,9 +116,10 @@ export default function SandboxDetailView({ sandbox }: SandboxDetailViewProps) {
       <main className="flex-1 p-6 overflow-hidden">
         {activeTab === "workspace" && (
           <SandboxWorkspace 
-            phases={phases} 
+            phases={sortedPhases} 
             logs={logs}
             onAddLog={(log) => setLogs([log, ...logs])}
+            sandboxId={sandbox.id}
           />
         )}
         
@@ -130,8 +138,9 @@ export default function SandboxDetailView({ sandbox }: SandboxDetailViewProps) {
         {activeTab === "structure" && (
           <SandboxStructure 
             sandboxName={sandbox.name} 
+            sandboxId={sandbox.id}
             targetHours={sandbox.targetHours} 
-            phases={phases}
+            phases={sortedPhases}
             setPhases={setPhases}
             logs={logs}
           />
@@ -140,4 +149,3 @@ export default function SandboxDetailView({ sandbox }: SandboxDetailViewProps) {
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
 import { db } from "@/db/drizzle";
-import { sandboxes } from "@/db/schema/schema";
+import { sandboxes, sandboxPhases, sandboxLogs } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import SandboxDetailView from "@/components/dashboard/sandbox/sandbox-detail-view";
@@ -31,5 +31,43 @@ export default async function SandboxDetailPage(props: PageProps) {
     notFound();
   }
 
-  return <SandboxDetailView sandbox={sandbox} />;
+  const phasesData = await db
+    .select()
+    .from(sandboxPhases)
+    .where(eq(sandboxPhases.sandboxId, params.sandboxId))
+    .orderBy(sandboxPhases.orderIndex);
+
+  // Fetch logs via join to filter by sandboxId (through phases)
+  const logsData = await db
+    .select({
+      id: sandboxLogs.id,
+      phaseId: sandboxLogs.phaseId,
+      title: sandboxLogs.title,
+      startTime: sandboxLogs.startTime,
+      endTime: sandboxLogs.endTime,
+      duration: sandboxLogs.duration,
+    })
+    .from(sandboxLogs)
+    .innerJoin(sandboxPhases, eq(sandboxLogs.phaseId, sandboxPhases.id))
+    .where(eq(sandboxPhases.sandboxId, params.sandboxId))
+    .orderBy(desc(sandboxLogs.startTime));
+
+  // Transform data to match frontend interfaces (casting numeric strings to numbers)
+  const phases = phasesData.map(p => ({
+    ...p,
+    allocatedHours: Number(p.allocatedHours),
+  }));
+
+  const logs = logsData.map(l => ({
+    ...l,
+    duration: Number(l.duration),
+  }));
+
+  return (
+    <SandboxDetailView 
+      sandbox={sandbox} 
+      initialPhases={phases} 
+      initialLogs={logs} 
+    />
+  );
 }

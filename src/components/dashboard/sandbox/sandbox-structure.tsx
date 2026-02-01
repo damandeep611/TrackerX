@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Edit3, Minimize2, Maximize2 } from "lucide-react";
+import { Plus, Edit3, Minimize2, Maximize2, Trash2 } from "lucide-react";
 import AddPhaseModal from "./add-phase-modal";
 import { cn } from "@/lib/utils";
 import { Phase, ActivityLog } from "./sandbox-detail-view";
+import { createPhase, updatePhase, deletePhase } from "@/actions/sandboxActions";
+import toast from "react-hot-toast";
 
 interface SandboxStructureProps {
   sandboxName: string;
+  sandboxId: string;
   targetHours: number;
   phases: Phase[];
   setPhases: React.Dispatch<React.SetStateAction<Phase[]>>;
@@ -16,25 +19,124 @@ interface SandboxStructureProps {
 
 export default function SandboxStructure({
   sandboxName,
+  sandboxId,
   targetHours,
   phases,
   setPhases,
   logs,
 }: SandboxStructureProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [expandedPhaseId, setExpandedPhaseId] = useState<number | null>(null);
+  const [expandedPhaseId, setExpandedPhaseId] = useState<string | null>(null);
+  const [editingPhase, setEditingPhase] = useState<Phase | null>(null);
 
   const totalAllocatedHours = phases.reduce(
     (acc, phase) => acc + phase.allocatedHours,
     0,
   );
 
-  const handleAddPhase = (newPhase: Omit<Phase, "id">) => {
-    setPhases([...phases, { ...newPhase, id: phases.length + 1 }]);
-    setIsModalOpen(false);
+  const handleOpenAddModal = () => {
+    setEditingPhase(null);
+    setIsModalOpen(true);
   };
 
-  const handleToggleExpand = (id: number) => {
+  const handleEditPhase = (phase: Phase) => {
+    setEditingPhase(phase);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setEditingPhase(null), 300); // Clear after animation roughly
+  };
+
+  const handleSavePhase = async (phaseData: Omit<Phase, "id" | "orderIndex">) => {
+    if (editingPhase) {
+      // Update existing phase
+      try {
+        // Optimistic update
+        setPhases(current => current.map(p => p.id === editingPhase.id ? {
+          ...p,
+          ...phaseData
+        } : p));
+        setIsModalOpen(false);
+
+        // Server action
+        const updated = await updatePhase(editingPhase.id, sandboxId, {
+          ...phaseData,
+          milestones: phaseData.milestones || [],
+          description: phaseData.description || ""
+        });
+
+        // Sync with real data
+        setPhases(current => current.map(p => p.id === editingPhase.id ? {
+          ...updated,
+          allocatedHours: Number(updated.allocatedHours),
+          description: updated.description,
+          milestones: updated.milestones
+        } : p));
+        
+        toast.success("Phase parameters updated");
+      } catch (error) {
+        console.error("Failed to update phase:", error);
+        toast.error("Failed to update phase");
+        // Revert?
+      }
+    } else {
+      // Create new phase
+      try {
+        // Optimistic update
+        const tempId = Math.random().toString(36).substr(2, 9);
+        const tempPhase: Phase = {
+          ...phaseData,
+          id: tempId,
+          orderIndex: phases.length,
+          milestones: phaseData.milestones || [],
+          description: phaseData.description || null
+        };
+        setPhases([...phases, tempPhase]);
+        setIsModalOpen(false);
+
+        // Server action
+        const createdPhase = await createPhase(sandboxId, {
+          ...phaseData,
+          milestones: phaseData.milestones || [], // Ensure array
+          description: phaseData.description || ""
+        });
+
+        // Update state with real data
+        setPhases(current => current.map(p => p.id === tempId ? {
+          ...createdPhase,
+          allocatedHours: Number(createdPhase.allocatedHours),
+          description: createdPhase.description,
+          milestones: createdPhase.milestones
+        } : p));
+        
+        toast.success("Phase initialized");
+      } catch (error) {
+        console.error("Failed to create phase:", error);
+        toast.error("Failed to initialize phase");
+      }
+    }
+    setEditingPhase(null);
+  };
+
+  const handleDeletePhase = async (phaseId: string) => {
+    if (!confirm("Are you sure you want to dismantle this phase protocol?")) return;
+
+    try {
+      // Optimistic update
+      setPhases(current => current.filter(p => p.id !== phaseId));
+
+      await deletePhase(phaseId, sandboxId);
+      toast.success("Phase protocol dismantled");
+    } catch (error) {
+      console.error("Failed to delete phase:", error);
+      toast.error("Failed to delete phase");
+      // Revert?
+    }
+  };
+
+  const handleToggleExpand = (id: string) => {
     setExpandedPhaseId((currentId) => (currentId === id ? null : id));
   };
 
@@ -44,7 +146,7 @@ export default function SandboxStructure({
       <div className="flex items-end justify-between border-b border-border/50 pb-6 mb-8 mt-2">
         <div>
           <p className="text-[10px] text-blue-500 font-bold tracking-widest uppercase mb-1">
-            Manual_Arch_Mode
+            System Architecture
           </p>
           <h1 className="text-4xl font-bold text-foreground tracking-tight uppercase">
             {sandboxName}
@@ -53,7 +155,7 @@ export default function SandboxStructure({
 
         <div className="flex items-center gap-6">
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenAddModal}
             className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-xs font-medium border border-zinc-700 transition-all"
           >
             <Plus size={14} />
@@ -108,14 +210,16 @@ export default function SandboxStructure({
               return (
                 <PhaseCard
                   key={phase.id}
-                  phaseNumber={phase.id}
+                  phaseNumber={phase.orderIndex + 1}
                   title={phase.title}
-                  description={phase.description}
-                  milestones={phase.milestones}
+                  description={phase.description || ""}
+                  milestones={phase.milestones || []}
                   allocatedHours={phase.allocatedHours}
                   loggedHours={loggedHours}
                   isExpanded={expandedPhaseId === phase.id}
                   onToggleExpand={() => handleToggleExpand(phase.id)}
+                  onEdit={() => handleEditPhase(phase)}
+                  onDelete={() => handleDeletePhase(phase.id)}
                 />
               );
             })}
@@ -125,10 +229,11 @@ export default function SandboxStructure({
 
       <AddPhaseModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onConfirm={handleAddPhase}
+        onClose={handleModalClose}
+        onConfirm={handleSavePhase}
         targetHours={targetHours}
         totalAllocatedHours={totalAllocatedHours}
+        initialData={editingPhase}
       />
     </div>
   );
@@ -143,6 +248,8 @@ function PhaseCard({
   loggedHours,
   isExpanded,
   onToggleExpand,
+  onEdit,
+  onDelete,
 }: {
   phaseNumber: number;
   title: string;
@@ -152,6 +259,8 @@ function PhaseCard({
   loggedHours: number;
   isExpanded: boolean;
   onToggleExpand: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   return (
     <div
@@ -183,8 +292,17 @@ function PhaseCard({
               <span>{allocatedHours}H</span>
             </div>
           </div>
-          <button className="p-1.5 hover:bg-zinc-800 rounded-md transition-colors border border-transparent hover:border-zinc-800 text-zinc-600 hover:text-white">
+          <button 
+            onClick={onEdit}
+            className="p-1.5 hover:bg-zinc-800 rounded-md transition-colors border border-transparent hover:border-zinc-800 text-zinc-600 hover:text-white"
+          >
             <Edit3 size={12} />
+          </button>
+          <button 
+            onClick={onDelete}
+            className="p-1.5 hover:bg-red-900/20 rounded-md transition-colors border border-transparent hover:border-red-900/30 text-zinc-600 hover:text-red-500"
+          >
+            <Trash2 size={12} />
           </button>
         </div>
       </div>

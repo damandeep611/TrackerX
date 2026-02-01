@@ -134,6 +134,13 @@
       "when": 1769854316031,
       "tag": "0018_special_ricochet",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1769930978364,
+      "tag": "0019_yielding_lord_tyger",
+      "breakpoints": true
     }
   ]
 }

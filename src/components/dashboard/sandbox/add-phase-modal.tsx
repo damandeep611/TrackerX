@@ -14,15 +14,37 @@ interface AddPhaseModalProps {
   onConfirm: (phase: { title: string; description: string; milestones: string[]; allocatedHours: number }) => void;
   targetHours: number;
   totalAllocatedHours: number;
+  initialData?: {
+    title: string;
+    description: string | null;
+    milestones: string[] | null;
+    allocatedHours: number;
+  } | null;
 }
 
-export default function AddPhaseModal({ isOpen, onClose, onConfirm, targetHours, totalAllocatedHours }: AddPhaseModalProps) {
+export default function AddPhaseModal({ isOpen, onClose, onConfirm, targetHours, totalAllocatedHours, initialData }: AddPhaseModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [milestonesText, setMilestonesText] = useState("");
   const [allocatedHours, setAllocatedHours] = useState("");
 
-  const availableHours = targetHours - totalAllocatedHours;
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setTitle(initialData.title);
+        setDescription(initialData.description || "");
+        setMilestonesText((initialData.milestones || []).join("\n"));
+        setAllocatedHours(initialData.allocatedHours.toString());
+      } else {
+        setTitle("");
+        setDescription("");
+        setMilestonesText("");
+        setAllocatedHours("");
+      }
+    }
+  }, [isOpen, initialData]);
+
+  const availableHours = targetHours - totalAllocatedHours + (initialData ? initialData.allocatedHours : 0);
   
   // Calculate potential remaining if user inputs a value
   const potentialAllocated = parseFloat(allocatedHours) || 0;
@@ -44,15 +66,17 @@ export default function AddPhaseModal({ isOpen, onClose, onConfirm, targetHours,
       allocatedHours: hours,
     });
     
-    // Reset fields
-    setTitle("");
-    setDescription("");
-    setMilestonesText("");
-    setAllocatedHours("");
+    // Reset fields if just creating, though useEffect handles this on open
+    if (!initialData) {
+      setTitle("");
+      setDescription("");
+      setMilestonesText("");
+      setAllocatedHours("");
+    }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="INITIALIZE PHASE PROTOCOL">
+    <Modal isOpen={isOpen} onClose={onClose} title={initialData ? "MODIFY PHASE PROTOCOL" : "INITIALIZE PHASE PROTOCOL"}>
       <div className="space-y-5">
         {/* Resource Monitor */}
         <div
@@ -203,7 +227,7 @@ export default function AddPhaseModal({ isOpen, onClose, onConfirm, targetHours,
             )}
             onClick={handleCreate}
           >
-            Confirm Allocation
+            {initialData ? "Update Phase" : "Confirm Allocation"}
           </Button>
         </div>
       </div>

@@ -6,20 +6,24 @@ import { Clock, Target, Layers } from "lucide-react";
 import { Phase, ActivityLog } from "./sandbox-detail-view";
 import { cn } from "@/lib/utils";
 import LogSprintModal from "./log-sprint-modal";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
+import { logSession } from "@/actions/sandboxActions";
+import toast from "react-hot-toast";
 
 interface SandboxWorkspaceProps {
   phases: Phase[];
   logs: ActivityLog[];
   onAddLog: (log: ActivityLog) => void;
+  sandboxId: string;
 }
 
 export default function SandboxWorkspace({
   phases,
   logs,
   onAddLog,
+  sandboxId,
 }: SandboxWorkspaceProps) {
-  const [activePhaseId, setActivePhaseId] = useState<number | null>(null);
+  const [activePhaseId, setActivePhaseId] = useState<string | null>(null);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   useEffect(() => {
@@ -37,25 +41,50 @@ export default function SandboxWorkspace({
     0,
   );
 
-  const handleSaveSession = (session: {
+  const handleSaveSession = async (session: {
     title: string;
-    startTime: string;
-    endTime: string;
+    startTime: string; // HH:mm
+    endTime: string;   // HH:mm
     duration: number;
   }) => {
     if (!activePhaseId) return;
 
-    const newLog: ActivityLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      phaseId: activePhaseId,
-      title: session.title,
-      startTime: session.startTime,
-      endTime: session.endTime,
-      duration: session.duration,
-      date: new Date().toISOString(),
-    };
+    // Construct Date objects
+    const today = format(new Date(), "yyyy-MM-dd");
+    const startDate = parse(`${today} ${session.startTime}`, "yyyy-MM-dd HH:mm", new Date());
+    let endDate = parse(`${today} ${session.endTime}`, "yyyy-MM-dd HH:mm", new Date());
 
-    onAddLog(newLog);
+    if (endDate < startDate) {
+      endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    try {
+        // Optimistic update
+        const tempId = Math.random().toString(36).substr(2, 9);
+        const newLog: ActivityLog = {
+          id: tempId,
+          phaseId: activePhaseId,
+          title: session.title,
+          startTime: startDate,
+          endTime: endDate,
+          duration: session.duration,
+        };
+        onAddLog(newLog); // Updates local state via parent callback
+
+        // Server Action
+        await logSession(sandboxId, activePhaseId, {
+            title: session.title,
+            startTime: startDate,
+            endTime: endDate,
+            duration: session.duration
+        });
+        
+        toast.success("Telemetry logged");
+    } catch (error) {
+        console.error("Failed to log session:", error);
+        toast.error("Failed to log telemetry");
+        // Handle rollback if needed
+    }
   };
 
   if (phases.length === 0) {
@@ -92,7 +121,7 @@ export default function SandboxWorkspace({
                 : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50",
             )}
           >
-            PHASE {String(phase.id).padStart(2, "0")}
+            PHASE {String(phase.orderIndex + 1).padStart(2, "0")}
           </button>
         ))}
       </div>
@@ -192,10 +221,10 @@ export default function SandboxWorkspace({
                     </div>
                     <div className="flex items-center justify-between border-t border-zinc-800/30 pt-2">
                       <span className="text-[9px] font-mono text-zinc-500">
-                        {format(new Date(log.date), "MMM d")}
+                        {format(new Date(log.startTime), "MMM d")}
                       </span>
                       <span className="text-[9px] font-mono text-zinc-600">
-                        {log.startTime} - {log.endTime}
+                        {format(new Date(log.startTime), "HH:mm")} - {format(new Date(log.endTime), "HH:mm")}
                       </span>
                     </div>
                   </div>
