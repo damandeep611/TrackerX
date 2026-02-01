@@ -109,7 +109,6 @@ export default function SandboxDetailView({ sandbox }: SandboxDetailViewProps) {
       <main className="flex-1 p-6 overflow-hidden">
         {activeTab === "workspace" && (
           <SandboxWorkspace 
-            sandboxName={sandbox.name} 
             phases={phases} 
             logs={logs}
             onAddLog={(log) => setLogs([log, ...logs])}
@@ -134,6 +133,7 @@ export default function SandboxDetailView({ sandbox }: SandboxDetailViewProps) {
             targetHours={sandbox.targetHours} 
             phases={phases}
             setPhases={setPhases}
+            logs={logs}
           />
         )}
       </main>
