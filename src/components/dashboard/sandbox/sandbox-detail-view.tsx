@@ -13,6 +13,16 @@ export interface Phase {
   allocatedHours: number;
 }
 
+export interface ActivityLog {
+  id: string;
+  phaseId: number;
+  title: string;
+  startTime: string;
+  endTime: string;
+  duration: number; // in hours
+  date: string;
+}
+
 interface Sandbox {
   id: string;
   name: string;
@@ -30,6 +40,7 @@ type TabType = "workspace" | "analytics" | "structure";
 export default function SandboxDetailView({ sandbox }: SandboxDetailViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>("workspace");
   const [phases, setPhases] = useState<Phase[]>([]);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -97,7 +108,12 @@ export default function SandboxDetailView({ sandbox }: SandboxDetailViewProps) {
       {/* Main Content Area */}
       <main className="flex-1 p-6 overflow-hidden">
         {activeTab === "workspace" && (
-          <SandboxWorkspace sandboxName={sandbox.name} phases={phases} />
+          <SandboxWorkspace 
+            sandboxName={sandbox.name} 
+            phases={phases} 
+            logs={logs}
+            onAddLog={(log) => setLogs([log, ...logs])}
+          />
         )}
         
         {activeTab === "analytics" && (
