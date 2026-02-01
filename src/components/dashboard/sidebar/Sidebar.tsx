@@ -8,6 +8,7 @@ import {
   PanelLeft,
   PanelRight,
   Settings,
+  Terminal,
   Zap,
 } from "lucide-react";
 import { useState } from "react";
@@ -50,6 +51,12 @@ const navigation = {
       title: "Daily Logs",
       icon: BookOpen,
       path: "/dashboard/daily-logs",
+    },
+    {
+      id: "sandbox",
+      title: "Sandbox",
+      icon: Terminal,
+      path: "/dashboard/sandbox",
     },
   ],
 };

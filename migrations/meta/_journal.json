@@ -127,6 +127,13 @@
       "when": 1769758043337,
       "tag": "0017_majestic_the_call",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1769854316031,
+      "tag": "0018_special_ricochet",
+      "breakpoints": true
     }
   ]
 }

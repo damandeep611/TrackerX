@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
-
+export * from "./sandbox-schema";
 
 export const skillCard = pgTable("skillcard", {
   id: uuid("id").primaryKey().defaultRandom(),
