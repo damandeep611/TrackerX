@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import SkillKanbanBoard from "../skilltodos/kanban/SkillKanbanBoard";
 import SkillAnalyticsCards from "./SkillAnalyticsCards";
 import SkillAnalytics from "../../../app/dashboard/skills/SkillAnalytics";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import SkillHeader from "../../../app/dashboard/skills/SkillHeader";
 import { motion, AnimatePresence } from "framer-motion";
+import SkillTimeline from "./SkillTimeline";
+import { getTimeLogsByDateForSkill } from "@/actions/timeLogAction";
+import { subDays, addDays } from "date-fns";
 
 interface SkillPageWrapperProps {
   initialSkillTodos: skillTodo[];
@@ -26,12 +29,26 @@ export default function SkillPageWrapper({
   createdAt,
 }: SkillPageWrapperProps) {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [timeByDate, setTimeByDate] = useState<Record<string, number>>({});
   const [activeTab, setActiveTab] = useState<"workflow" | "analytics">(
     "workflow",
   );
+  const [view, setView] = useState<"grid" | "kanban">("kanban");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const fetchTimelineTimeData = useCallback(async () => {
+    const start = subDays(new Date(), 3);
+    const end = addDays(new Date(), 7);
+    const data = await getTimeLogsByDateForSkill(skillId, start, end);
+    setTimeByDate(data);
+  }, [skillId]);
+
+  useEffect(() => {
+    fetchTimelineTimeData();
+  }, [fetchTimelineTimeData, refreshKey]);
 
   const handleTimeUpdate = useCallback(() => {
-    // Trigger a refresh of analytics data
+    // Trigger a refresh of analytics data and timeline time
     setRefreshKey((prev) => prev + 1);
   }, []);
 
@@ -41,7 +58,7 @@ export default function SkillPageWrapper({
   }, []);
 
   return (
-    <div className="flex flex-col bg-background">
+    <div className="flex flex-col bg-background min-h-screen">
       <SkillHeader
         skillSlug={skillSlug}
         skillId={skillId}
@@ -56,17 +73,56 @@ export default function SkillPageWrapper({
           {activeTab === "workflow" ? (
             <motion.div
               key="workflow"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="w-full mx-auto"
+              className="max-w-[1600px] mx-auto space-y-8"
             >
-              <SkillKanbanBoard
-                initialSkillTodos={initialSkillTodos}
-                skillId={skillId}
-                onTimeUpdate={handleTimeUpdate}
+              <SkillTimeline 
+                tasks={initialSkillTodos} 
+                skillName={skillName} 
+                timeByDate={timeByDate}
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
               />
+              
+              <div className="space-y-4">
+                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">All Tasks</h2>
+                    
+                    <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl border border-border">
+                       <button 
+                          onClick={() => setView("grid")}
+                          className={`flex items-center gap-2 px-4 py-1.5 text-xs font-medium transition-all rounded-lg ${
+                             view === "grid" 
+                             ? "bg-background text-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/10" 
+                             : "text-muted-foreground hover:text-foreground"
+                          }`}
+                       >
+                          <span>Grid</span>
+                       </button>
+                       <button 
+                          onClick={() => setView("kanban")}
+                          className={`flex items-center gap-2 px-4 py-1.5 text-xs font-medium transition-all rounded-lg ${
+                             view === "kanban" 
+                             ? "bg-background text-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/10" 
+                             : "text-muted-foreground hover:text-foreground"
+                          }`}
+                       >
+                          <span>Kanban</span>
+                       </button>
+                    </div>
+                 </div>
+                 
+                 <SkillKanbanBoard
+                  initialSkillTodos={initialSkillTodos}
+                  skillId={skillId}
+                  onTimeUpdate={handleTimeUpdate}
+                  view={view}
+                  selectedDate={selectedDate}
+                />
+              </div>
             </motion.div>
           ) : (
             <motion.div

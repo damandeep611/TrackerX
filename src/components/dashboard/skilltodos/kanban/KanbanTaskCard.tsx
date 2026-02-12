@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -14,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface KanbanTaskCardProps {
   todo: skillTodo;
@@ -22,7 +21,6 @@ interface KanbanTaskCardProps {
   onEditTodo: (todoId: string, updatedTodo: Partial<skillTodo>) => void;
   onDeleteTodo: (todoId: string) => void;
   onTimeLogCreated?: () => void;
-  onToggleDone: (todoId: string, isDone: boolean) => void;
   isOverlay?: boolean;
 }
 
@@ -32,7 +30,6 @@ export default function KanbanTaskCard({
   onEditTodo,
   onDeleteTodo,
   onTimeLogCreated,
-  onToggleDone,
   isOverlay = false,
 }: KanbanTaskCardProps) {
   const {
@@ -58,14 +55,12 @@ export default function KanbanTaskCard({
   };
 
   const [optimisticMinutes, setOptimisticMinutes] = useState<number | null>(null);
-
   const displayMinutes = optimisticMinutes !== null ? optimisticMinutes : timeLogMinutes;
 
   const handleTimeUpdate = async () => {
     try {
       const minutesToAdd = 30;
       const newTotal = displayMinutes + minutesToAdd;
-
       setOptimisticMinutes(newTotal);
 
       const result = await createTimeLog({
@@ -90,8 +85,9 @@ export default function KanbanTaskCard({
   
   const handleDelete = () => {
     onDeleteTodo(todo.id);
-    toast.success("Task deleted");
   };
+
+  const isDone = todo.status === 'done' || todo.done;
 
   return (
     <div
@@ -99,35 +95,22 @@ export default function KanbanTaskCard({
       style={style}
       {...attributes}
       {...listeners}
-      className={`group relative flex flex-col gap-3 rounded-2xl bg-card border border-border p-4 shadow-sm hover:shadow-md hover:border-border/80 transition-all duration-200 cursor-grab active:cursor-grabbing mb-3 ${
-        isOverlay ? "rotate-2 shadow-xl scale-105 cursor-grabbing z-50 ring-2 ring-primary/20" : ""
+      className={`group relative flex flex-col gap-4 rounded-2xl bg-card border p-5 shadow-sm hover:shadow-lg transition-all duration-300 cursor-grab active:cursor-grabbing mb-4 ${
+        isDone 
+          ? "border-emerald-500/40 bg-emerald-500/[0.02] shadow-emerald-500/5" 
+          : "border-border hover:border-primary/20"
+      } ${
+        isOverlay ? "rotate-2 shadow-2xl scale-105 cursor-grabbing z-50 ring-2 ring-primary/20" : ""
       }`}
     >
-      {/* Header: Tags & Actions */}
-      <div className="flex items-start justify-between gap-2">
-        <div 
-          className="pt-0.5"
-          onPointerDown={(e) => e.stopPropagation()} 
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Checkbox 
-            checked={todo.status === 'done' || todo.done}
-            onCheckedChange={(checked) => onToggleDone(todo.id, checked as boolean)}
-            className="h-4 w-4 rounded-[4px] border-muted-foreground/40 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
+      {/* Top Section: Category & Actions */}
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-1">
+           <h4 className="font-bold text-sm text-foreground leading-tight line-clamp-2 mt-1">
+             {todo.title}
+           </h4>
         </div>
 
-        <div className="flex flex-wrap gap-1.5 mr-auto">
-          {todo.tags?.slice(0, 3).map((tag, i) => (
-             <span
-              key={i}
-              className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-secondary text-secondary-foreground border border-black/5 dark:border-white/5"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-        
         <div 
           className="relative" 
           onPointerDown={(e) => e.stopPropagation()} 
@@ -135,11 +118,11 @@ export default function KanbanTaskCard({
         >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-1 hover:bg-muted rounded-md text-muted-foreground transition-colors">
-                <MoreHorizontal size={16} />
+              <button className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground transition-colors border border-transparent hover:border-border">
+                <MoreHorizontal size={14} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuItem onClick={() => onEditTodo(todo.id, {})}>
                 <PencilLine className="mr-2 h-4 w-4" /> Edit
               </DropdownMenuItem>
@@ -154,44 +137,50 @@ export default function KanbanTaskCard({
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 space-y-1">
-        <h4 className="font-semibold text-sm text-card-foreground leading-tight line-clamp-2">
-          {todo.title}
-        </h4>
-        {todo.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-            {todo.description}
-          </p>
-        )}
-      </div>
-
-      {/* Footer: Date & Time */}
-      <div className="flex items-center justify-between pt-2 mt-auto border-t border-border/50">
-         <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-            <div className="flex items-center gap-1">
-               <CalendarDays size={12} />
-               <span suppressHydrationWarning>{new Date(todo.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-            </div>
+      {/* Date, Time and Tags Row */}
+      <div className="flex flex-wrap items-center gap-2 text-[9px] text-muted-foreground font-medium">
+         <div className="flex items-center gap-1 bg-secondary/50 px-1.5 py-0.5 rounded-md border border-border/50">
+            <CalendarDays size={10} className="text-primary/70" />
+            <span suppressHydrationWarning>{new Date(todo.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
          </div>
-
-         <div className="flex items-center gap-2" onPointerDown={(e) => e.stopPropagation()}>
-             <div className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded-md">
-                <Timer size={12} className="text-primary" />
-                <span className="text-[10px] font-medium font-mono">{formatDuration(displayMinutes)}</span>
-             </div>
-             
-             {todo.status !== 'done' && (
+         
+         <div className="flex items-center gap-0 bg-primary/5 rounded-md border border-primary/10 overflow-hidden">
+            <div className="flex items-center gap-1 px-1.5 py-0.5">
+               <Timer size={10} className="text-primary" />
+               <span className="font-mono text-primary">{formatDuration(displayMinutes)}</span>
+            </div>
+            {!isDone && (
                <button 
                   onClick={handleTimeUpdate}
-                  className="p-1.5 hover:bg-primary hover:text-primary-foreground rounded-md text-muted-foreground transition-colors flex items-center justify-center border border-transparent hover:border-border"
+                  className="bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground px-1.5 py-0.5 transition-all duration-300 border-l border-primary/10"
+                  onPointerDown={(e) => e.stopPropagation()}
                   title="Add 30 mins"
                >
-                  <Play size={10} className="fill-current" />
+                  <Play size={8} className="fill-current" />
                </button>
-             )}
+            )}
+         </div>
+         
+         <div className="flex items-center gap-1 ml-auto">
+            {todo.tags?.slice(0, 2).map((tag, i) => (
+               <div key={i} className="px-1.5 py-0.5 rounded-full bg-background border border-border shadow-sm text-muted-foreground">
+                  {tag}
+               </div>
+            ))}
+            {todo.tags && todo.tags.length > 2 && (
+               <div className="px-1.5 py-0.5 rounded-full bg-background border border-border shadow-sm text-muted-foreground">
+                  +{todo.tags.length - 2}
+               </div>
+            )}
          </div>
       </div>
+
+      {/* Description if exists */}
+      {todo.description && (
+        <p className="text-[11px] text-muted-foreground/80 line-clamp-2 leading-relaxed bg-muted/30 p-2 rounded-lg border border-border/30">
+          {todo.description}
+        </p>
+      )}
     </div>
   );
 }

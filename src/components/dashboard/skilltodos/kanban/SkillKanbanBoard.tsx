@@ -27,11 +27,15 @@ import KanbanTaskCard from "./KanbanTaskCard";
 import SkillTodoForm from "../skill-todo-form";
 import Modal from "@/components/ui/modal";
 import { createPortal } from "react-dom";
+import { isAfter, subDays, startOfDay, isSameDay, isBefore } from "date-fns";
+import { Plus, History, Calendar } from "lucide-react";
 
 interface SkillKanbanBoardProps {
   initialSkillTodos: skillTodo[];
   skillId: string;
   onTimeUpdate?: () => void;
+  view?: "grid" | "kanban";
+  selectedDate?: Date;
 }
 
 const COLUMNS = [
@@ -44,6 +48,8 @@ export default function SkillKanbanBoard({
   initialSkillTodos,
   skillId,
   onTimeUpdate,
+  view = "kanban",
+  selectedDate = new Date(),
 }: SkillKanbanBoardProps) {
   const {
     skillTodos,
@@ -60,11 +66,13 @@ export default function SkillKanbanBoard({
     initialSkillTodos,
     skillId,
     onTimeUpdate,
+    selectedDate,
   });
 
   const [timeData, setTimeData] = useState<Record<string, number>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [showOverdue, setShowOverdue] = useState(false);
 
   // State for editing via Modal
   const [editingTodo, setEditingTodo] = useState<skillTodo | null>(null);
@@ -140,14 +148,46 @@ export default function SkillKanbanBoard({
       done: [],
     };
 
+    if (view === "grid") {
+      skillTodos.forEach((todo) => {
+        let status = todo.status || (todo.done ? "done" : "todo");
+        if (!cols[status]) status = "todo";
+        cols[status].push(todo);
+      });
+      return cols;
+    }
+
+    const targetDate = startOfDay(selectedDate);
+    const today = startOfDay(new Date());
+
     skillTodos.forEach((todo) => {
       let status = todo.status || (todo.done ? "done" : "todo");
       if (!cols[status]) status = "todo";
-      cols[status].push(todo);
+      
+      const todoDate = startOfDay(new Date(todo.date));
+      const isForSelectedDate = isSameDay(todoDate, targetDate);
+      const isOverdue = isBefore(todoDate, today) && status !== "done";
+
+      if (status === "todo") {
+        if (showOverdue) {
+          if (isForSelectedDate || isOverdue) {
+            cols[status].push(todo);
+          }
+        } else {
+          if (isForSelectedDate) {
+            cols[status].push(todo);
+          }
+        }
+      } else {
+        // For in_progress and done, we only show items for the selected date
+        if (isForSelectedDate) {
+          cols[status].push(todo);
+        }
+      }
     });
 
     return cols;
-  }, [skillTodos]);
+  }, [skillTodos, selectedDate, showOverdue, view]);
 
   const onDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -244,7 +284,7 @@ export default function SkillKanbanBoard({
     }),
   };
 
-  const activeTask = activeId ? skillTodos.find((t) => t.id === activeId) : null;
+  const activeTask = activeId ? skillTodos.find((t) => t.id === activeId) : null; 
 
   // Handle opening the edit modal
   const openEditModal = (todoId: string) => {
@@ -288,53 +328,103 @@ export default function SkillKanbanBoard({
 
   return (
     <div className="h-full w-full p-4 overflow-x-auto">
-      <div className="flex flex-col md:flex-row h-full gap-6 min-w-[800px]">
-        <DndContext
-          id="skill-kanban-board"
-          sensors={sensors}
-          collisionDetection={collisionDetectionStrategy}
-          onDragStart={onDragStart}
-          onDragOver={onDragOver}
-          onDragEnd={onDragEnd}
-        >
-          <SortableContext
-            items={skillTodos.map((t) => t.id)}
-            strategy={verticalListSortingStrategy}
+      {view === "kanban" ? (
+        <div className="flex flex-col md:flex-row h-full gap-6 min-w-[800px]">
+          <DndContext
+            id="skill-kanban-board"
+            sensors={sensors}
+            collisionDetection={collisionDetectionStrategy}
+            onDragStart={onDragStart}
+            onDragOver={onDragOver}
+            onDragEnd={onDragEnd}
           >
-            {COLUMNS.map((col) => (
-              <div key={col.id} className="flex-1 min-w-[280px]">
-                <KanbanColumn
-                  id={col.id}
-                  title={col.title}
-                  tasks={columns[col.id]}
-                  timeData={timeData}
-                  onEditTodo={openEditModal} // Pass the opener function
-                  onDeleteTodo={handleDeleteTodo}
-                  onTimeLogCreated={(taskId) => refreshTimeData([taskId])}
-                  onToggleDone={handleToggleTodo}
-                  onAddClick={() => setIsAddingTodo(true)}
-                />
-              </div>
-            ))}
-          </SortableContext>
+            <SortableContext
+              items={skillTodos.map((t) => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {COLUMNS.map((col) => (
+                <div key={col.id} className="flex-1 min-w-[280px]">
+                  <KanbanColumn
+                    id={col.id}
+                    title={col.title}
+                    tasks={columns[col.id]}
+                    timeData={timeData}
+                    onEditTodo={openEditModal}
+                    onDeleteTodo={handleDeleteTodo}
+                    onTimeLogCreated={() => refreshTimeData(columns[col.id].map(t => t.id))}
+                    onAddClick={() => setIsAddingTodo(true)}
+                    headerAction={
+                      col.id === "todo" ? (
+                        <button
+                          onClick={() => setShowOverdue(!showOverdue)}
+                          className={`p-1.5 rounded-md transition-all border flex items-center gap-1.5 ${
+                            showOverdue 
+                            ? "bg-primary/10 text-primary border-primary/20 shadow-sm" 
+                            : "text-muted-foreground hover:text-foreground border-transparent hover:border-border/50 hover:bg-background"
+                          }`}
+                          title={showOverdue ? "Showing Overdue + Selected Date" : "Showing Selected Date Only"}
+                        >
+                          <History size={14} className={showOverdue ? "animate-pulse" : ""} />
+                          {showOverdue && <span className="text-[10px] font-bold uppercase tracking-tight">Overdue</span>}
+                        </button>
+                      ) : undefined
+                    }
+                  />
+                </div>
+              ))}
+            </SortableContext>
 
-          {createPortal(
-            <DragOverlay dropAnimation={dropAnimation}>
-              {activeTask ? (
-                <KanbanTaskCard
-                  todo={activeTask}
-                  timeLogMinutes={timeData[activeTask.id] || 0}
-                  onEditTodo={() => { }}
-                  onDeleteTodo={() => { }}
-                  onToggleDone={() => { }}
-                  isOverlay
-                />
-              ) : null}
-            </DragOverlay>,
-            document.body
-          )}
-        </DndContext>
+            {createPortal(
+              <DragOverlay dropAnimation={dropAnimation}>
+                {activeTask ? (
+                  <KanbanTaskCard
+                    todo={activeTask}
+                    timeLogMinutes={timeData[activeTask.id] || 0}
+                    onEditTodo={() => { }}
+                    onDeleteTodo={() => { }}
+                    isOverlay
+                  />
+                ) : null}
+              </DragOverlay>,
+              document.body
+            )}
+          </DndContext>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-2 mb-2">
+             <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded-lg">
+                   <Calendar size={14} className="text-primary" />
+                </div>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                   Grid View: {columns.todo.length + columns.in_progress.length + columns.done.length} Total Tasks
+                </span>
+             </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[...columns.todo, ...columns.in_progress, ...columns.done].map((todo) => (
+            <KanbanTaskCard
+              key={todo.id}
+              todo={todo}
+              timeLogMinutes={timeData[todo.id] || 0}
+              onEditTodo={openEditModal}
+              onDeleteTodo={handleDeleteTodo}
+              onTimeLogCreated={() => refreshTimeData([todo.id])}
+            />
+          ))}
+          <button 
+            onClick={() => setIsAddingTodo(true)}
+            className="flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 group min-h-[160px]"
+          >
+            <div className="p-3 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
+              <Plus className="w-6 h-6 text-muted-foreground group-hover:text-primary" />
+            </div>
+            <span className="text-sm font-medium text-muted-foreground group-hover:text-primary">Add Task</span>
+          </button>
+        </div>
       </div>
+      )}
 
       {/* Add Task Modal */}
       <Modal

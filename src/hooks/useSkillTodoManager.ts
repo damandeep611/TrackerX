@@ -14,6 +14,7 @@ interface useSkillTodoManagerProps {
   skillId: string;
   onTimeUpdate?: () => void; // Callback to refresh analytics data
   onRefreshTimeData?: () => void; // Callback to refresh time data
+  selectedDate?: Date;
 }
 
 //generating temp id for the todo
@@ -24,6 +25,8 @@ const generateTempId = (): string => {
 export const useSkillTodoManager = ({
   initialSkillTodos,
   skillId,
+  onTimeUpdate,
+  selectedDate = new Date(),
 }: useSkillTodoManagerProps) => {
   //all states - remove it and use state management for clean look
   const [skillTodos, setSkillTodos] = useState<skillTodo[]>(initialSkillTodos);
@@ -42,7 +45,7 @@ export const useSkillTodoManager = ({
       skill_id: skillId,
       ...newTodoData,
       status: newTodoData.status || "todo",
-      date: new Date().toISOString(),
+      date: selectedDate.toISOString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -57,6 +60,7 @@ export const useSkillTodoManager = ({
           const dataToSend: newSkillTodo = {
             ...newTodoData,
             skillId: skillId,
+            date: selectedDate.toISOString(),
           };
           const result = await addSkillTasks(dataToSend);
           if (result.success && result.newTask) {

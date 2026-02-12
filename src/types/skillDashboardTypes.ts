@@ -35,6 +35,7 @@ export type newSkillTodo = {
   status?: string;
   tags: string[];
   skillId: string;
+  date?: string;
 };
 
 // Time log type for tracking individual time entries

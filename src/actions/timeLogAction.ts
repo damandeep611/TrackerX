@@ -306,6 +306,44 @@ export async function getTimeLogsForDateRange(
   }
 }
 
+// Get time logs grouped by date for a specific skill and date range
+export async function getTimeLogsByDateForSkill(
+  skillId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<Record<string, number>> {
+  const userId = await getUserId();
+
+  try {
+    const result = await db
+      .select({
+        date: timeLog.logged_date,
+        totalMinutes: sql<number>`sum(${timeLog.minutes})`.mapWith(Number),
+      })
+      .from(timeLog)
+      .where(
+        and(
+          eq(timeLog.user_id, userId),
+          eq(timeLog.skill_id, skillId),
+          gte(timeLog.logged_date, startDate),
+          lte(timeLog.logged_date, endDate)
+        )
+      )
+      .groupBy(timeLog.logged_date);
+
+    const timeMap: Record<string, number> = {};
+    result.forEach((item) => {
+      const dateKey = item.date.toISOString().split("T")[0];
+      timeMap[dateKey] = (timeMap[dateKey] || 0) + item.totalMinutes;
+    });
+
+    return timeMap;
+  } catch (error) {
+    console.error("Failed to get time logs by date for skill:", error);
+    return {};
+  }
+}
+
 // Weekly activity data interface for insights
 interface WeeklyActivityData {
   day: string;
