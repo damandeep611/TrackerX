@@ -3,8 +3,8 @@
 import React, { useMemo, useRef, useEffect } from "react";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { format, addDays, isSameDay, eachDayOfInterval, subDays } from "date-fns";
-import { motion } from "framer-motion";
-import { CalendarDays, Timer, Plus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Timer, Plus, Calendar, ChevronRight } from "lucide-react";
 
 interface SkillTimelineProps {
   tasks: skillTodo[];
@@ -17,17 +17,15 @@ interface SkillTimelineProps {
 export default function SkillTimeline({ tasks, skillName, timeByDate = {}, selectedDate = new Date(), onDateSelect }: SkillTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Calculate date range: 3 days before today and 7 days after
   const dateRange = useMemo(() => {
     const today = new Date();
-    const start = subDays(today, 3);
-    const end = addDays(today, 7);
+    const start = subDays(today, 4);
+    const end = addDays(today, 8);
     return eachDayOfInterval({ start, end });
   }, []);
 
   const today = new Date();
 
-  // Group tasks by date
   const tasksByDate = useMemo(() => {
     const map: Record<string, skillTodo[]> = {};
     tasks.forEach((task) => {
@@ -38,7 +36,6 @@ export default function SkillTimeline({ tasks, skillName, timeByDate = {}, selec
     return map;
   }, [tasks]);
 
-  // Center the timeline on today initially
   useEffect(() => {
     if (containerRef.current) {
       const todayElement = containerRef.current.querySelector('[data-today="true"]');
@@ -56,36 +53,28 @@ export default function SkillTimeline({ tasks, skillName, timeByDate = {}, selec
   };
 
   return (
-    <div className="w-full bg-card/40 border border-border/60 rounded-3xl overflow-hidden mb-10 shadow-sm backdrop-blur-sm">
-      <div className="p-5 border-b border-border/50 bg-card/30 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
-            <CalendarDays size={18} className="text-primary" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground tracking-tight">Focus Timeline</h3>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest opacity-70">{skillName} Schedule</p>
-          </div>
+    <div className="w-full bg-card/30 border border-border/50 rounded-2xl overflow-hidden mb-8 shadow-sm backdrop-blur-md">
+      {/* Compact Header */}
+      <div className="px-4 py-2.5 border-b border-border/40 bg-muted/20 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calendar size={12} className="text-primary/70" />
+          <h3 className="text-[10px] font-bold text-foreground uppercase tracking-[0.15em]">Neural Timeline</h3>
+          <span className="text-[9px] text-muted-foreground font-medium px-2 py-0.5 bg-background/50 rounded-full border border-border/40 uppercase tracking-tighter">
+            {skillName}
+          </span>
         </div>
+        
         <div className="flex items-center gap-3">
-           <div className="flex -space-x-2">
-              {[1,2,3].map(i => (
-                <div key={i} className="w-6 h-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[8px] font-bold">
-                   {String.fromCharCode(64 + i)}
-                </div>
-              ))}
+           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <span className="text-[9px] font-black text-primary uppercase tracking-tighter">Active Sync</span>
            </div>
-           <div className="h-4 w-px bg-border mx-1" />
-           <span className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-tight">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live
-           </span>
         </div>
       </div>
 
       <div 
         ref={containerRef}
-        className="overflow-x-auto custom-scrollbar relative p-8 min-h-[260px] bg-grid-zinc-900/[0.02] dark:bg-grid-white/[0.02]"
+        className="overflow-x-auto custom-scrollbar relative p-4 min-h-[180px] bg-grid-white/[0.01]"
       >
         <div className="flex min-w-max gap-0 h-full relative">
           {dateRange.map((date) => {
@@ -99,76 +88,85 @@ export default function SkillTimeline({ tasks, skillName, timeByDate = {}, selec
               <button 
                 key={dateKey} 
                 onClick={() => onDateSelect?.(date)}
-                className={`flex flex-col items-center w-40 relative px-4 border-l border-border/30 last:border-r transition-colors text-left
-                  ${isToday ? "bg-primary/[0.01]" : ""}
-                  ${isSelected ? "bg-primary/[0.03]" : "hover:bg-muted/30"}
+                className={`flex flex-col items-center w-32 relative px-3 transition-all duration-300
+                  ${isSelected ? "z-10" : "opacity-80 hover:opacity-100"}
                 `}
                 data-today={isToday}
               >
                 {/* Date Header */}
-                <div className={`mb-10 text-center transition-all duration-300 ${isSelected ? "scale-110" : "opacity-80"}`}>
-                  <span className={`text-[10px] font-black uppercase block tracking-widest mb-1 ${isSelected ? "text-primary" : "text-muted-foreground/60"}`}>
+                <div className={`mb-6 text-center transition-all duration-300 ${isSelected ? "scale-105" : ""}`}>
+                  <span className={`text-[8px] font-black uppercase block tracking-widest mb-1.5 ${isSelected ? "text-primary" : "text-muted-foreground/50"}`}>
                     {format(date, "EEE")}
                   </span>
-                  <div className={`relative inline-block px-3 py-1 rounded-full transition-all ${isSelected ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-foreground font-bold"}`}>
-                    <span className="text-sm">
+                  
+                  <div className={`relative px-2.5 py-1 rounded-lg transition-all border ${
+                    isSelected 
+                      ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                      : isToday
+                      ? "border-primary/30 text-primary bg-primary/5"
+                      : "border-transparent text-foreground font-bold"
+                  }`}>
+                    <span className="text-[11px] whitespace-nowrap">
                       {format(date, "d MMM")}
                     </span>
                   </div>
                   
-                  {dayMinutes > 0 && (
-                     <motion.div 
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="mt-2 text-[10px] font-black text-primary/80 flex items-center justify-center gap-1"
-                    >
-                        <Timer size={10} />
+                  <AnimatePresence>
+                    {dayMinutes > 0 && (
+                       <motion.div 
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-2 text-[9px] font-bold text-primary/70 flex items-center justify-center gap-1"
+                      >
+                        <Timer size={10} strokeWidth={2.5} />
                         {formatMinutes(dayMinutes)}
-                     </motion.div>
-                  )}
+                       </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {/* Vertical Line for Today */}
-                {isToday && (
-                   <div className="absolute top-0 bottom-0 w-0.5 bg-primary/40 -z-10">
-                      <div className="absolute top-12 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-primary border-4 border-background shadow-xl" />
-                      <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-primary/20" />
-                   </div>
-                )}
+                {/* Vertical Connector */}
+                <div className={`absolute top-[68px] bottom-0 w-[1px] ${
+                  isToday ? "bg-primary/40" : "bg-border/30"
+                }`}>
+                  {isToday && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-sm" />}
+                </div>
 
-                {/* Tasks for this day */}
-                <div className="flex flex-col gap-3 w-full mt-4 z-10">
+                {/* Tasks Container */}
+                <div className="flex flex-col gap-1.5 w-full mt-4 z-10">
                   {dayTasks.map((task, idx) => (
                     <motion.div
                       key={task.id}
-                      initial={{ opacity: 0, x: -10 }}
+                      initial={{ opacity: 0, x: -5 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      className={`group relative px-3 py-2.5 rounded-xl text-[11px] font-bold shadow-sm border transition-all duration-300 cursor-default
+                      transition={{ delay: idx * 0.03 }}
+                      className={`group relative px-2 py-1.5 rounded-md text-[9px] font-bold border transition-all duration-200 cursor-default
                         ${task.status === 'done' 
-                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/20" 
+                          ? "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/10" 
                           : task.status === 'in_progress'
-                          ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 hover:bg-amber-500/20"
-                          : "bg-primary/5 text-primary border-primary/10 hover:bg-primary/10"
+                          ? "bg-amber-500/5 text-amber-600 dark:text-amber-400 border-amber-500/10"
+                          : "bg-background/50 text-foreground/80 border-border/60 hover:border-primary/30"
                         }`}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                         <div className={`w-1.5 h-1.5 rounded-full ${task.status === 'done' ? "bg-emerald-500" : task.status === 'in_progress' ? "bg-amber-500" : "bg-primary"}`} />
-                         <span className="opacity-60 text-[9px] uppercase tracking-tighter">Task</span>
+                      <div className="flex items-center gap-1.5">
+                         <div className={`w-1 h-1 rounded-full shrink-0 ${
+                           task.status === 'done' ? "bg-emerald-500" : 
+                           task.status === 'in_progress' ? "bg-amber-500" : 
+                           "bg-primary/40"
+                         }`} />
+                         <span className="truncate flex-1">{task.title}</span>
                       </div>
-                      <div className="truncate w-full">{task.title}</div>
                       
-                      {/* Hover decoration */}
-                      <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-0.5 h-0 group-hover:h-1/2 bg-current opacity-50 transition-all rounded-full" />
+                      {/* Interaction hint on hover */}
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <ChevronRight size={8} className="text-primary" />
+                      </div>
                     </motion.div>
                   ))}
                   
                   {dayTasks.length === 0 && (
-                    <div className="h-14 rounded-xl border border-dashed border-border/20 bg-muted/5 w-full flex items-center justify-center opacity-40 group hover:opacity-100 transition-opacity">
-                       <div className="w-8 h-8 rounded-full border border-dashed border-border/40 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Plus size={12} className="text-muted-foreground" />
-                       </div>
+                    <div className="h-8 rounded-md border border-dashed border-border/20 bg-muted/5 w-full flex items-center justify-center opacity-30 hover:opacity-100 transition-opacity">
+                       <Plus size={10} className="text-muted-foreground" />
                     </div>
                   )}
                 </div>
@@ -180,3 +178,4 @@ export default function SkillTimeline({ tasks, skillName, timeByDate = {}, selec
     </div>
   );
 }
+
