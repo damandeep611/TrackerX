@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Box, Share2, MoreHorizontal } from "lucide-react";
 import SandboxWorkspace from "./sandbox-workspace";
 import SandboxStructure from "./sandbox-structure";
+import { SandboxResource } from "./resource-card";
 
 export interface Phase {
   id: string;
@@ -35,11 +36,17 @@ interface SandboxDetailViewProps {
   sandbox: Sandbox;
   initialPhases?: Phase[];
   initialLogs?: ActivityLog[];
+  initialResources?: SandboxResource[];
 }
 
 type TabType = "workspace" | "analytics" | "structure";
 
-export default function SandboxDetailView({ sandbox, initialPhases = [], initialLogs = [] }: SandboxDetailViewProps) {
+export default function SandboxDetailView({ 
+  sandbox, 
+  initialPhases = [], 
+  initialLogs = [],
+  initialResources = []
+}: SandboxDetailViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>("workspace");
   // In a real app with React Query/Server Actions, these might be managed differently, 
   // but for now we initialize state with server props.
@@ -143,6 +150,7 @@ export default function SandboxDetailView({ sandbox, initialPhases = [], initial
             phases={sortedPhases}
             setPhases={setPhases}
             logs={logs}
+            initialResources={initialResources}
           />
         )}
       </main>

@@ -44,6 +44,22 @@ export const sandboxLogs = pgTable("sandbox_logs", {
   title: text("title").notNull(),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
-  duration: numeric("duration", { precision: 5, scale: 2 }).notNull(), // stored in hours
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+    duration: numeric("duration", { precision: 5, scale: 2 }).notNull(), // stored in hours
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  });
+  
+  export const sandboxResources = pgTable("sandbox_resources", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sandboxId: uuid("sandbox_id")
+      .notNull()
+      .references(() => sandboxes.id, { onDelete: "cascade" }),
+    phaseId: uuid("phase_id")
+      .references(() => sandboxPhases.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    url: text("url").notNull(),
+    thumbnailUrl: text("thumbnail_url"),
+    resourceType: text("resource_type").notNull(), // 'video', 'article', 'repo', 'documentation'
+    status: text("status").default("unread").notNull(), // 'unread', 'read'
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  });
+  

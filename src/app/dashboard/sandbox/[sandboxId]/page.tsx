@@ -5,6 +5,7 @@ import { eq, desc } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import SandboxDetailView from "@/components/dashboard/sandbox/sandbox-detail-view";
+import { getResources } from "@/actions/sandboxActions";
 
 interface PageProps {
   params: Promise<{
@@ -63,11 +64,14 @@ export default async function SandboxDetailPage(props: PageProps) {
     duration: Number(l.duration),
   }));
 
+  const resources = await getResources(params.sandboxId);
+
   return (
     <SandboxDetailView 
       sandbox={sandbox} 
       initialPhases={phases} 
       initialLogs={logs} 
+      initialResources={resources}
     />
   );
 }

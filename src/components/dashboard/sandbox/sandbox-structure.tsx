@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { Phase, ActivityLog } from "./sandbox-detail-view";
 import { createPhase, updatePhase, deletePhase } from "@/actions/sandboxActions";
 import toast from "react-hot-toast";
+import ResourceMatrix from "./resource-matrix";
+import { SandboxResource } from "./resource-card";
 
 interface SandboxStructureProps {
   sandboxName: string;
@@ -15,6 +17,7 @@ interface SandboxStructureProps {
   phases: Phase[];
   setPhases: React.Dispatch<React.SetStateAction<Phase[]>>;
   logs: ActivityLog[];
+  initialResources: SandboxResource[];
 }
 
 export default function SandboxStructure({
@@ -24,6 +27,7 @@ export default function SandboxStructure({
   phases,
   setPhases,
   logs,
+  initialResources,
 }: SandboxStructureProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedPhaseId, setExpandedPhaseId] = useState<string | null>(null);
@@ -226,6 +230,12 @@ export default function SandboxStructure({
           </div>
         )}
       </div>
+
+      <ResourceMatrix 
+        sandboxId={sandboxId} 
+        phases={phases} 
+        initialResources={initialResources} 
+      />
 
       <AddPhaseModal
         isOpen={isModalOpen}
