@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { useTaskTimeTotals } from "@/hooks/useSkills";
 import {
   DndContext,
   DragOverlay,
@@ -21,7 +22,6 @@ import {
 import { arrayMove, sortableKeyboardCoordinates, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
 import { useSkillTodoManager } from "@/hooks/useSkillTodoManager";
-import { getTotalTimeForTasks } from "@/actions/timeLogAction";
 import KanbanColumn from "./KanbanColumn";
 import KanbanTaskCard from "./KanbanTaskCard";
 import SkillTodoForm from "../skill-todo-form";
@@ -33,7 +33,6 @@ import { Plus, History, Calendar } from "lucide-react";
 interface SkillKanbanBoardProps {
   initialSkillTodos: skillTodo[];
   skillId: string;
-  onTimeUpdate?: () => void;
   view?: "grid" | "kanban";
   selectedDate?: Date;
 }
@@ -47,7 +46,6 @@ const COLUMNS = [
 export default function SkillKanbanBoard({
   initialSkillTodos,
   skillId,
-  onTimeUpdate,
   view = "kanban",
   selectedDate = new Date(),
 }: SkillKanbanBoardProps) {
@@ -64,11 +62,14 @@ export default function SkillKanbanBoard({
   } = useSkillTodoManager({
     initialSkillTodos,
     skillId,
-    onTimeUpdate,
     selectedDate,
   });
 
-  const [timeData, setTimeData] = useState<Record<string, number>>({});
+  // Minutes logged per task; refreshed automatically when time is logged.
+  const { data: timeData = {} } = useTaskTimeTotals(
+    skillId,
+    useMemo(() => skillTodos.map((t) => t.id), [skillTodos])
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showOverdue, setShowOverdue] = useState(false);
@@ -76,25 +77,9 @@ export default function SkillKanbanBoard({
   // State for editing via Modal
   const [editingTodo, setEditingTodo] = useState<skillTodo | null>(null);
 
-  // Time Data Fetching
-  const refreshTimeData = async (taskIds: string[]) => {
-    try {
-      const timeMap = await getTotalTimeForTasks(taskIds);
-      setTimeData((prev) => ({ ...prev, ...timeMap }));
-    } catch (error) {
-      console.error("Failed to load time data:", error);
-    }
-  };
-
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (skillTodos.length > 0) {
-      refreshTimeData(skillTodos.map((t) => t.id));
-    }
-  }, [skillTodos.length]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -350,7 +335,6 @@ export default function SkillKanbanBoard({
                     timeData={timeData}
                     onEditTodo={openEditModal}
                     onDeleteTodo={handleDeleteTodo}
-                    onTimeLogCreated={() => refreshTimeData(columns[col.id].map(t => t.id))}
                     onAddClick={() => setIsAddingTodo(true)}
                     headerAction={
                       col.id === "todo" ? (
@@ -409,7 +393,6 @@ export default function SkillKanbanBoard({
               timeLogMinutes={timeData[todo.id] || 0}
               onEditTodo={openEditModal}
               onDeleteTodo={handleDeleteTodo}
-              onTimeLogCreated={() => refreshTimeData([todo.id])}
             />
           ))}
           <button 

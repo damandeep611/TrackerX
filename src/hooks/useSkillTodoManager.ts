@@ -8,12 +8,11 @@ import {
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useInvalidateSkill } from "@/hooks/useSkills";
 
 interface useSkillTodoManagerProps {
   initialSkillTodos: skillTodo[];
   skillId: string;
-  onTimeUpdate?: () => void; // Callback to refresh analytics data
-  onRefreshTimeData?: () => void; // Callback to refresh time data
   selectedDate?: Date;
 }
 
@@ -33,6 +32,8 @@ export const useSkillTodoManager = ({
   const [updatingTodoId, setUpdatingTodoId] = useState<string | null>(null);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+  // Refresh this skill's tag stats, task counts and totals after a change.
+  const invalidateSkill = useInvalidateSkill(skillId);
   // event Handlers
   const handleAddTodo = async (newTodoData: Omit<newSkillTodo, "skillId">) => {
     setIsSubmittingForm(true);
@@ -66,6 +67,7 @@ export const useSkillTodoManager = ({
             setSkillTodos((prev) =>
               prev.map((t) => (t.id === tempId ? result.newTask! : t))
             );
+            invalidateSkill();
           } else {
             throw new Error(result.error || "Failed to add task");
           }
@@ -128,8 +130,9 @@ export const useSkillTodoManager = ({
         (async () => {
           const result = await editSkillTask(todoId, dataToSend);
           if (!result.success) {
-            console.error("Failed to edit Todo details:", result.error);
+            throw new Error(result.error || "Failed to edit task");
           }
+          invalidateSkill();
         })(),
         {
           loading: "Updating Todo details",
@@ -162,9 +165,9 @@ export const useSkillTodoManager = ({
         (async () => {
           const result = await toggleTaskDone(todoId, skillId, newDone);
           if (!result.success) {
-            console.error("Failed to toggle todo:", result.error);
-            setSkillTodos(originalTodos); // rollback
+            throw new Error(result.error || "Failed to toggle task");
           }
+          invalidateSkill();
         })(),
         {
           loading: newDone ? "Marking as done..." : "Unmarking...",
@@ -196,6 +199,8 @@ export const useSkillTodoManager = ({
         console.error("Failed to update status:", result.error);
         setSkillTodos(originalTodos);
         toast.error("Failed to move task");
+      } else {
+        invalidateSkill();
       }
     } catch (err) {
       console.error("Error updating status:", err);
@@ -218,9 +223,9 @@ export const useSkillTodoManager = ({
         (async () => {
           const result = await deleteSkillTask(todoId, skillId);
           if (!result.success) {
-            console.error("Failed to delete todo:", result.error);
-            setSkillTodos(originalTodos);
+            throw new Error(result.error || "Failed to delete task");
           }
+          invalidateSkill();
         })(),
         {
           loading: "Deleting task....",
@@ -230,6 +235,7 @@ export const useSkillTodoManager = ({
       )
       .catch((err) => {
         console.error("Error deleting try again:", err);
+        setSkillTodos(originalTodos); // rollback
       })
       .finally(() => {
         setDeletingTodoId(null);

@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState } from "react";
 import SkillKanbanBoard from "../skilltodos/kanban/SkillKanbanBoard";
 import SkillAnalyticsCards from "./SkillAnalyticsCards";
-import SkillAnalytics from "../../../app/dashboard/skills/SkillAnalytics";
+import SkillAnalytics from "./SkillAnalytics";
 import { skillTodo } from "@/types/skillDashboardTypes";
-import SkillHeader from "../../../app/dashboard/skills/SkillHeader";
+import SkillHeader from "./SkillHeader";
 import { motion, AnimatePresence } from "motion/react";
 import SkillTimeline from "./SkillTimeline";
-import { getTimeLogsByDateForSkill } from "@/actions/timeLogAction";
-import { subDays, addDays } from "date-fns";
+import { useSkillTimeByDate } from "@/hooks/useSkills";
 
 interface SkillPageWrapperProps {
   initialSkillTodos: skillTodo[];
@@ -28,34 +27,13 @@ export default function SkillPageWrapper({
   skillSlug,
   createdAt,
 }: SkillPageWrapperProps) {
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [timeByDate, setTimeByDate] = useState<Record<string, number>>({});
+  // Refreshed automatically when time is logged (useCreateTimeLog invalidates it).
+  const { data: timeByDate = {} } = useSkillTimeByDate(skillId);
   const [activeTab, setActiveTab] = useState<"workflow" | "analytics">(
     "workflow",
   );
   const [view, setView] = useState<"grid" | "kanban">("kanban");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-  const fetchTimelineTimeData = useCallback(async () => {
-    const start = subDays(new Date(), 3);
-    const end = addDays(new Date(), 7);
-    const data = await getTimeLogsByDateForSkill(skillId, start, end);
-    setTimeByDate(data);
-  }, [skillId]);
-
-  useEffect(() => {
-    fetchTimelineTimeData();
-  }, [fetchTimelineTimeData, refreshKey]);
-
-  const handleTimeUpdate = useCallback(() => {
-    // Trigger a refresh of analytics data and timeline time
-    setRefreshKey((prev) => prev + 1);
-  }, []);
-
-  const handleTagUpdate = useCallback(() => {
-    // Trigger a refresh of tag analytics data
-    setRefreshKey((prev) => prev + 1);
-  }, []);
 
   return (
     <div className="flex flex-col bg-background min-h-screen">
@@ -118,7 +96,6 @@ export default function SkillPageWrapper({
                  <SkillKanbanBoard
                   initialSkillTodos={initialSkillTodos}
                   skillId={skillId}
-                  onTimeUpdate={handleTimeUpdate}
                   view={view}
                   selectedDate={selectedDate}
                 />
@@ -136,10 +113,9 @@ export default function SkillPageWrapper({
               <div className="w-full">
                 <SkillAnalyticsCards
                   skillName={skillName}
-                  key={refreshKey}
                   skillId={skillId}
+                  skillSlug={skillSlug}
                   skillCurrentHours={skillCurrentHours}
-                  onRefresh={handleTimeUpdate}
                 />
               </div>
 
@@ -148,10 +124,7 @@ export default function SkillPageWrapper({
                   <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider pl-1">
                     Tag Distribution
                   </h3>
-                  <SkillAnalytics
-                    skillId={skillId}
-                    onRefresh={handleTagUpdate}
-                  />
+                  <SkillAnalytics skillId={skillId} />
                 </div>
 
                 {/* Placeholder for future charts (e.g., Activity Heatmap, Progress Over Time) */}

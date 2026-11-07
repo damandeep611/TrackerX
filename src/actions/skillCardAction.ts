@@ -1,7 +1,7 @@
 "use server";
 import { db } from "@/db/drizzle";
-import { skillCard, skillTask, timeLog } from "@/db/schema/schema";
-import { and, eq, like, sql } from "drizzle-orm";
+import { skillCard, timeLog } from "@/db/schema/schema";
+import { and, eq, getTableColumns, like, sql } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { requireUser } from "@/lib/require-user";
@@ -17,18 +17,19 @@ const skillCardInput = z.object({
   description: zOptionalText(1000),
 });
 
-// Function to generate a slug from skill name
-async function generateSlug(skillName: string): Promise<string> {
-  const baseSlug = skillName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+// Generate a slug that is unique among this user's skills.
+async function generateSlug(skillName: string, userId: string): Promise<string> {
+  const baseSlug =
+    skillName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "skill";
 
-  // Check if a skill with this base slug exists
   const existingSkills = await db
-    .select()
+    .select({ id: skillCard.id })
     .from(skillCard)
-    .where(like(skillCard.slug, `${baseSlug}%`));
+    .where(and(eq(skillCard.userId, userId), like(skillCard.slug, `${baseSlug}%`)))
+    .limit(1);
 
   if (existingSkills.length === 0) {
     return baseSlug;
@@ -42,46 +43,32 @@ async function generateSlug(skillName: string): Promise<string> {
 export async function getSkillCard() {
   const userId = await requireUser();
 
-  // Get all skills for the user and calculate current hours from time logs
-  const skills = await db
-    .select()
-    .from(skillCard)
-    .where(eq(skillCard.userId, userId))
-    .then((skills) =>
-      skills.map((skill) => ({
-        ...skill,
-        createdAt: skill.createdAt.toISOString(),
-      }))
-    );
-
-  // Calculate current hours from time logs for each skill
-  const skillsWithCalculatedHours = await Promise.all(
-    skills.map(async (skill) => {
-      // Calculate total minutes from time logs for this skill
-      const timeLogResult = await db
-        .select({
-          totalMinutes:
-            sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(Number),
-        })
-        .from(timeLog)
-        .where(
-          and(
-            eq(timeLog.skill_id, skill.id),
-            eq(timeLog.user_id, userId)
-          )
-        );
-
-      const timeLogMinutes = timeLogResult[0]?.totalMinutes || 0;
-      const calculatedHours = timeLogMinutes / 60.0;
-
-      return {
-        ...skill,
-        currentHours: calculatedHours,
-      };
+  // One query: per-skill minute totals joined onto the user's skills (PERF-01).
+  const totals = db
+    .select({
+      skillId: timeLog.skill_id,
+      minutes: sql<number>`sum(${timeLog.minutes})`.as("minutes"),
     })
-  );
+    .from(timeLog)
+    .where(eq(timeLog.user_id, userId))
+    .groupBy(timeLog.skill_id)
+    .as("totals");
 
-  return skillsWithCalculatedHours;
+  const rows = await db
+    .select({
+      ...getTableColumns(skillCard),
+      totalMinutes: sql<number>`coalesce(${totals.minutes}, 0)`.mapWith(Number),
+    })
+    .from(skillCard)
+    .leftJoin(totals, eq(totals.skillId, skillCard.id))
+    .where(eq(skillCard.userId, userId))
+    .orderBy(skillCard.createdAt);
+
+  return rows.map(({ totalMinutes, ...skill }) => ({
+    ...skill,
+    createdAt: skill.createdAt.toISOString(),
+    currentHours: totalMinutes / 60,
+  }));
 }
 
 export async function getCurrentHours(slug: string) {
@@ -152,7 +139,7 @@ export async function addSkillCard(data: {
   const userId = await requireUser();
   const input = parseInput(skillCardInput, data);
 
-  const slug = await generateSlug(input.skillName);
+  const slug = await generateSlug(input.skillName, userId);
 
   await db.insert(skillCard).values({
     skillName: input.skillName,
@@ -171,19 +158,7 @@ export async function deleteSkillCard(id: string) {
   const userId = await requireUser();
   id = parseInput(zId, id);
 
-  // Delete all related time logs first
-  await db
-    .delete(timeLog)
-    .where(and(eq(timeLog.skill_id, id), eq(timeLog.user_id, userId)));
-
-  // Delete all related skill tasks
-  await db
-    .delete(skillTask)
-    .where(
-      and(eq(skillTask.skill_id, id), eq(skillTask.user_id, userId))
-    );
-
-  // Finally delete the skill card
+  // Tasks and time logs are removed by ON DELETE CASCADE (PERF-07).
   await db
     .delete(skillCard)
     .where(and(eq(skillCard.id, id), eq(skillCard.userId, userId)));

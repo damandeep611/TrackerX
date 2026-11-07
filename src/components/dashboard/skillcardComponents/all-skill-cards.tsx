@@ -4,7 +4,7 @@ import SkillCard from "./skill-card";
 import DashboardHeader from "../header/DashboardHeader";
 import OverviewCards from "../analytics-components/OverviewCards";
 import InsightsCards from "../analytics-components/InsightsCards";
-import { useAddSkillCard, useSkillCards } from "@/hooks/useSkillCardsHook";
+import { useAddSkillCard, useSkillCards } from "@/hooks/useSkills";
 import { toast } from "react-hot-toast";
 import { motion } from "motion/react";
 

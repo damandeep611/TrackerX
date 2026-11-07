@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { motion } from "motion/react";
 import { TrendingUp, TrendingUpIcon } from "lucide-react";
 import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
@@ -8,7 +8,7 @@ import {
   ChartContainer,
   ChartTooltip,
 } from "@/components/ui/chart";
-import { getLastSevenWeeksProgress } from "@/actions/timeLogAction";
+import { useWeeklyProgress } from "@/hooks/useDashboardAnalytics";
 
 interface WeeklyProgressData {
   weekLabel: string;
@@ -46,25 +46,8 @@ function getTakeaway(currentWeekHours: number, weeklyChange: number) {
 }
 
 export default function WeeklyProgressChart() {
-  const [weeklyData, setWeeklyData] = useState<WeeklyProgressData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchWeeklyProgress = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getLastSevenWeeksProgress();
-        setWeeklyData(data);
-      } catch (error) {
-        console.error("Failed to fetch weekly progress:", error);
-        setWeeklyData([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchWeeklyProgress();
-  }, []);
+  const { data, isPending: isLoading } = useWeeklyProgress();
+  const weeklyData: WeeklyProgressData[] = data ?? [];
 
   const currentWeekHours = weeklyData[weeklyData.length - 1]?.hours || 0;
   const previousWeekHours = weeklyData[weeklyData.length - 2]?.hours || 0;

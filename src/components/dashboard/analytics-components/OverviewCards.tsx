@@ -3,7 +3,7 @@
 import { Loader2, Calendar, Box, Activity, Layers } from "lucide-react";
 
 import React from "react";
-import { useOverviewAnalytics } from "@/hooks/useOverviewAnalytics";
+import { useOverviewAnalytics } from "@/hooks/useDashboardAnalytics";
 import { motion } from "motion/react";
 
 export default function OverviewCards() {

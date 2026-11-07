@@ -5,6 +5,7 @@ import {
   integer,
   numeric,
   timestamp,
+  index,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
@@ -19,7 +20,7 @@ export const sandboxes = pgTable("sandboxes", {
     .default("0.00")
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [index("sandboxes_user_idx").on(t.userId)]);
 
 export const sandboxPhases = pgTable("sandbox_phases", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -34,7 +35,7 @@ export const sandboxPhases = pgTable("sandbox_phases", {
   allocatedHours: numeric("allocated_hours", { precision: 5, scale: 2 }).notNull(),
   orderIndex: integer("order_index").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [index("sandbox_phases_sandbox_idx").on(t.sandboxId)]);
 
 export const sandboxLogs = pgTable("sandbox_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -44,22 +45,21 @@ export const sandboxLogs = pgTable("sandbox_logs", {
   title: text("title").notNull(),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
-    duration: numeric("duration", { precision: 5, scale: 2 }).notNull(), // stored in hours
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  });
-  
-  export const sandboxResources = pgTable("sandbox_resources", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    sandboxId: uuid("sandbox_id")
-      .notNull()
-      .references(() => sandboxes.id, { onDelete: "cascade" }),
-    phaseId: uuid("phase_id")
-      .references(() => sandboxPhases.id, { onDelete: "set null" }),
-    title: text("title").notNull(),
-    url: text("url").notNull(),
-    thumbnailUrl: text("thumbnail_url"),
-    resourceType: text("resource_type").notNull(), // 'video', 'article', 'repo', 'documentation'
-    status: text("status").default("unread").notNull(), // 'unread', 'read'
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  });
-  
+  duration: numeric("duration", { precision: 5, scale: 2 }).notNull(), // stored in hours
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [index("sandbox_logs_phase_idx").on(t.phaseId)]);
+
+export const sandboxResources = pgTable("sandbox_resources", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sandboxId: uuid("sandbox_id")
+    .notNull()
+    .references(() => sandboxes.id, { onDelete: "cascade" }),
+  phaseId: uuid("phase_id")
+    .references(() => sandboxPhases.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  url: text("url").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
+  resourceType: text("resource_type").notNull(), // 'video', 'article', 'repo', 'documentation'
+  status: text("status").default("unread").notNull(), // 'unread', 'read'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [index("sandbox_resources_sandbox_idx").on(t.sandboxId)]);

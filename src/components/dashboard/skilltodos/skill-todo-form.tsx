@@ -4,7 +4,7 @@ import { Send } from "lucide-react";
 import React, { ChangeEvent, useState } from "react";
 import TagInput from "./tag-input";
 import { motion } from "motion/react";
-import { useRecentTags } from "@/hooks/useRecentTags";
+import { useRecentTags } from "@/hooks/useSkills";
 
 //defining the props expected by the skilltodoform component
 interface SkillTodoFormProps {

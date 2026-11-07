@@ -7,6 +7,8 @@ import {
   varchar,
   timestamp,
   numeric,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
@@ -21,13 +23,16 @@ export const skillCard = pgTable("skillcard", {
     .default("0.00")
     .notNull(),
   skillColor: text("skill-color").notNull(),
-  slug: text("slug").notNull().unique(),
+  // Unique per user (see skillcard_user_slug_uq), not globally.
+  slug: text("slug").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-});
+}, (t) => [
+  uniqueIndex("skillcard_user_slug_uq").on(t.userId, t.slug),
+]);
 
 export const skillTask = pgTable("skillTask", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -45,7 +50,9 @@ export const skillTask = pgTable("skillTask", {
   date: timestamp("date").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("skill_task_skill_user_idx").on(t.skill_id, t.user_id),
+]);
 
 export const timeLog = pgTable("timelog", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -61,7 +68,11 @@ export const timeLog = pgTable("timelog", {
   minutes: integer("minutes").notNull(),
   logged_date: timestamp("logged_date").defaultNow().notNull(),
   tracked_at: timestamp("tracked_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("time_log_user_date_idx").on(t.user_id, t.logged_date),
+  index("time_log_task_idx").on(t.task_id),
+  index("time_log_skill_idx").on(t.skill_id),
+]);
 
 // Goals schema for tracking personal goals
 export const goals = pgTable("goals", {
@@ -70,12 +81,15 @@ export const goals = pgTable("goals", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 255 }).notNull(),
-  slug: text("slug").notNull().unique(),
+  // Unique per user (see goals_user_slug_uq), not globally.
+  slug: text("slug").notNull(),
   startDate: timestamp("start_date"),
   completedDate: timestamp("completed_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (t) => [
+  uniqueIndex("goals_user_slug_uq").on(t.userId, t.slug),
+]);
 
 export const goalLogs = pgTable("goal_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -90,4 +104,6 @@ export const goalLogs = pgTable("goal_logs", {
   endTime: timestamp("end_time").notNull(),
   durationMinutes: integer("duration_minutes").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("goal_logs_goal_user_idx").on(t.goalId, t.userId),
+]);

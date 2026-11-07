@@ -2,20 +2,23 @@
 
 import React from "react";
 import { BarChart3, Calendar1, Clock1, CheckCircle2 } from "lucide-react";
-import { useSkillAnalytics } from "@/hooks/useSkillAnalytics";
+import { useSkillAnalytics, useSkillHours } from "@/hooks/useSkills";
 
 interface SkillAnalyticsCardsProps {
   skillId: string;
+  skillSlug: string;
+  /** Server-rendered value; kept fresh by React Query afterwards. */
   skillCurrentHours: string;
-  onRefresh?: () => void;
   skillName: string;
 }
 
 export default function SkillAnalyticsCards({
   skillId,
-  skillCurrentHours,
+  skillSlug,
+  skillCurrentHours: initialHours,
 }: SkillAnalyticsCardsProps) {
   const { analytics, isLoading, error } = useSkillAnalytics(skillId);
+  const { data: skillCurrentHours = initialHours } = useSkillHours(skillId, skillSlug, initialHours);
 
   return (
     <div className="w-full">

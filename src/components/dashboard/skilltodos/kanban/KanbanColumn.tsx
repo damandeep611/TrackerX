@@ -13,7 +13,6 @@ interface KanbanColumnProps {
   timeData: Record<string, number>;
   onEditTodo: (todoId: string, updatedTodo: Partial<skillTodo>) => void;
   onDeleteTodo: (todoId: string) => void;
-  onTimeLogCreated: (taskId: string) => void;
   onAddClick?: () => void;
   headerAction?: React.ReactNode;
 }
@@ -51,7 +50,6 @@ export default function KanbanColumn({
   timeData,
   onEditTodo,
   onDeleteTodo,
-  onTimeLogCreated,
   onAddClick,
   headerAction,
 }: KanbanColumnProps) {
@@ -103,7 +101,6 @@ export default function KanbanColumn({
               timeLogMinutes={timeData[task.id] || 0}
               onEditTodo={onEditTodo}
               onDeleteTodo={onDeleteTodo}
-              onTimeLogCreated={() => onTimeLogCreated(task.id)}
             />
           ))}
           {tasks.length === 0 && (

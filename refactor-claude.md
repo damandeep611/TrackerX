@@ -23,11 +23,11 @@ Order principle: delete first (less code to fix) → make it safe → make data 
 - ✅ `proxy.ts` redirect for `/dashboard/*`. ⏳ Rate limit metadata fetching + mutations (Upstash already dropped). Owner decides whether it's needed.
 - Done before redesigns because the upgrades can break APIs that the UI work would build on.
 
-## P3 — Data layer & fetching speed  (T4 + audit Phase 4, DES-03, DES-04, DES-09)
-- DB: indexes, kill the N+1s/loops (PERF-01/02/03), one session lookup per request, per-user slug uniqueness, pool singleton.
-- One fetching pattern: Server Components fetch + `HydrationBoundary` prefill React Query (no loading flash on first paint); a `queryKeys` factory; one hook per domain in `hooks/`; optimistic updates + targeted invalidation on mutations; remove raw `useEffect` fetching.
-- `loading.tsx` (skeletons) / `error.tsx` / `not-found.tsx` for dashboard segments; `Suspense` around slow widgets.
-- Move route-folder components into `components/` (DES-06).
+## P3 — Data layer & fetching speed  (T4 + audit Phase 4, DES-03, DES-04, DES-09) — ✅ DONE 2026-11-07 (migration 0023 not applied)
+- ✅ DB: indexes, kill the N+1s/loops (PERF-01/02/03), one session lookup per request, per-user slug uniqueness, pool singleton. → `migrations/0023_indexes_per_user_slugs.sql` (not applied); `generateSlug` checks only the user's own skills.
+- ✅ One fetching pattern: Server Components fetch + `HydrationBoundary` prefill React Query (no loading flash on first paint); a `queryKeys` factory; one hook per domain in `hooks/`; optimistic updates + targeted invalidation on mutations; remove raw `useEffect` fetching. → `lib/query-keys.ts`, `lib/query-client.ts`, `hooks/useSkills|useDashboardAnalytics|useGoals`. Goals pages became server pages + `GoalsView`/`GoalDetailView`. Sandbox kept as server-props + local state (already server-rendered, no client fetching). **[new] Bugs fixed:** logging time never refreshed the timeline, analytics or hours (`onTimeUpdate` was never called); task edit/toggle/delete showed success and kept the optimistic change when the server refused; prefetching pages were being prerendered statically (now `requireUser()` first). **Dead code removed:** `skill-todo-list`, `skill-todo-card`, `TimeBlockList`, `TodoCard/*`, `lib/api/skillCardApi.ts`, 5 old hooks.
+- ✅ `loading.tsx` (skeletons) / `error.tsx` / `not-found.tsx` for dashboard segments (+ `ui/skeleton.tsx`). ⏳ `Suspense` around slow widgets: deferred. Pages await all prefetches in parallel and `loading.tsx` covers navigation; revisit streaming per widget in P5 if TTFB matters.
+- ✅ Move route-folder components into `components/` (DES-06).
 
 ## P4 — Design system foundation  (enables T2, T5, T8; audit Phase 6 baseline)
 - Direction from `public/design-inspiration/`: calm near-black / soft-white neutral surfaces, **panel-inside-panel cards** with hairline borders, generous spacing, monospace tabular numerals for metrics, small inline bar sparklines, segmented progress bars, muted labels, a single accent per metric, delta chips ("+12% vs last week"), pill tab switchers. Keep light + dark themes.
@@ -115,20 +115,20 @@ Pattern: every action already checks that a session exists, but many never check
 - [ ] **DES-08 [expanded]** `src/app/globals.css:187` uses the undefined `var(--text-primary)`; globals.css:199 **and** `src/app/dashboard/layout.tsx` (`text-primary` on the wrapper) set every text color to the primary color. Switch to `text-foreground`.
 
 ## Phase 4 — Performance (High–Low)
-- [ ] **PERF-01** `src/actions/skillCardAction.ts:50` — N+1: one `sum(timeLog)` query per skill. *[corrected: these run in parallel via `Promise.all`, not sequentially, but it's still N+1.]* Replace with a single `LEFT JOIN … GROUP BY`.
-- [ ] **PERF-02** `src/actions/timeLogAction.ts:169-176` — `getTotalTimeForTasks` awaits one query per task in a `for…of` loop. Use `inArray` + `GROUP BY task_id`.
-- [ ] **PERF-03** `src/actions/timeLogAction.ts:466` — `getLastSevenWeeksProgress` runs 7 sequential queries. Use one ranged query and bucket the results.
-- [ ] **PERF-05 [corrected]** Indexes: `daily-log-schema.ts` already has 5 indexes. `schema.ts` and `sandbox-schema.ts` have none. Add indexes on `skillcard.user_id`, `skill_task(skill_id,user_id)`, `time_log(user_id,logged_date)`, `time_log(task_id)`, `time_log(skill_id)`, `goals.user_id`, `goal_logs(goal_id,user_id)`, `sandboxes.user_id`, `sandbox_phases.sandbox_id`, `sandbox_logs.phase_id`, `sandbox_resources.sandbox_id`.
+- [x] **PERF-01** `src/actions/skillCardAction.ts:50` — N+1: one `sum(timeLog)` query per skill. *[corrected: these run in parallel via `Promise.all`, not sequentially, but it's still N+1.]* Replace with a single `LEFT JOIN … GROUP BY`.
+- [x] **PERF-02** `src/actions/timeLogAction.ts:169-176` — `getTotalTimeForTasks` awaits one query per task in a `for…of` loop. Use `inArray` + `GROUP BY task_id`.
+- [x] **PERF-03** `src/actions/timeLogAction.ts:466` — `getLastSevenWeeksProgress` runs 7 sequential queries. Use one ranged query and bucket the results.
+- [x] **PERF-05 [corrected]** Indexes: `daily-log-schema.ts` already has 5 indexes. `schema.ts` and `sandbox-schema.ts` have none. Add indexes on `skillcard.user_id`, `skill_task(skill_id,user_id)`, `time_log(user_id,logged_date)`, `time_log(task_id)`, `time_log(skill_id)`, `goals.user_id`, `goal_logs(goal_id,user_id)`, `sandboxes.user_id`, `sandbox_phases.sandbox_id`, `sandbox_logs.phase_id`, `sandbox_resources.sandbox_id`.
 - [~] **PERF-08** *(P2: `getCurrentUser` is wrapped in React `cache()`, so repeated lookups in one request should dedupe; confirm in P3)* `src/actions/overviewAnalyticsAction.ts:211` — 4 parallel `getSession` calls for one request. Resolve the user once and pass it down.
 - [x] **PERF-04** Two chart libraries in the bundle. Port `WeeklyProgressChart` to Recharts and drop `echarts`/`echarts-for-react` (the ECharts version also has XSS advisory GHSA-fgmj-fm8m-jvvx).
-- [ ] **PERF-07** `src/actions/skillCardAction.ts:182` — the manual child deletes are redundant given `ON DELETE CASCADE` (schema.ts:39, :60). Delete the parent only.
-- [ ] **PERF-06** `src/db/drizzle.ts:11` — no `globalThis` pool singleton in dev. ~~**[new]** The `schema` object also omits `sandbox-schema`~~ **[corrected in P2]**: `schema.ts` re-exports `sandbox-schema`, so it *is* registered.
+- [x] **PERF-07** `src/actions/skillCardAction.ts:182` — the manual child deletes are redundant given `ON DELETE CASCADE` (schema.ts:39, :60). Delete the parent only.
+- [x] **PERF-06** `src/db/drizzle.ts:11` — no `globalThis` pool singleton in dev. ~~**[new]** The `schema` object also omits `sandbox-schema`~~ **[corrected in P2]**: `schema.ts` re-exports `sandbox-schema`, so it *is* registered.
 
 ## Phase 5 — Architecture
-- [ ] **DES-03** Four data-fetching patterns (RQ+actions, RQ+REST, raw `useEffect`+`isMounted` in `useOverviewAnalytics.ts:48`/`useSkillAnalytics`, direct action calls in 80-hour-goals pages). Pick one: Server Components for reads, plus React Query only where client interactivity needs it.
-- [ ] **DES-04** `src/db/schema/schema.ts:24,73` — `slug` is globally unique on `skillCard` and `goals`. Make it unique per `(userId, slug)` (requires a migration).
-- [ ] **DES-09 [new]** No `error.tsx`, `loading.tsx` or `not-found.tsx` under `src/app/`. Add them at least to `dashboard/`.
-- [ ] **DES-06** Move `SkillHeader`, `SkillAnalytics`, `SkillDropdownMenu` (`src/app/dashboard/skills/`) and `help/DateChecker.tsx` into `src/components/`. This gets rid of the `../../../app/...` imports in `SkillPageWrapper.tsx`.
+- [x] **DES-03** Four data-fetching patterns (RQ+actions, RQ+REST, raw `useEffect`+`isMounted` in `useOverviewAnalytics.ts:48`/`useSkillAnalytics`, direct action calls in 80-hour-goals pages). Pick one: Server Components for reads, plus React Query only where client interactivity needs it.
+- [x] **DES-04** `src/db/schema/schema.ts:24,73` — `slug` is globally unique on `skillCard` and `goals`. Make it unique per `(userId, slug)` (requires a migration).
+- [x] **DES-09 [new]** No `error.tsx`, `loading.tsx` or `not-found.tsx` under `src/app/`. Add them at least to `dashboard/`.
+- [x] **DES-06** Move `SkillHeader`, `SkillAnalytics`, `SkillDropdownMenu` (`src/app/dashboard/skills/`) and `help/DateChecker.tsx` into `src/components/`. This gets rid of the `../../../app/...` imports in `SkillPageWrapper.tsx`.
 - [x] **DES-05** Dead code to delete (all verified as unimported): `components/dashboard/sidebar/demouserProfile.tsx` (558 lines), `lib/mock-80-hour-goals-store.ts`, `components/dashboard/goals-list/*`, `components/skeletons/NumberSkeleton.tsx`, `components/dashboard/skilltodos/ActivityTimeline.tsx` + `skill-activity-timeline.tsx`; deps `gsap`, `react-icons`.
 - [ ] Add tests for the ownership checks in Phase 1. There are no tests at all today.
 

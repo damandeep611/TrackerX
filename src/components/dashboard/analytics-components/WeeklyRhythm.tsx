@@ -1,7 +1,7 @@
 "use client"
 
-import { getLastSevenDaysActivity } from '@/actions/timeLogAction';
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useWeeklyRhythm } from "@/hooks/useDashboardAnalytics";
 import { motion } from "motion/react";
 import { Activity, Flame, Target, TrendingUp } from "lucide-react";
 
@@ -12,34 +12,9 @@ interface WeeklyData {
 }
 
 export default function WeeklyRhythm() {
-  const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
+  const { data } = useWeeklyRhythm();
+  const weeklyData: WeeklyData[] = data ?? [];
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
-
-  useEffect(() => {
-    const fetchWeeklyActivity = async () => {
-      try {
-        const data = await getLastSevenDaysActivity();
-        setWeeklyData(data);
-      } catch (error) {
-        console.error("Failed to fetch weekly activity:", error);
-        // Fallback to default empty data structure
-        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        const today = new Date();
-        const fallbackData = Array.from({ length: 7 }, (_, i) => {
-          const date = new Date();
-          date.setDate(today.getDate() - (6 - i));
-          return {
-            day: dayNames[date.getDay()],
-            hours: 0,
-            hasActivity: false,
-          };
-        });
-        setWeeklyData(fallbackData);
-      }
-    };
-
-    fetchWeeklyActivity();
-  }, []);
 
   // Calculate metrics based on 80-hour week goal
   const WEEKLY_GOAL = 80;

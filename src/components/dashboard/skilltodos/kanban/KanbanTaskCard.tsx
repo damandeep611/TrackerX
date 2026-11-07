@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { MoreHorizontal, Timer, PencilLine, Trash2, CalendarDays, Play } from "lucide-react";
 import { formatDuration } from "@/utils/format-time";
-import { createTimeLog } from "@/actions/timeLogAction";
+import { useCreateTimeLog } from "@/hooks/useSkills";
 import toast from "react-hot-toast";
 import {
   DropdownMenu,
@@ -20,7 +20,6 @@ interface KanbanTaskCardProps {
   timeLogMinutes?: number;
   onEditTodo: (todoId: string, updatedTodo: Partial<skillTodo>) => void;
   onDeleteTodo: (todoId: string) => void;
-  onTimeLogCreated?: () => void;
   isOverlay?: boolean;
 }
 
@@ -29,7 +28,6 @@ export default function KanbanTaskCard({
   timeLogMinutes = 0,
   onEditTodo,
   onDeleteTodo,
-  onTimeLogCreated,
   isOverlay = false,
 }: KanbanTaskCardProps) {
   const {
@@ -54,33 +52,24 @@ export default function KanbanTaskCard({
     opacity: isDragging ? 0.4 : 1,
   };
 
-  const [optimisticMinutes, setOptimisticMinutes] = useState<number | null>(null);
-  const displayMinutes = optimisticMinutes !== null ? optimisticMinutes : timeLogMinutes;
+  // The mutation bumps the total optimistically and refreshes dependents.
+  const createTimeLog = useCreateTimeLog(todo.skill_id);
+  const displayMinutes = timeLogMinutes;
 
-  const handleTimeUpdate = async () => {
-    try {
-      const minutesToAdd = 30;
-      const newTotal = displayMinutes + minutesToAdd;
-      setOptimisticMinutes(newTotal);
-
-      const result = await createTimeLog({
+  const handleTimeUpdate = () => {
+    if (todo.id.startsWith("temp-")) return; // task not saved yet
+    createTimeLog.mutate(
+      {
         task_id: todo.id,
         skill_id: todo.skill_id,
-        minutes: minutesToAdd,
+        minutes: 30,
         logged_date: new Date().toISOString().split("T")[0],
-      });
-
-      if (result.success) {
-        toast.success(`Added 30m to task`);
-        onTimeLogCreated?.();
-      } else {
-        setOptimisticMinutes(null);
-        toast.error("Failed to update time.");
+      },
+      {
+        onSuccess: () => toast.success("Added 30m to task"),
+        onError: () => toast.error("Failed to update time."),
       }
-    } catch {
-      setOptimisticMinutes(null);
-      toast.error("Failed to update time.");
-    }
+    );
   };
   
   const handleDelete = () => {

@@ -10,12 +10,11 @@ import {
 import React, { useMemo } from "react";
 import { Label, Pie, PieChart } from "recharts";
 import { motion } from "motion/react";
-import { useTagStats } from "@/hooks/useTagStats";
+import { useTagStats } from "@/hooks/useSkills";
 import { Tag } from "lucide-react";
 
 interface SkillAnalyticsProps {
   skillId: string;
-  onRefresh?: () => void;
 }
 
 // Generate colors for tags

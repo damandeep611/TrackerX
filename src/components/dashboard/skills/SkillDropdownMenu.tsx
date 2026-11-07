@@ -1,6 +1,6 @@
 import { Check, LogOut, RotateCcw, Trash2, X } from "lucide-react";
 import React, { useState } from "react";
-import { deleteSkillCard } from "@/actions/skillCardAction";
+import { useDeleteSkillCard } from "@/hooks/useSkills";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "motion/react";
@@ -26,16 +26,16 @@ interface SkillDropdownSection {
 
 export default function SkillDropdownMenu({ skillId }: SkillDropdownProps) {
   const router = useRouter();
+  const deleteSkill = useDeleteSkillCard();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleDeleteSkill = async () => {
     try {
       setIsDeleting(true);
-      await deleteSkillCard(skillId);
+      await deleteSkill.mutateAsync(skillId);
       toast.success("Skill deleted successfully");
       router.push("/dashboard");
-      router.refresh();
     } catch {
       toast.error("Failed to delete skill. Please try again.");
     } finally {

@@ -4,7 +4,13 @@ import { db } from "@/db/drizzle";
 import { skillCard } from "@/db/schema/schema";
 import { and, eq } from "drizzle-orm";
 import React from "react";
+import { notFound } from "next/navigation";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { subDays, addDays } from "date-fns";
 import { getCurrentHours } from "@/actions/skillCardAction";
+import { getTimeLogsByDateForSkill, getTotalTimeForTasks } from "@/actions/timeLogAction";
+import { getQueryClient } from "@/lib/query-client";
+import { queryKeys } from "@/lib/query-keys";
 import SkillPageWrapper from "@/components/dashboard/skills/SkillPageWrapper";
 
 async function loadSkill(skillSlug: string, userId: string) {
@@ -27,7 +33,29 @@ async function loadSkill(skillSlug: string, userId: string) {
     getCurrentHours(skillSlug),
   ]);
 
-  return { status: "ok" as const, skill, skillTodoData, skillCurrentHours };
+  // Prefill React Query so the timeline and task totals render without a loading flash.
+  // Keys must match the client hooks in hooks/useSkills.ts.
+  const queryClient = getQueryClient();
+  const taskIds = skillTodoData.map((t) => t.id).sort();
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.skills.timeByDate(skill.id),
+      queryFn: () => getTimeLogsByDateForSkill(skill.id, subDays(new Date(), 3), addDays(new Date(), 7)),
+    }),
+    taskIds.length > 0 &&
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.skills.taskTotals(skill.id, taskIds),
+        queryFn: () => getTotalTimeForTasks(taskIds),
+      }),
+  ]);
+
+  return {
+    status: "ok" as const,
+    skill,
+    skillTodoData,
+    skillCurrentHours,
+    dehydratedState: dehydrate(queryClient),
+  };
 }
 
 export default async function SkillOverview({
@@ -49,10 +77,11 @@ export default async function SkillOverview({
   }
 
   if (result.status === "error") return <div>Error loading skill please try again</div>;
-  if (result.status === "not-found") return <div>Skill Not found...</div>;
+  if (result.status === "not-found") notFound();
 
-  const { skill, skillTodoData, skillCurrentHours } = result;
+  const { skill, skillTodoData, skillCurrentHours, dehydratedState } = result;
   return (
+    <HydrationBoundary state={dehydratedState}>
     <div className="flex flex-col">
       <SkillPageWrapper
         skillName={skill.skillName}
@@ -63,5 +92,6 @@ export default async function SkillOverview({
         createdAt={skill.createdAt}
       />
     </div>
+    </HydrationBoundary>
   );
 }
