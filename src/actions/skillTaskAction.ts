@@ -2,50 +2,33 @@
 
 import { db } from "@/db/drizzle";
 import { skillCard, skillTask, timeLog } from "@/db/schema/schema";
-import { auth } from "@/lib/auth";
 import { newSkillTodo, skillTodo } from "@/types/skillDashboardTypes";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+import { z } from "zod";
+import { requireUser } from "@/lib/require-user";
+import { getOwnedSkill } from "@/lib/ownership";
+import { recomputeSkillHours } from "@/lib/skill-hours";
+import { parseInput, tryParseInput, zId, zOptionalText, zText } from "@/lib/validation";
 
-//async function to get authenticated user id to use for server action functions
-export async function getUserId(): Promise<string> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user?.id) {
-    throw new Error("User not Authenticated");
-  }
-  return session.user.id;
-}
+const taskStatus = z.enum(["todo", "in_progress", "done"]);
+const tags = z.array(z.string().trim().min(1).max(50)).max(20).default([]);
 
-// --- Helper function to update the parent skillcard current hours
-// Calculate the total time from time logs for the skill's tasks and update the current hours
-export async function updateSkillCardHours(skillId: string): Promise<void> {
-  const userId = await getUserId();
-  try {
-    // Calculate the sum of minutes from time logs for this skill's tasks
-    const result = await db
-      .select({
-        totalMinutes: sql<number>`sum(${timeLog.minutes})`.mapWith(Number),
-      })
-      .from(timeLog)
-      .where(and(eq(timeLog.skill_id, skillId), eq(timeLog.user_id, userId)));
+const newTaskInput = z.object({
+  skillId: zId,
+  title: zText(255),
+  description: zOptionalText(700),
+  tags,
+  status: taskStatus.optional(),
+});
 
-    const totalMinutes = result[0]?.totalMinutes || 0;
-    // Convert total minutes to hours using float for precision
-    const totalHours = totalMinutes / 60.0;
+const editTaskInput = z.object({
+  title: zText(255),
+  description: zOptionalText(700),
+  tags,
+});
 
-    await db
-      .update(skillCard)
-      .set({ currentHours: totalHours.toString() })
-      .where(and(eq(skillCard.id, skillId), eq(skillCard.userId, userId)));
-
-    console.log(`Updated currentHours for skill ${skillId} to ${totalHours}`);
-  } catch (error) {
-    console.error(`Failed to update hours for skill ${skillId}:`, error);
-  }
-}
+const INVALID = { success: false, error: "Invalid input" } as const;
 
 //----------- now the server action CRUD operations
 
@@ -53,7 +36,8 @@ export async function updateSkillCardHours(skillId: string): Promise<void> {
 export async function getSkillTasksForSkill(
   skillId: string
 ): Promise<skillTodo[]> {
-  const userId = await getUserId();
+  const userId = await requireUser();
+  skillId = parseInput(zId, skillId);
 
   const skillTasks = await db
     .select()
@@ -79,25 +63,30 @@ export async function getSkillTasksForSkill(
 export async function addSkillTasks(
   newTodo: newSkillTodo
 ): Promise<{ success: boolean; error?: string; newTask?: skillTodo }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
-  if (!newTodo.skillId) {
-    return { success: false, error: "skill ID is missing" };
-  }
-  if (!newTodo.title || !newTodo.title.trim()) {
+  if (!newTodo?.title || !newTodo.title.trim()) {
     return { success: false, error: "Title is required" };
   }
+  const input = tryParseInput(newTaskInput, newTodo);
+  if (!input) return INVALID;
 
   try {
+    // The skill must belong to the caller (SEC-04).
+    const parentSkill = await getOwnedSkill(input.skillId, userId);
+    if (!parentSkill) {
+      return { success: false, error: "Skill not found" };
+    }
+
     const insertedTasks = await db
       .insert(skillTask)
       .values({
         user_id: userId,
-        skill_id: newTodo.skillId,
-        title: newTodo.title.trim(),
-        description: newTodo.description?.trim() || null,
-        tags: newTodo.tags || [],
-        status: newTodo.status || "todo",
+        skill_id: parentSkill.id,
+        title: input.title,
+        description: input.description,
+        tags: input.tags,
+        status: input.status ?? "todo",
       })
       .returning();
 
@@ -107,15 +96,7 @@ export async function addSkillTasks(
 
     const createdSkillTask = insertedTasks[0];
 
-    const parentSkill = await db
-      .select({ slug: skillCard.slug })
-      .from(skillCard)
-      .where(eq(skillCard.id, createdSkillTask.skill_id || ""))
-      .limit(1);
-
-    if (parentSkill[0]?.slug) {
-      revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
-    }
+    revalidatePath(`/dashboard/skills/${parentSkill.slug}`);
 
     revalidatePath("/dashboard");
 
@@ -149,21 +130,22 @@ export async function editSkillTask(
     tags: string[];
   }
 ): Promise<{ success: boolean; error?: string }> {
-  //ensure user id authenticated
-  const userId = await getUserId();
+  const userId = await requireUser();
 
-  //input validation
-  //to ensure the edited form is not empty
-  if (!updatedFields.title || !updatedFields.title.trim()) {
+  if (!updatedFields?.title || !updatedFields.title.trim()) {
     return { success: false, error: "title is required" };
   }
+  const input = tryParseInput(editTaskInput, updatedFields);
+  const id = tryParseInput(zId, taskId);
+  if (!input || !id) return INVALID;
+  taskId = id;
   try {
     const result = await db
       .update(skillTask)
       .set({
-        title: updatedFields.title.trim(),
-        description: updatedFields.description?.trim() || null,
-        tags: updatedFields.tags || [],
+        title: input.title,
+        description: input.description,
+        tags: input.tags,
         updatedAt: new Date(),
       })
       .where(and(eq(skillTask.id, taskId), eq(skillTask.user_id, userId)));
@@ -177,13 +159,13 @@ export async function editSkillTask(
     const taskData = await db
       .select({ skill_id: skillTask.skill_id })
       .from(skillTask)
-      .where(eq(skillTask.id, taskId))
+      .where(and(eq(skillTask.id, taskId), eq(skillTask.user_id, userId)))
       .limit(1);
     if (taskData[0]?.skill_id) {
       const parentSkill = await db
         .select({ slug: skillCard.slug })
         .from(skillCard)
-        .where(eq(skillCard.id, taskData[0].skill_id))
+        .where(and(eq(skillCard.id, taskData[0].skill_id), eq(skillCard.userId, userId)))
         .limit(1);
       if (parentSkill[0]?.slug) {
         revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
@@ -202,11 +184,13 @@ export async function toggleTaskDone(
   skillId: string,
   done: boolean
 ): Promise<{ success: boolean; error?: string }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   if (!skillId) {
     return { success: false, error: "Skill ID is missing for toggle" };
   }
+  const ids = tryParseInput(z.object({ taskId: zId, skillId: zId, done: z.boolean() }), { taskId, skillId, done });
+  if (!ids) return INVALID;
 
   try {
     const status = done ? "done" : "todo";
@@ -232,7 +216,7 @@ export async function toggleTaskDone(
     const parentSkill = await db
       .select({ slug: skillCard.slug })
       .from(skillCard)
-      .where(eq(skillCard.id, skillId))
+      .where(and(eq(skillCard.id, skillId), eq(skillCard.userId, userId)))
       .limit(1);
 
     if (parentSkill[0]?.slug) {
@@ -253,11 +237,13 @@ export async function updateTaskStatus(
   skillId: string,
   status: string
 ): Promise<{ success: boolean; error?: string }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   if (!skillId) {
     return { success: false, error: "Skill ID is missing for status update" };
   }
+  const ids = tryParseInput(z.object({ taskId: zId, skillId: zId, status: taskStatus }), { taskId, skillId, status });
+  if (!ids) return INVALID;
 
   try {
     const done = status === "done";
@@ -283,7 +269,7 @@ export async function updateTaskStatus(
     const parentSkill = await db
       .select({ slug: skillCard.slug })
       .from(skillCard)
-      .where(eq(skillCard.id, skillId))
+      .where(and(eq(skillCard.id, skillId), eq(skillCard.userId, userId)))
       .limit(1);
 
     if (parentSkill[0]?.slug) {
@@ -304,11 +290,12 @@ export async function deleteSkillTask(
   taskId: string,
   skillId: string
 ): Promise<{ success: boolean; error?: string }> {
-  //user auth checking
-  const userId = await getUserId();
+  const userId = await requireUser();
   if (!skillId) {
     return { success: false, error: "Skill ID is missing for delete" };
   }
+  const ids = tryParseInput(z.object({ taskId: zId, skillId: zId }), { taskId, skillId });
+  if (!ids) return INVALID;
   try {
     //delete rows from the 'skillTask' table
     const result = await db.delete(skillTask).where(
@@ -327,13 +314,13 @@ export async function deleteSkillTask(
       };
     }
 
-    await updateSkillCardHours(skillId);
+    await recomputeSkillHours(skillId, userId);
 
     // Revalidate
     const parentSkill = await db
       .select({ slug: skillCard.slug })
       .from(skillCard)
-      .where(eq(skillCard.id, skillId))
+      .where(and(eq(skillCard.id, skillId), eq(skillCard.userId, userId)))
       .limit(1);
     if (parentSkill[0]?.slug) {
       revalidatePath(`/dashboard/skills/${parentSkill[0].slug}`);
@@ -349,7 +336,7 @@ export async function deleteSkillTask(
 
 // ACTION: Get today's total time spent across all skills
 export async function getTodayTotalTimeSpent(): Promise<number> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
     // Get today's date in YYYY-MM-DD format for date comparison

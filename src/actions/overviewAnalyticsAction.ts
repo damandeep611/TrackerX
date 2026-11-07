@@ -2,20 +2,9 @@
 
 import { db } from "@/db/drizzle";
 import { timeLog, skillTask, skillCard } from "@/db/schema/schema";
-import { auth } from "@/lib/auth";
+import { requireUser } from "@/lib/require-user";
 import { and, eq, sql, gte, desc } from "drizzle-orm";
-import { headers } from "next/headers";
 
-// Helper function to get authenticated user ID
-async function getUserId(): Promise<string> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user?.id) {
-    throw new Error("User not authenticated");
-  }
-  return session.user.id;
-}
 
 
 
@@ -24,7 +13,7 @@ export async function getTimeSpentYesterday(): Promise<{
   hoursSpent: number;
   tasksCompleted: number;
 }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
     const yesterday = new Date();
@@ -80,7 +69,7 @@ export async function getWeeklyTimeSpent(): Promise<{
   totalHours: number;
   daysWithActivity: number;
 }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
     const sevenDaysAgo = new Date();
@@ -119,7 +108,7 @@ export async function getMontlyTimeSpent(): Promise<{
   totalHours: number;
   daysWithActivity: number;
 }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
     const thirtyDaysAgo = new Date();
@@ -158,7 +147,7 @@ export async function getMostActiveSkill(): Promise<{
   skillName: string;
   hoursSpent: number;
 }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
     const sevenDaysAgo = new Date();

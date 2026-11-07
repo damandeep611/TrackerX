@@ -17,10 +17,10 @@ Order principle: delete first (less code to fix) → make it safe → make data 
 - ✅ **Embarrassing bugs:** DES-01 profanity + inverted logic, DES-02 `onCanPlay`.
 - ✅ **[new] Lint was broken:** `next lint` doesn't exist in Next 16. The script is now `eslint .`, with `.next/` etc. ignored, and the 20 pre-existing lint errors (unused vars, unescaped quotes, one `any`) are fixed.
 
-## P2 — Security & dependency upgrades  (audit Phase 0, 1, 2)
-- Upgrade next, better-auth, drizzle-orm, eslint-config-next, then fix any breakage.
-- `requireUser()` helper (`server-only`), ownership checks on every action (SEC-01/03/04/05/07), SSRF fix (SEC-02), zod at every action boundary (SEC-12).
-- `proxy.ts` redirect for `/dashboard/*`; rate limit metadata fetching + mutations (or drop Upstash).
+## P2 — Security & dependency upgrades  (audit Phase 0, 1, 2) — ✅ DONE 2026-11-07 (except rate limiting, migration 0022 not applied)
+- ✅ Upgrade next, better-auth, drizzle-orm, eslint-config-next, then fix any breakage. → next 16.4.5, better-auth 1.7.18, drizzle-orm 0.45.4, eslint-config-next 16.4.5 (native flat config), zod 4.6.7, plus `pnpm update` within ranges. `pnpm audit`: 6 crit / 73 high → **0 crit / 0 high / 2 moderate (dev-only)**.
+- ✅ `requireUser()` helper (`server-only`), ownership checks on every action (SEC-01/03/04/05/07), SSRF fix (SEC-02), zod at every action boundary (SEC-12). **[new]** Also fixed: `addGoalLog` trusted a client `goalId`; exported internal helpers (`getUserId`, `updateSkillCardHours`, `updateSkillCardHoursFromTimeLogs`) were public endpoints; `logSession` trusted the client's duration (now computed server-side, in a transaction).
+- ✅ `proxy.ts` redirect for `/dashboard/*`. ⏳ Rate limit metadata fetching + mutations (Upstash already dropped). Owner decides whether it's needed.
 - Done before redesigns because the upgrades can break APIs that the UI work would build on.
 
 ## P3 — Data layer & fetching speed  (T4 + audit Phase 4, DES-03, DES-04, DES-09)
@@ -78,32 +78,32 @@ Severity: Critical = exploitable now · High = serious risk/slowdown · Medium =
 ## Phase 0 — Dependency upgrades (Critical)
 `pnpm audit` reports 6 critical, 73 high, 53 moderate, 10 low.
 
-- [ ] **SEC-09 [corrected] Upgrade `next` 16.1.6 → latest 16.x (above 16.4.0).** AUDIT.md cited only GHSA-26hh-7cqf-hhc6 (a middleware bypass), which is irrelevant because the app has no middleware. The advisories that matter are:
+- [x] **SEC-09 [corrected] Upgrade `next` 16.1.6 → latest 16.x (above 16.4.0).** AUDIT.md cited only GHSA-26hh-7cqf-hhc6 (a middleware bypass), which is irrelevant because the app has no middleware. The advisories that matter are:
   - Critical RCE: GHSA-2464-fhr4-w9xw (Image Optimization + SVG, ≤16.4.0), GHSA-673q-mjm6-r5xr (`use cache`, ≤16.4.0), GHSA-2xp9-vwfh-vxw4 (AVIF, <16.3.3)
   - Server Actions: GHSA-mq59-m269-xvcx (null-origin CSRF bypass, <16.1.7), GHSA-m99w-x7hq-7vfj / GHSA-p3m5-59mp-jv5r (DoS)
   - Also bump `eslint-config-next` (still pinned to 15.3.0).
-- [ ] **SEC-10 [new] Upgrade `better-auth` 1.4.18 → ≥1.7.7.** GHSA-965c-763c-88jm (Critical, "OAuth state can be used as a Magic Link to sign in as another user") and GHSA-g38m-r43w-p2q7 (High, account takeover via OAuth auto-link) both affect the Google OAuth flow this app uses. Expect breaking changes, so regenerate the auth schema afterwards.
-- [ ] **SEC-11 [new] Upgrade `drizzle-orm` 0.42 → ≥0.45.2** (GHSA-gpj5-g38j-94v9, SQL identifier escaping). Low practical risk here because the app builds no dynamic identifiers, but it's a cheap fix.
-- [ ] Re-run `pnpm audit` and the build after the upgrades. Remaining transitive issues (undici, brace-expansion, postcss, sharp…) should mostly clear up.
+- [x] **SEC-10 [new] Upgrade `better-auth` 1.4.18 → ≥1.7.7.** GHSA-965c-763c-88jm (Critical, "OAuth state can be used as a Magic Link to sign in as another user") and GHSA-g38m-r43w-p2q7 (High, account takeover via OAuth auto-link) both affect the Google OAuth flow this app uses. Expect breaking changes, so regenerate the auth schema afterwards. → No API breakage. The regenerated schema adds only defaults + 3 indexes (`migrations/0022_better_auth_1_7.sql`, not applied); `verification` timestamps deliberately kept nullable.
+- [x] **SEC-11 [new] Upgrade `drizzle-orm` 0.42 → ≥0.45.2** (GHSA-gpj5-g38j-94v9, SQL identifier escaping). Low practical risk here because the app builds no dynamic identifiers, but it's a cheap fix.
+- [x] Re-run `pnpm audit` and the build after the upgrades. Remaining transitive issues (undici, brace-expansion, postcss, sharp…) should mostly clear up.
 
 ## Phase 1 — Authorization / IDOR (Critical–High)
 Pattern: every action already checks that a session exists, but many never check **ownership**. Fix this in the data layer. Middleware is not the fix.
 
-- [ ] **SEC-01** `src/actions/sandboxActions.ts:45` — `deleteSandbox` deletes by id only. Add `and(eq(sandboxes.id, id), eq(sandboxes.userId, session.user.id))`.
-- [ ] **SEC-03 [expanded]** `src/app/dashboard/sandbox/[sandboxId]/page.tsx:29` — the sandbox is looked up by id only, and phases, logs, and resources are then loaded unscoped too. Scope the sandbox by owner and `notFound()` otherwise; load the children only after that check passes.
-- [ ] **SEC-07 [expanded]** `src/actions/sandboxActions.ts` — AUDIT.md listed only update/delete. Actually unscoped:
+- [x] **SEC-01** `src/actions/sandboxActions.ts:45` — `deleteSandbox` deletes by id only. Add `and(eq(sandboxes.id, id), eq(sandboxes.userId, session.user.id))`.
+- [x] **SEC-03 [expanded]** `src/app/dashboard/sandbox/[sandboxId]/page.tsx:29` — the sandbox is looked up by id only, and phases, logs, and resources are then loaded unscoped too. Scope the sandbox by owner and `notFound()` otherwise; load the children only after that check passes.
+- [x] **SEC-07 [expanded]** `src/actions/sandboxActions.ts` — AUDIT.md listed only update/delete. Actually unscoped:
   - `createPhase` (:71), `updatePhase` (:106/:123), `deletePhase` (:130/:139)
   - `logSession` (:146, also updates `sandboxes` by id at :177)
   - `addResource` (:221), `getResources` (:252), `deleteResource` (:268/:277), `toggleResourceStatus` (:282/:296)
   - Fix: add one `assertSandboxOwner(sandboxId, userId)` helper and resolve phase/resource → sandbox → owner. Also verify that the `phaseId` passed in actually belongs to the given `sandboxId`.
-- [ ] **SEC-04** `src/actions/skillTaskAction.ts:94` — `addSkillTasks` trusts the client-supplied `skillId`. It then also updates that skill card by id only (:113), so the attacker can alter another user's hours too.
-- [ ] **SEC-05** `src/actions/timeLogAction.ts:44` — `createTimeLog` trusts `task_id`/`skill_id`, then updates `skillCard` by id only (:69). Verify that the task belongs to the user and to that skill.
-- [ ] **SEC-02** `src/actions/sandboxActions.ts:185` *(AUDIT said :187)* — `fetchResourceMetadata(url)` is an exported Server Action, which makes it a public POST endpoint with **no session check** and no URL validation (SSRF). Require a session, allow only `https:`, block private/loopback/link-local hosts, set a timeout, and cap the response size. Ideally make it a non-exported helper called from `addResource`.
-- [ ] **SEC-12 [new]** No Server Action validates input: zod is used in 0 of the 56 exported actions (it's used only in `api/entries`). Add zod schemas at each action boundary, including protocol validation for `addResource.url` (rendered as `href` at `src/components/dashboard/sandbox/resource-card.tsx:118`).
-- [ ] **Shared helper**: replace the duplicated `getUserId()` copies (skillTaskAction.ts:12, timeLogAction.ts:13, others) with one `requireUser()` in `src/lib/` (marked `server-only`).
+- [x] **SEC-04** `src/actions/skillTaskAction.ts:94` — `addSkillTasks` trusts the client-supplied `skillId`. It then also updates that skill card by id only (:113), so the attacker can alter another user's hours too.
+- [x] **SEC-05** `src/actions/timeLogAction.ts:44` — `createTimeLog` trusts `task_id`/`skill_id`, then updates `skillCard` by id only (:69). Verify that the task belongs to the user and to that skill.
+- [x] **SEC-02** `src/actions/sandboxActions.ts:185` *(AUDIT said :187)* — `fetchResourceMetadata(url)` is an exported Server Action, which makes it a public POST endpoint with **no session check** and no URL validation (SSRF). Require a session, allow only `https:`, block private/loopback/link-local hosts, set a timeout, and cap the response size. Ideally make it a non-exported helper called from `addResource`. → Kept exported (the add-resource bar uses it for title preview) but it now requires a session and goes through `lib/safe-fetch.ts`: https + port 443 only, private/reserved IPs blocked **at connect time** (defeats DNS rebinding), redirects re-validated (max 3), 8s timeout, 1MB cap.
+- [x] **SEC-12 [new]** No Server Action validates input: zod is used in 0 of the 56 exported actions (it's used only in `api/entries`). Add zod schemas at each action boundary, including protocol validation for `addResource.url` (rendered as `href` at `src/components/dashboard/sandbox/resource-card.tsx:118`).
+- [x] **Shared helper**: replace the duplicated `getUserId()` copies (skillTaskAction.ts:12, timeLogAction.ts:13, others) with one `requireUser()` in `src/lib/` (marked `server-only`).
 
 ## Phase 2 — Auth hardening (Medium)
-- [ ] **SEC-06 [severity lowered High→Medium]** No `src/middleware.ts` (or `proxy.ts` on Next 16). Add an optimistic redirect for `/dashboard/*` for UX and defense in depth. It does **not** replace the Phase 1 checks.
+- [x] **SEC-06 [severity lowered High→Medium]** No `src/middleware.ts` (or `proxy.ts` on Next 16). Add an optimistic redirect for `/dashboard/*` for UX and defense in depth. It does **not** replace the Phase 1 checks.
 - [ ] **SEC-08** *(Upstash packages removed in P1)* `package.json:26` — `@upstash/ratelimit` is installed but never imported. Rate-limit `fetchResourceMetadata`, the auth endpoints, and the mutation actions, or remove the packages.
 - [x] **DES-07** Delete the 0-byte `src/actions/auth-middleware.ts`.
 
@@ -119,10 +119,10 @@ Pattern: every action already checks that a session exists, but many never check
 - [ ] **PERF-02** `src/actions/timeLogAction.ts:169-176` — `getTotalTimeForTasks` awaits one query per task in a `for…of` loop. Use `inArray` + `GROUP BY task_id`.
 - [ ] **PERF-03** `src/actions/timeLogAction.ts:466` — `getLastSevenWeeksProgress` runs 7 sequential queries. Use one ranged query and bucket the results.
 - [ ] **PERF-05 [corrected]** Indexes: `daily-log-schema.ts` already has 5 indexes. `schema.ts` and `sandbox-schema.ts` have none. Add indexes on `skillcard.user_id`, `skill_task(skill_id,user_id)`, `time_log(user_id,logged_date)`, `time_log(task_id)`, `time_log(skill_id)`, `goals.user_id`, `goal_logs(goal_id,user_id)`, `sandboxes.user_id`, `sandbox_phases.sandbox_id`, `sandbox_logs.phase_id`, `sandbox_resources.sandbox_id`.
-- [ ] **PERF-08** `src/actions/overviewAnalyticsAction.ts:211` — 4 parallel `getSession` calls for one request. Resolve the user once and pass it down.
+- [~] **PERF-08** *(P2: `getCurrentUser` is wrapped in React `cache()`, so repeated lookups in one request should dedupe; confirm in P3)* `src/actions/overviewAnalyticsAction.ts:211` — 4 parallel `getSession` calls for one request. Resolve the user once and pass it down.
 - [x] **PERF-04** Two chart libraries in the bundle. Port `WeeklyProgressChart` to Recharts and drop `echarts`/`echarts-for-react` (the ECharts version also has XSS advisory GHSA-fgmj-fm8m-jvvx).
 - [ ] **PERF-07** `src/actions/skillCardAction.ts:182` — the manual child deletes are redundant given `ON DELETE CASCADE` (schema.ts:39, :60). Delete the parent only.
-- [ ] **PERF-06** `src/db/drizzle.ts:11` — no `globalThis` pool singleton in dev. **[new]** The `schema` object also omits `sandbox-schema`, so `db.query.sandboxes…` isn't available.
+- [ ] **PERF-06** `src/db/drizzle.ts:11` — no `globalThis` pool singleton in dev. ~~**[new]** The `schema` object also omits `sandbox-schema`~~ **[corrected in P2]**: `schema.ts` re-exports `sandbox-schema`, so it *is* registered.
 
 ## Phase 5 — Architecture
 - [ ] **DES-03** Four data-fetching patterns (RQ+actions, RQ+REST, raw `useEffect`+`isMounted` in `useOverviewAnalytics.ts:48`/`useSkillAnalytics`, direct action calls in 80-hour-goals pages). Pick one: Server Components for reads, plus React Query only where client interactivity needs it.
@@ -168,5 +168,5 @@ Inventory (verified counts): 112 raw `<button>` tags vs shadcn `Button` imported
 - Under-scoped: SEC-03 and SEC-07 missed 6 more unscoped sandbox actions and the unscoped child loads on the detail page.
 - Overstated: SEC-06 rated High, but middleware isn't an authorization layer; Medium is more accurate.
 - Inaccurate: PERF-01 called "sequential" (it's parallel); PERF-05 "zero indexes" (daily-log tables are indexed); SEC-02 line number (185, not 187).
-- Missed: no zod in any Server Action; no error/loading/not-found boundaries; drizzle client omits the sandbox schema; `text-primary` on the dashboard layout.
+- Missed: no zod in any Server Action; no error/loading/not-found boundaries; `text-primary` on the dashboard layout. (The "drizzle client omits the sandbox schema" note was itself wrong: schema.ts re-exports it.)
 - Confirmed accurate: DES-01, DES-02, DES-04, DES-05, DES-07, UI-01…UI-08 counts and locations, PERF-02/03/04/06/07/08, SEC-01, SEC-04, SEC-05, SEC-08.

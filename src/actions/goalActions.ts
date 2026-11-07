@@ -1,21 +1,22 @@
 "use server";
 import { db } from "@/db/drizzle";
 import { goals } from "@/db/schema/schema";
-import { auth } from "@/lib/auth";
 import { and, eq } from "drizzle-orm";
-import { headers } from "next/headers";
+import { z } from "zod";
+import { requireUser } from "@/lib/require-user";
+import { parseInput, zId, zText } from "@/lib/validation";
+
+const zSlug = z.string().trim().min(1).max(200).regex(/^[\w-]+$/, "Invalid slug");
+const zIsoDate = z.string().refine((v) => !Number.isNaN(new Date(v).getTime()), "Invalid date");
 
 // Get all goals for the current user
 export async function getGoals() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
 
   const userGoals = await db
     .select()
     .from(goals)
-    .where(eq(goals.userId, session.user.id))
+    .where(eq(goals.userId, userId))
     .then((goals) =>
       goals.map((goal) => ({
         ...goal,
@@ -31,10 +32,10 @@ export async function getGoals() {
 
 // Get a single goal by slug
 export async function getGoalBySlug(slug: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  const parsedSlug = zSlug.safeParse(slug);
+  if (!parsedSlug.success) return null;
+  slug = parsedSlug.data;
 
   const [goal] = await db
     .select()
@@ -42,7 +43,7 @@ export async function getGoalBySlug(slug: string) {
     .where(
       and(
         eq(goals.slug, slug),
-        eq(goals.userId, session.user.id)
+        eq(goals.userId, userId)
       )
     );
 
@@ -58,17 +59,15 @@ export async function getGoalBySlug(slug: string) {
 }
 
 // Add a new goal
-export async function addGoal({
-  title,
-  slug,
-}: {
+export async function addGoal(data: {
   title: string;
   slug?: string;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  const { title, slug } = parseInput(
+    z.object({ title: zText(255), slug: zSlug.optional() }),
+    data
+  );
 
   const generatedSlug = slug || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
   const now = new Date();
@@ -77,7 +76,7 @@ export async function addGoal({
     .values({
       title,
       slug: generatedSlug,
-      userId: session.user.id,
+      userId: userId,
       createdAt: now,
       updatedAt: now,
     })
@@ -91,17 +90,12 @@ export async function addGoal({
 }
 
 // Update goal start date
-export async function updateGoalStartDate({
-  id,
-  startDate,
-}: {
+export async function updateGoalStartDate(data: {
   id: string;
   startDate: string;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  const { id, startDate } = parseInput(z.object({ id: zId, startDate: zIsoDate }), data);
 
   const [updatedGoal] = await db.update(goals)
     .set({
@@ -111,7 +105,7 @@ export async function updateGoalStartDate({
     .where(
       and(
         eq(goals.id, id),
-        eq(goals.userId, session.user.id)
+        eq(goals.userId, userId)
       )
     )
     .returning();
@@ -127,16 +121,14 @@ export async function updateGoalStartDate({
 
 // Delete goal
 export async function deleteGoal(id: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  id = parseInput(zId, id);
 
   await db.delete(goals)
     .where(
       and(
         eq(goals.id, id),
-        eq(goals.userId, session.user.id)
+        eq(goals.userId, userId)
       )
     );
 
@@ -144,19 +136,16 @@ export async function deleteGoal(id: string) {
 }
 
 // Toggle goal completion
-export async function toggleGoalCompletion({
-  id,
-  isCompleted,
-  completedDate,
-}: {
+export async function toggleGoalCompletion(data: {
   id: string;
   isCompleted: boolean;
   completedDate?: string;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  const { id, isCompleted, completedDate } = parseInput(
+    z.object({ id: zId, isCompleted: z.boolean(), completedDate: zIsoDate.optional() }),
+    data
+  );
 
   const [updatedGoal] = await db.update(goals)
     .set({
@@ -166,7 +155,7 @@ export async function toggleGoalCompletion({
     .where(
       and(
         eq(goals.id, id),
-        eq(goals.userId, session.user.id)
+        eq(goals.userId, userId)
       )
     )
     .returning();

@@ -1,10 +1,21 @@
 "use server";
 import { db } from "@/db/drizzle";
 import { skillCard, skillTask, timeLog } from "@/db/schema/schema";
-import { auth } from "@/lib/auth";
 import { and, eq, like, sql } from "drizzle-orm";
-import { headers } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
+import { requireUser } from "@/lib/require-user";
+import { parseInput, zId, zOptionalText, zText } from "@/lib/validation";
+
+const zSlug = z.string().trim().min(1).max(200);
+
+const skillCardInput = z.object({
+  skillName: zText(100),
+  category: zText(60),
+  targetHours: z.number().min(1).max(100_000),
+  skillColor: z.string().regex(/^#[0-9a-fA-F]{3,8}$/, "Invalid color"),
+  description: zOptionalText(1000),
+});
 
 // Function to generate a slug from skill name
 async function generateSlug(skillName: string): Promise<string> {
@@ -29,16 +40,13 @@ async function generateSlug(skillName: string): Promise<string> {
 }
 
 export async function getSkillCard() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
 
   // Get all skills for the user and calculate current hours from time logs
   const skills = await db
     .select()
     .from(skillCard)
-    .where(eq(skillCard.userId, session.user.id))
+    .where(eq(skillCard.userId, userId))
     .then((skills) =>
       skills.map((skill) => ({
         ...skill,
@@ -59,7 +67,7 @@ export async function getSkillCard() {
         .where(
           and(
             eq(timeLog.skill_id, skill.id),
-            eq(timeLog.user_id, session.user.id)
+            eq(timeLog.user_id, userId)
           )
         );
 
@@ -77,10 +85,8 @@ export async function getSkillCard() {
 }
 
 export async function getCurrentHours(slug: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  slug = parseInput(zSlug, slug);
 
   try {
     // Get the skill ID from the slug and calculate current hours from time logs
@@ -88,7 +94,7 @@ export async function getCurrentHours(slug: string) {
       .select({ id: skillCard.id })
       .from(skillCard)
       .where(
-        and(eq(skillCard.slug, slug), eq(skillCard.userId, session.user.id))
+        and(eq(skillCard.slug, slug), eq(skillCard.userId, userId))
       )
       .limit(1);
 
@@ -107,7 +113,7 @@ export async function getCurrentHours(slug: string) {
       })
       .from(timeLog)
       .where(
-        and(eq(timeLog.skill_id, skillId), eq(timeLog.user_id, session.user.id))
+        and(eq(timeLog.skill_id, skillId), eq(timeLog.user_id, userId))
       );
 
     const timeLogMinutes = timeLogResult[0]?.totalMinutes || 0;
@@ -122,120 +128,65 @@ export async function getCurrentHours(slug: string) {
 
 // Get skill by slug
 export async function getSkillBySlug(slug: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  slug = parseInput(zSlug, slug);
 
   const skills = await db
     .select()
     .from(skillCard)
     .where(
-      and(eq(skillCard.slug, slug), eq(skillCard.userId, session.user.id))
+      and(eq(skillCard.slug, slug), eq(skillCard.userId, userId))
     );
 
   return skills[0];
 }
 
 //adding skill card
-export async function addSkillCard({
-  skillName,
-  category,
-  targetHours,
-  skillColor,
-  description,
-}: {
+export async function addSkillCard(data: {
   skillName: string;
   category: string;
   targetHours: number;
   skillColor: string;
   description?: string;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  const input = parseInput(skillCardInput, data);
 
-  const slug = await generateSlug(skillName);
-  const now = new Date();
+  const slug = await generateSlug(input.skillName);
 
   await db.insert(skillCard).values({
-    skillName,
-    category,
-    targetHours: Math.floor(targetHours),
+    skillName: input.skillName,
+    category: input.category,
+    targetHours: Math.floor(input.targetHours),
     currentHours: "0.00",
-    skillColor,
-    description: description || null,
-    createdAt: now,
+    skillColor: input.skillColor,
+    description: input.description,
+    createdAt: new Date(),
     slug,
-    userId: session.user.id,
+    userId,
   });
 }
 
 export async function deleteSkillCard(id: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
+  const userId = await requireUser();
+  id = parseInput(zId, id);
 
   // Delete all related time logs first
   await db
     .delete(timeLog)
-    .where(and(eq(timeLog.skill_id, id), eq(timeLog.user_id, session.user.id)));
+    .where(and(eq(timeLog.skill_id, id), eq(timeLog.user_id, userId)));
 
   // Delete all related skill tasks
   await db
     .delete(skillTask)
     .where(
-      and(eq(skillTask.skill_id, id), eq(skillTask.user_id, session.user.id))
+      and(eq(skillTask.skill_id, id), eq(skillTask.user_id, userId))
     );
 
   // Finally delete the skill card
   await db
     .delete(skillCard)
-    .where(and(eq(skillCard.id, id), eq(skillCard.userId, session.user.id)));
+    .where(and(eq(skillCard.id, id), eq(skillCard.userId, userId)));
 
   return { success: true };
-}
-
-// Update skill card current hours based on time logs
-export async function updateSkillCardHoursFromTimeLogs(
-  skillId: string
-): Promise<void> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Not authenticated");
-
-  try {
-    // Calculate total minutes from time logs for this skill
-    const timeLogResult = await db
-      .select({
-        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(
-          Number
-        ),
-      })
-      .from(timeLog)
-      .where(
-        and(eq(timeLog.skill_id, skillId), eq(timeLog.user_id, session.user.id))
-      );
-
-    const timeLogMinutes = timeLogResult[0]?.totalMinutes || 0;
-    const totalHours = timeLogMinutes / 60.0;
-
-    await db
-      .update(skillCard)
-      .set({ currentHours: totalHours.toFixed(2) })
-      .where(
-        and(eq(skillCard.id, skillId), eq(skillCard.userId, session.user.id))
-      );
-
-    console.log(
-      `Updated currentHours for skill ${skillId} to ${totalHours.toFixed(
-        2
-      )} (TimeLogs: ${timeLogMinutes}m)`
-    );
-  } catch (error) {
-    console.error(`Failed to update hours for skill ${skillId}:`, error);
-  }
 }

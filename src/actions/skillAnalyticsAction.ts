@@ -2,19 +2,15 @@
 
 import { db } from "@/db/drizzle";
 import { timeLog, skillTask, skillCard } from "@/db/schema/schema";
-import { auth } from "@/lib/auth";
+import { requireUser } from "@/lib/require-user";
+import { parseInput, zId } from "@/lib/validation";
 import { and, eq, sql, gte } from "drizzle-orm";
-import { headers } from "next/headers";
 
-// Helper function to get authenticated user ID
-async function getUserId(): Promise<string> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user?.id) {
-    throw new Error("User not authenticated");
-  }
-  return session.user.id;
+// Resolve the user (cached per request) and validate the skill id argument.
+async function getUserId(skillId: string): Promise<string> {
+  const userId = await requireUser();
+  parseInput(zId, skillId);
+  return userId;
 }
 
 // Get tag statistics for a specific skill
@@ -24,7 +20,7 @@ export async function getTagStatsForSkill(skillId: string): Promise<
     count: number;
   }[]
 > {
-  const userId = await getUserId();
+  const userId = await getUserId(skillId);
 
   try {
     // Get all tasks for this skill with their tags
@@ -76,7 +72,7 @@ export async function getTagStatsForSkill(skillId: string): Promise<
 export async function getAverageDailyTimeForSkill(
   skillId: string
 ): Promise<{ averageHours: number; totalDays: number }> {
-  const userId = await getUserId();
+  const userId = await getUserId(skillId);
 
   try {
     // Calculate date 7 days ago
@@ -118,7 +114,7 @@ export async function getAverageDailyTimeForSkill(
 export async function getTaskStatsForSkill(
   skillId: string
 ): Promise<{ completedTasks: number; totalTasks: number }> {
-  const userId = await getUserId();
+  const userId = await getUserId(skillId);
 
   try {
     // Calculate date 7 days ago
@@ -161,7 +157,7 @@ export async function getSkillAnalytics(skillId: string): Promise<{
   daysSinceCreation: number;
 }> {
   try {
-    const userId = await getUserId();
+    const userId = await getUserId(skillId);
     const [timeData, taskData, skillData] = await Promise.all([
       getAverageDailyTimeForSkill(skillId),
       getTaskStatsForSkill(skillId),
@@ -217,7 +213,8 @@ export async function getUniqueTagsForSkill(
   skillId: string,
   limit: number = 7
 ): Promise<string[]> {
-  const userId = await getUserId();
+  limit = Math.min(Math.max(Math.floor(Number(limit) || 7), 1), 50);
+  const userId = await getUserId(skillId);
 
   try {
     // Get all tasks for this skill with their tags

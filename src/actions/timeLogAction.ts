@@ -1,52 +1,59 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { timeLog, skillCard } from "@/db/schema/schema";
-import { auth } from "@/lib/auth";
+import { timeLog } from "@/db/schema/schema";
 import { TimeLog, NewTimeLog } from "@/types/skillDashboardTypes";
 import { and, eq, sql, desc, gte, lte } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { updateSkillCardHoursFromTimeLogs } from "./skillCardAction";
+import { z } from "zod";
+import { requireUser } from "@/lib/require-user";
+import { getOwnedSkill, getOwnedTask } from "@/lib/ownership";
+import { recomputeSkillHours } from "@/lib/skill-hours";
+import { parseInput, tryParseInput, zId } from "@/lib/validation";
 
-// Helper function to get authenticated user ID
-async function getUserId(): Promise<string> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user?.id) {
-    throw new Error("User not authenticated");
-  }
-  return session.user.id;
-}
+const newTimeLogInput = z.object({
+  task_id: zId,
+  skill_id: zId,
+  minutes: z.number().int().min(1).max(24 * 60),
+  logged_date: z
+    .string()
+    .refine((v) => !Number.isNaN(new Date(v).getTime()), "Invalid date")
+    .optional(),
+});
+
+const zDateString = z
+  .string()
+  .refine((v) => !Number.isNaN(new Date(v).getTime()), "Invalid date");
 
 // Create a new time log entry
 export async function createTimeLog(
   timeLogData: NewTimeLog
 ): Promise<{ success: boolean; error?: string; timeLog?: TimeLog }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
-    // Validate input
-    if (
-      !timeLogData.task_id ||
-      !timeLogData.skill_id ||
-      timeLogData.minutes <= 0
-    ) {
+    const input = tryParseInput(newTimeLogInput, timeLogData);
+    if (!input) {
       return { success: false, error: "Invalid time log data" };
+    }
+
+    // The task must belong to the caller and to that skill (SEC-05).
+    const task = await getOwnedTask(input.task_id, input.skill_id, userId);
+    if (!task) {
+      return { success: false, error: "Task not found" };
     }
 
     // Set logged_date to today if not provided
     const loggedDate =
-      timeLogData.logged_date || new Date().toISOString().split("T")[0];
+      input.logged_date || new Date().toISOString().split("T")[0];
 
     const insertedTimeLogs = await db
       .insert(timeLog)
       .values({
-        task_id: timeLogData.task_id,
+        task_id: input.task_id,
         user_id: userId,
-        skill_id: timeLogData.skill_id,
-        minutes: timeLogData.minutes,
+        skill_id: input.skill_id,
+        minutes: input.minutes,
         logged_date: new Date(loggedDate),
         tracked_at: new Date(),
       })
@@ -59,19 +66,12 @@ export async function createTimeLog(
     const createdTimeLog = insertedTimeLogs[0];
 
     // Update the skill card's current hours based on time logs
-    await updateSkillCardHoursFromTimeLogs(timeLogData.skill_id);
-
-    // Get the skill slug for proper revalidation
-    // This ensures the skill card and tracking cards show updated time data
-    const skill = await db
-      .select({ slug: skillCard.slug })
-      .from(skillCard)
-      .where(eq(skillCard.id, timeLogData.skill_id))
-      .limit(1);
+    await recomputeSkillHours(input.skill_id, userId);
 
     // Only revalidate the specific skill page to reduce unnecessary renders
-    if (skill[0]?.slug) {
-      revalidatePath(`/dashboard/skills/${skill[0].slug}`);
+    const skill = await getOwnedSkill(input.skill_id, userId);
+    if (skill?.slug) {
+      revalidatePath(`/dashboard/skills/${skill.slug}`);
     }
 
     const timeLogResult: TimeLog = {
@@ -93,7 +93,8 @@ export async function createTimeLog(
 
 // Get time logs for a specific task
 export async function getTimeLogsForTask(taskId: string): Promise<TimeLog[]> {
-  const userId = await getUserId();
+  const userId = await requireUser();
+  if (!tryParseInput(zId, taskId)) return [];
 
   try {
     const timeLogs = await db
@@ -119,7 +120,8 @@ export async function getTimeLogsForTask(taskId: string): Promise<TimeLog[]> {
 
 // Get total time spent for a task (from time logs)
 export async function getTotalTimeForTask(taskId: string): Promise<number> {
-  const userId = await getUserId();
+  const userId = await requireUser();
+  if (!tryParseInput(zId, taskId)) return 0;
 
   try {
     const result = await db
@@ -142,15 +144,17 @@ export async function getTotalTimeForTask(taskId: string): Promise<number> {
 export async function getTotalTimeForTasks(
   taskIds: string[]
 ): Promise<Record<string, number>> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   // Return empty object if no task IDs provided
   if (!taskIds || taskIds.length === 0) {
     return {};
   }
 
-  // Filter out temporary IDs (those starting with "temp-")
-  const validTaskIds = taskIds.filter((id) => !id.startsWith("temp-"));
+  const ids = parseInput(z.array(z.string().max(100)).max(1000), taskIds);
+
+  // Skip optimistic temp IDs ("temp-...") and anything that isn't a uuid
+  const validTaskIds = ids.filter((id) => zId.safeParse(id).success);
 
   // Return empty object if no valid task IDs
   if (validTaskIds.length === 0) {
@@ -187,7 +191,7 @@ export async function getTotalTimeForTasks(
 
 // Get today's total time spent across all skills (updated to use time logs)
 export async function getTodayTotalTimeSpentFromLogs(): Promise<number> {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
     const today = new Date();
@@ -224,7 +228,10 @@ export async function getTodayTotalTimeSpentFromLogs(): Promise<number> {
 export async function deleteTimeLog(
   timeLogId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const userId = await getUserId();
+  const userId = await requireUser();
+  if (!tryParseInput(zId, timeLogId)) {
+    return { success: false, error: "Time log not found or access denied" };
+  }
 
   try {
     // First, get the skill_id from the time log before deleting it
@@ -250,18 +257,12 @@ export async function deleteTimeLog(
     }
 
     // Update the skill card's current hours after deletion
-    await updateSkillCardHoursFromTimeLogs(skillId);
-
-    // Get the skill slug for proper revalidation
-    const skill = await db
-      .select({ slug: skillCard.slug })
-      .from(skillCard)
-      .where(eq(skillCard.id, skillId))
-      .limit(1);
+    await recomputeSkillHours(skillId, userId);
 
     // Only revalidate the specific skill page to reduce unnecessary renders
-    if (skill[0]?.slug) {
-      revalidatePath(`/dashboard/skills/${skill[0].slug}`);
+    const skill = await getOwnedSkill(skillId, userId);
+    if (skill?.slug) {
+      revalidatePath(`/dashboard/skills/${skill.slug}`);
     }
 
     return { success: true };
@@ -276,7 +277,8 @@ export async function getTimeLogsForDateRange(
   startDate: string,
   endDate: string
 ): Promise<TimeLog[]> {
-  const userId = await getUserId();
+  const userId = await requireUser();
+  parseInput(z.object({ startDate: zDateString, endDate: zDateString }), { startDate, endDate });
 
   try {
     const timeLogs = await db
@@ -312,7 +314,11 @@ export async function getTimeLogsByDateForSkill(
   startDate: Date,
   endDate: Date
 ): Promise<Record<string, number>> {
-  const userId = await getUserId();
+  const userId = await requireUser();
+  parseInput(
+    z.object({ skillId: zId, startDate: z.date(), endDate: z.date() }),
+    { skillId, startDate, endDate }
+  );
 
   try {
     const result = await db
@@ -363,7 +369,7 @@ interface WeeklyProgressData {
 export async function getLastSevenDaysActivity(): Promise<
   WeeklyActivityData[]
 > {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
     // Calculate date range for last 7 days including today
@@ -443,7 +449,7 @@ export async function getLastSevenDaysActivity(): Promise<
 export async function getLastSevenWeeksProgress(): Promise<
   WeeklyProgressData[]
 > {
-  const userId = await getUserId();
+  const userId = await requireUser();
 
   try {
     const weeklyData: WeeklyProgressData[] = [];
