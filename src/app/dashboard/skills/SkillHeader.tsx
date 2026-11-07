@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { FolderCheck, MoreHorizontal, Share2 } from "lucide-react";
 
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 import SkillDropdownMenu from "./SkillDropdownMenu";
 
 interface SkillHeaderProps {
@@ -15,7 +15,6 @@ interface SkillHeaderProps {
 }
 
 export default function SkillHeader({
-  skillSlug,
   skillId,
   skillName,
   createdAt,

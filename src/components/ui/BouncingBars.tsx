@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 
 export default function BouncingBarsLoader() {
   const barHeights = [20, 32, 24, 40, 28]

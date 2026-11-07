@@ -27,7 +27,7 @@ import KanbanTaskCard from "./KanbanTaskCard";
 import SkillTodoForm from "../skill-todo-form";
 import Modal from "@/components/ui/modal";
 import { createPortal } from "react-dom";
-import { isAfter, subDays, startOfDay, isSameDay, isBefore } from "date-fns";
+import { startOfDay, isSameDay, isBefore } from "date-fns";
 import { Plus, History, Calendar } from "lucide-react";
 
 interface SkillKanbanBoardProps {
@@ -59,7 +59,6 @@ export default function SkillKanbanBoard({
     handleEditTodo,
     handleDeleteTodo,
     handleUpdateStatus,
-    handleToggleTodo,
     isSubmittingForm,
     setSkillTodos,
   } = useSkillTodoManager({

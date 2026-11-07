@@ -14,7 +14,6 @@ interface SkillAnalyticsCardsProps {
 export default function SkillAnalyticsCards({
   skillId,
   skillCurrentHours,
-  skillName,
 }: SkillAnalyticsCardsProps) {
   const { analytics, isLoading, error } = useSkillAnalytics(skillId);
 

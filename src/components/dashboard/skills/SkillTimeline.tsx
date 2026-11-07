@@ -3,7 +3,7 @@
 import React, { useMemo, useRef, useEffect } from "react";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { format, addDays, isSameDay, eachDayOfInterval, subDays } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Timer, Plus, Calendar, ChevronRight } from "lucide-react";
 
 interface SkillTimelineProps {

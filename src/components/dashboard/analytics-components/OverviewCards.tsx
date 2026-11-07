@@ -4,7 +4,7 @@ import { Loader2, Calendar, Box, Activity, Layers } from "lucide-react";
 
 import React from "react";
 import { useOverviewAnalytics } from "@/hooks/useOverviewAnalytics";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export default function OverviewCards() {
   const { analytics, isLoading, error } = useOverviewAnalytics();

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, Video, FileText, Github, Trash2, ExternalLink, CheckCircle2, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toggleResourceStatus, deleteResource } from "@/actions/sandboxActions";
@@ -43,7 +43,7 @@ export default function ResourceCard({ resource, onDelete }: ResourceCardProps) 
       setIsRead(!isRead);
       await toggleResourceStatus(resource.id, resource.sandboxId, resource.status);
       toast.success(newStatus === "read" ? "Marked as completed" : "Marked as unread");
-    } catch (error) {
+    } catch {
       setIsRead(isRead);
       toast.error("Failed to update status");
     }
@@ -57,7 +57,7 @@ export default function ResourceCard({ resource, onDelete }: ResourceCardProps) 
       onDelete(resource.id);
       await deleteResource(resource.id, resource.sandboxId);
       toast.success("Resource removed");
-    } catch (error) {
+    } catch {
       toast.error("Failed to remove resource");
     }
   };

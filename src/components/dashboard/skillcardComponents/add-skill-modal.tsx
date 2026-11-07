@@ -1,7 +1,7 @@
 "use client";
 import { Skill } from "@/types/skillDashboardTypes";
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Plus, Sparkles, XIcon } from "lucide-react";
 
 interface AddSkillModalProps {

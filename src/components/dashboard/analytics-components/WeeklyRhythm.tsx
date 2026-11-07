@@ -2,7 +2,7 @@
 
 import { getLastSevenDaysActivity } from '@/actions/timeLogAction';
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Activity, Flame, Target, TrendingUp } from "lucide-react";
 
 interface WeeklyData {

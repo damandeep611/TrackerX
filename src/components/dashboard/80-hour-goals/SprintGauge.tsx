@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Zap } from "lucide-react";
 
 interface SprintGaugeProps {
@@ -13,7 +13,6 @@ const TOTAL_HOURS = 80;
 const TOTAL_MINUTES = TOTAL_HOURS * 60;
 const RADIUS = 200;
 const CENTER = 250; // SVG Size 500x500
-const STROKE_WIDTH = 2; // For ticks
 
 export function SprintGauge({ totalMinutes, onClick }: SprintGaugeProps) {
   const progressPercent = Math.min((totalMinutes / TOTAL_MINUTES) * 100, 100);

@@ -2,7 +2,7 @@
 import { skillTodo } from "@/types/skillDashboardTypes";
 import SkillTodoForm from "./skill-todo-form";
 import SkillTodoCard from "./skill-todo-card";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { taskCardVariants } from "@/components/animations/taskCardAnimations";
 import { useSkillTodoManager } from "@/hooks/useSkillTodoManager";
 import { getTotalTimeForTasks } from "@/actions/timeLogAction";

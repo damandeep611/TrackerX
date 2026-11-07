@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/chart";
 import React, { useMemo } from "react";
 import { Label, Pie, PieChart } from "recharts";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useTagStats } from "@/hooks/useTagStats";
 import { Tag } from "lucide-react";
 

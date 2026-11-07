@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Plus, Link as LinkIcon, Loader2, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { fetchResourceMetadata, addResource } from "@/actions/sandboxActions";
 import { Phase } from "./sandbox-detail-view";
+import type { SandboxResource } from "./resource-card";
 import toast from "react-hot-toast";
 
 interface ResourceCommandBarProps {
   sandboxId: string;
   phases: Phase[];
-  onAdd: (resource: any) => void;
+  onAdd: (resource: SandboxResource) => void;
 }
 
 export default function ResourceCommandBar({ sandboxId, phases, onAdd }: ResourceCommandBarProps) {
@@ -28,7 +28,7 @@ export default function ResourceCommandBar({ sandboxId, phases, onAdd }: Resourc
       const data = await fetchResourceMetadata(url);
       setTitle(data.title);
       setMetadata({ thumbnailUrl: data.thumbnailUrl, resourceType: data.resourceType });
-    } catch (error) {
+    } catch {
       console.error("Metadata fetch failed");
     } finally {
       setIsLoading(false);
@@ -54,7 +54,7 @@ export default function ResourceCommandBar({ sandboxId, phases, onAdd }: Resourc
       setMetadata(null);
       setSelectedPhaseId("general");
       toast.success("Resource added successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to add resource");
     }
   };

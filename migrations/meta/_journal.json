@@ -148,6 +148,13 @@
       "when": 1771167138600,
       "tag": "0020_rich_korvac",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794067533530,
+      "tag": "0021_drop_daily_logs",
+      "breakpoints": true
     }
   ]
 }

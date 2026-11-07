@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -77,7 +77,7 @@ export default function KanbanTaskCard({
         setOptimisticMinutes(null);
         toast.error("Failed to update time.");
       }
-    } catch (error) {
+    } catch {
       setOptimisticMinutes(null);
       toast.error("Failed to update time.");
     }

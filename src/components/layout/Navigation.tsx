@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { Hexagon, LogIn, Menu, X } from "lucide-react";
 import SignIn from "../auth/sign-in";
 

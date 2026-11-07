@@ -6,13 +6,13 @@ import OverviewCards from "../analytics-components/OverviewCards";
 import InsightsCards from "../analytics-components/InsightsCards";
 import { useAddSkillCard, useSkillCards } from "@/hooks/useSkillCardsHook";
 import { toast } from "react-hot-toast";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 import BouncingBarsLoader from "@/components/ui/BouncingBars";
 import AddSkillModal from "./add-skill-modal";
 import { Plus, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 
 export default function SkillDashboard() {
   const [filter, setFilter] = useState("All");

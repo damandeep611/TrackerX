@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { ArrowUpRight, Clock, Box } from "lucide-react";
 import DeleteSandboxModal from "./delete-sandbox-modal";
 

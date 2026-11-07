@@ -2,7 +2,7 @@
 import { Skill } from "@/types/skillDashboardTypes";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { ArrowUpRight, Clock, Layers, MoreHorizontal, Zap } from "lucide-react";
 
 interface SkillCardProps {

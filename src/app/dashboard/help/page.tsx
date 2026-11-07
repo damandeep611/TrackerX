@@ -1,11 +1,8 @@
-import React from 'react'
-import DateChecker from "./DateChecker";
-
 export default function Page() {
   return (
-    <div className="flex items-center justify-center">
-      <h2 className="text-2xl">User Help manual</h2>
-      <DateChecker />
+    <div className="mx-auto max-w-7xl p-6">
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">Help Center</h1>
+      <p className="mt-2 text-sm text-muted-foreground">Coming soon.</p>
     </div>
   );
 }

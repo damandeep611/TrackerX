@@ -2,7 +2,7 @@
 
 import { MessageSquarePlus, User } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { SignOutButton } from "@/components/auth/sign-out";
 import { authClient } from "@/lib/auth-client";
 import { ModeToggle } from "@/components/layout/mode-toggle";

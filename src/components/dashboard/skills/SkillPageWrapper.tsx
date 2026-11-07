@@ -6,7 +6,7 @@ import SkillAnalyticsCards from "./SkillAnalyticsCards";
 import SkillAnalytics from "../../../app/dashboard/skills/SkillAnalytics";
 import { skillTodo } from "@/types/skillDashboardTypes";
 import SkillHeader from "../../../app/dashboard/skills/SkillHeader";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import SkillTimeline from "./SkillTimeline";
 import { getTimeLogsByDateForSkill } from "@/actions/timeLogAction";
 import { subDays, addDays } from "date-fns";

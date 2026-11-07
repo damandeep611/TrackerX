@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Database, Filter } from "lucide-react";
+import { Database } from "lucide-react";
 import ResourceCard, { SandboxResource } from "./resource-card";
 import ResourceCommandBar from "./resource-command-bar";
 import { Phase } from "./sandbox-detail-view";

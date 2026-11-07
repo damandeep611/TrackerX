@@ -3,7 +3,7 @@ import { newSkillTodo } from "@/types/skillDashboardTypes";
 import { Send } from "lucide-react";
 import React, { ChangeEvent, useState } from "react";
 import TagInput from "./tag-input";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useRecentTags } from "@/hooks/useRecentTags";
 
 //defining the props expected by the skilltodoform component

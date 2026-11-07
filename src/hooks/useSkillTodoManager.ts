@@ -25,7 +25,6 @@ const generateTempId = (): string => {
 export const useSkillTodoManager = ({
   initialSkillTodos,
   skillId,
-  onTimeUpdate,
   selectedDate = new Date(),
 }: useSkillTodoManagerProps) => {
   //all states - remove it and use state management for clean look

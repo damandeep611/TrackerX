@@ -3,8 +3,7 @@
 import React from 'react'
 import Navbar from './Navbar'
 import HeroBackground from './HeroBackground'
-import { motion } from 'framer-motion'
-import AppMockup from './app-mockup'
+import { motion } from 'motion/react'
 
 export default function Hero() {
   return (
@@ -37,43 +36,6 @@ export default function Hero() {
             Start Learning Free
           </motion.button>
         </motion.div>
-
-        {/* Mockup Container */}
-        <motion.div
-            initial={{ y: 100, opacity: 0, scale: 0.95 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.3, type: "spring", stiffness: 50 }}
-            className="w-full max-w-[1100px] h-[600px] md:h-[700px] relative perspective-1000"
-        >
-            {/* The Mockup Itself */}
-            <div className="w-full h-full rounded-2xl shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] bg-white relative z-20 border-[6px] border-white/50 overflow-hidden backdrop-blur-sm">
-                <AppMockup />
-            </div>
-
-            {/* Decorative Elements around Mockup */}
-            {/* Left sticky note */}
-            <motion.div 
-                initial={{ opacity: 0, x: -50, rotate: -10 }}
-                animate={{ opacity: 1, x: 0, rotate: -6 }}
-                transition={{ delay: 1, duration: 0.8 }}
-                className="absolute -left-4 md:-left-12 top-20 w-32 h-32 bg-[#FFD5D5] shadow-lg z-30 p-4 font-handwriting transform rotate-[-6deg]"
-                style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 90%, 90% 100%, 0% 100%)' }}
-            >
-                <div className="w-full h-full flex items-center justify-center text-center font-serif italic text-red-800 text-sm">
-                    Don&apos;t forget the React assignment!&apos;
-                </div>
-            </motion.div>
-
-            {/* Right floating element */}
-            <motion.div
-                animate={{ y: [0, -15, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -right-8 md:-right-20 top-40 z-10 hidden md:block"
-            >
-                <div className="w-24 h-24 rounded-full bg-blue-500/20 backdrop-blur-md border border-white/30"></div>
-            </motion.div>
-        </motion.div>
-
       </div>
       
       {/* Bottom fade to blend with next section if existed */}

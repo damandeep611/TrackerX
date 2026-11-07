@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { Trash2, X } from "lucide-react";
 import { deleteSandbox } from "@/actions/sandboxActions";
 import toast from "react-hot-toast";
@@ -94,7 +94,7 @@ export default function DeleteSandboxModal({ sandboxId, sandboxName }: DeleteSan
                 </h3>
                 
                 <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                  Are you sure you want to delete <span className="text-foreground font-medium">"{sandboxName}"</span>? This will permanently remove all phases and logs associated with it.
+                  Are you sure you want to delete <span className="text-foreground font-medium">&ldquo;{sandboxName}&rdquo;</span>? This will permanently remove all phases and logs associated with it.
                 </p>
 
                 <div className="flex gap-3 w-full">

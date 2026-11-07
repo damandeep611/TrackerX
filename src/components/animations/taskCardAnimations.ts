@@ -1,4 +1,4 @@
-import { Variants } from "framer-motion";
+import { Variants } from "motion/react";
 
 export const taskCardVariants: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },

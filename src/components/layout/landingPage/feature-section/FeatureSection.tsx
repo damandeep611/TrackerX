@@ -1,37 +1,38 @@
 "use client"
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { BookmarkMock, FilterMock, FolderMock, SearchMock } from './mock-ui';
+import { motion } from 'motion/react';
+import { BarChart3, Hourglass, KanbanSquare, Terminal, type LucideIcon } from 'lucide-react';
 
 interface FeatureCardProps {
   title: string;
   description: string;
   bgColor: string;
-  children: React.ReactNode;
+  icon: LucideIcon;
   delay?: number;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, bgColor, children, delay = 0 }) => {
+const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, bgColor, icon: Icon, delay = 0 }) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay, ease: "easeOut" }}
-      className={`relative overflow-hidden rounded-[2.5rem] ${bgColor} p-8 pb-0 flex flex-col h-[500px] group`}
+      className={`relative overflow-hidden rounded-[2.5rem] ${bgColor} p-8 flex flex-col min-h-[320px] group`}
     >
+      <div className="flex flex-1 items-center justify-center z-10 relative">
+        <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white/15 backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
+          <Icon className="h-12 w-12 text-white" strokeWidth={1.5} />
+        </div>
+      </div>
+
       {/* Text Content */}
-      <div className="text-center text-white mb-8 z-10 relative">
+      <div className="text-center text-white mt-8 z-10 relative">
         <h3 className="text-2xl font-bold mb-3 tracking-tight">{title}</h3>
         <p className="text-white/90 font-medium leading-snug px-4">{description}</p>
       </div>
 
-      {/* Mock UI Container */}
-      <div className="flex-1 w-full relative z-0 flex justify-center items-start pt-2">
-        {children}
-      </div>
-      
       {/* Subtle Gradient Overlay for depth */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5 pointer-events-none" />
     </motion.div>
@@ -49,8 +50,8 @@ const FeatureSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.1]"
         >
-          Stay <span className="text-brand-orange">Organized</span>, Manage<br className="hidden md:block" />
-          Your <span className="text-brand-orange">Notes</span> with Ease
+          Track <span className="text-brand-orange">Hours</span>, Build<br className="hidden md:block" />
+          Real <span className="text-brand-orange">Mastery</span>
         </motion.h2>
         
         <motion.p 
@@ -60,47 +61,43 @@ const FeatureSection: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed"
         >
-          Find, save, and sort everything effortlessly so your notes stay neat, searchable, and always within reach.
+          Log focused time against the skills you care about, run deep-work sprints, and see exactly where your hours go.
         </motion.p>
       </div>
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <FeatureCard 
-          title="Quick Search" 
-          description="Search across all notes instantly." 
+          title="Skill Tracking" 
+          description="Break each skill into tasks on a Kanban board and log time as you go." 
           bgColor="bg-[#0096FF]"
           delay={0.2}
-        >
-          <SearchMock />
-        </FeatureCard>
+          icon={KanbanSquare}
+        />
 
         <FeatureCard 
-          title="Easy Bookmarks" 
-          description="Save your favorites for easy access." 
+          title="80-Hour Goals" 
+          description="Commit to an 80-hour deep-work sprint and watch the hours stack up." 
           bgColor="bg-[#0096FF]"
           delay={0.3}
-        >
-          <BookmarkMock />
-        </FeatureCard>
+          icon={Hourglass}
+        />
 
         <FeatureCard 
-          title="Folders & Tags" 
-          description="Organize notes with clear structure." 
+          title="Sandboxes" 
+          description="Plan open-ended projects in phases, with sessions and saved resources." 
           bgColor="bg-[#7470E9]"
           delay={0.4}
-        >
-          <FolderMock />
-        </FeatureCard>
+          icon={Terminal}
+        />
 
         <FeatureCard 
-          title="Filters & Sorting" 
-          description="Sort or filter by note type in one tap." 
+          title="Analytics" 
+          description="Weekly trends and per-skill breakdowns of the time you've put in." 
           bgColor="bg-[#045D46]"
           delay={0.5}
-        >
-          <FilterMock/>
-        </FeatureCard>
+          icon={BarChart3}
+        />
       </div>
     </section>
   );

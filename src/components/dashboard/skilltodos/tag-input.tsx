@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type KeyboardEvent, type ChangeEvent } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 
 interface TagInputProps {
   tags: string[];

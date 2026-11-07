@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { DiamondIcon } from './DiamondIcon';
 import { Search } from 'lucide-react';
 import { CardData } from './constants';

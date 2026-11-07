@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Target } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { getGoalBySlug } from '@/actions/goalActions';
 import { getGoalLogs, addGoalLog, deleteGoalLog } from '@/actions/goalLogActions';
 import { SprintGauge } from '@/components/dashboard/80-hour-goals/SprintGauge';

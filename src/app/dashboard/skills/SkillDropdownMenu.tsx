@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { deleteSkillCard } from "@/actions/skillCardAction";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 
 interface SkillDropdownProps {
   skillId: string;

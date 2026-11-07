@@ -3,7 +3,7 @@ import { skillTodo } from "@/types/skillDashboardTypes";
 import { CheckCircle, PencilLine, Tag, Timer } from "lucide-react";
 import React, { useState } from "react";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { formatDuration } from "@/utils/format-time";
 import {

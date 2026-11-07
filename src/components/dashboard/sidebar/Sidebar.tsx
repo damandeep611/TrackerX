@@ -1,6 +1,5 @@
 "use client";
 import {
-  BookOpen,
   Box,
   HelpCircle,
   Hourglass,
@@ -45,12 +44,6 @@ const navigation = {
       title: "80 Hour Goals",
       icon: Hourglass,
       path: "/dashboard/80-hour-goals",
-    },
-    {
-      id: "daily-logs",
-      title: "Daily Logs",
-      icon: BookOpen,
-      path: "/dashboard/daily-logs",
     },
     {
       id: "sandbox",

@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { Trash2, X } from "lucide-react";
 
 interface DeleteModalProps {
@@ -102,7 +102,7 @@ export default function DeleteModal({ onDelete }: DeleteModalProps) {
                     className="flex gap-3"
                   >
                     <button
-                      onCanPlay={handleCancel}
+                      onClick={handleCancel}
                       className=" flex-1 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg px-4 py-2 font-medium"
                     >
                       Cancel Delete

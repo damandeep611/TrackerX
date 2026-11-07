@@ -1,8 +1,13 @@
-"use client"
-import React, { useEffect, useState } from 'react';
-import ReactECharts from 'echarts-for-react';
-import { motion } from 'framer-motion';
+"use client";
+import React, { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { TrendingUp, TrendingUpIcon } from "lucide-react";
+import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+} from "@/components/ui/chart";
 import { getLastSevenWeeksProgress } from "@/actions/timeLogAction";
 
 interface WeeklyProgressData {
@@ -10,6 +15,34 @@ interface WeeklyProgressData {
   weekStart: string;
   weekEnd: string;
   hours: number;
+}
+
+interface ChartRow extends WeeklyProgressData {
+  range: string;
+}
+
+const PAST_COLOR = "var(--chart-2)";
+const CURRENT_COLOR = "var(--chart-4)";
+
+const chartConfig = {
+  hours: { label: "Hours" },
+} satisfies ChartConfig;
+
+function formatRange(weekStart: string, weekEnd: string) {
+  const start = new Date(weekStart);
+  const end = new Date(weekEnd);
+  const startMonth = start.toLocaleDateString("en-US", { month: "short" });
+  const endMonth = end.toLocaleDateString("en-US", { month: "short" });
+  return startMonth === endMonth
+    ? `${startMonth} ${start.getDate()}-${end.getDate()}`
+    : `${startMonth} ${start.getDate()} - ${endMonth} ${end.getDate()}`;
+}
+
+function getTakeaway(currentWeekHours: number, weeklyChange: number) {
+  if (currentWeekHours === 0) return "No hours logged this week yet.";
+  if (weeklyChange > 20) return "Great momentum, you're ahead of last week.";
+  if (weeklyChange < -20) return "Behind last week. A short session today helps.";
+  return "Steady progress. Keep it up.";
 }
 
 export default function WeeklyProgressChart() {
@@ -24,7 +57,6 @@ export default function WeeklyProgressChart() {
         setWeeklyData(data);
       } catch (error) {
         console.error("Failed to fetch weekly progress:", error);
-        // Fallback to empty data
         setWeeklyData([]);
       } finally {
         setIsLoading(false);
@@ -34,7 +66,6 @@ export default function WeeklyProgressChart() {
     fetchWeeklyProgress();
   }, []);
 
-  // Calculate statistics
   const currentWeekHours = weeklyData[weeklyData.length - 1]?.hours || 0;
   const previousWeekHours = weeklyData[weeklyData.length - 2]?.hours || 0;
   const weeklyChange =
@@ -44,112 +75,10 @@ export default function WeeklyProgressChart() {
       ? 100
       : 0;
 
-  // ECharts options
-  const chartOptions = {
-    grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "15%",
-      top: "10%",
-      containLabel: true,
-    },
-    xAxis: {
-      type: "category",
-      data: weeklyData.map((week) => {
-        // Format date range for display
-        const startDate = new Date(week.weekStart);
-        const endDate = new Date(week.weekEnd);
-        const startMonth = startDate.toLocaleDateString("en-US", {
-          month: "short",
-        });
-        const endMonth = endDate.toLocaleDateString("en-US", {
-          month: "short",
-        });
-        const startDay = startDate.getDate();
-        const endDay = endDate.getDate();
-
-        if (startMonth === endMonth) {
-          return `${startMonth} ${startDay}-${endDay}`;
-        } else {
-          return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
-        }
-      }),
-      axisLabel: {
-        color: "#64748b",
-        fontSize: 11,
-        interval: 0,
-        rotate: 0,
-      },
-      axisLine: {
-        show: false,
-      },
-      axisTick: {
-        show: false,
-      },
-    },
-    yAxis: {
-      type: "value",
-      axisLabel: {
-        color: "#71717a",
-        fontSize: 10,
-        formatter: "{value}h",
-      },
-      axisLine: {
-        show: false,
-      },
-      axisTick: {
-        show: false,
-      },
-      splitLine: {
-        show: false,
-      },
-      interval: 10,
-      max: 70,
-    },
-    series: [
-      {
-        data: weeklyData.map((week, index) => ({
-          value: week.hours,
-          itemStyle: {
-            color:
-              index === weeklyData.length - 1
-                ? "#05fa8c" // Current week - indigo
-                : "#818cf8", // Previous weeks - zinc
-          },
-        })),
-        type: "bar",
-
-        barWidth: "50%",
-        itemStyle: {
-          borderRadius: [2, 2, 0, 0],
-        },
-        emphasis: {
-          itemStyle: {
-            color: "#818cf8",
-          },
-        },
-      },
-    ],
-    tooltip: {
-      trigger: "axis",
-      backgroundColor: "#18181b",
-      borderColor: "#27272a",
-      textStyle: {
-        color: "#f4f4f5",
-      },
-      formatter: function (params: unknown) {
-        const data = (params as Array<{ dataIndex: number }>)[0];
-        const weekInfo = weeklyData[data.dataIndex];
-        return `
-          <div style="padding: 8px;">
-            <div style="font-weight: 600; margin-bottom: 4px;">${weekInfo.weekLabel}</div>
-            <div style="color: #a1a1aa; font-size: 12px; margin-bottom: 4px;">${weekInfo.weekStart} to ${weekInfo.weekEnd}</div>
-            <div style="color: #6366f1; font-weight: 600;">${weekInfo.hours}h logged</div>
-          </div>
-        `;
-      },
-    },
-  };
+  const chartData: ChartRow[] = weeklyData.map((week) => ({
+    ...week,
+    range: formatRange(week.weekStart, week.weekEnd),
+  }));
 
   if (isLoading) {
     return (
@@ -206,7 +135,7 @@ export default function WeeklyProgressChart() {
             className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-bold ${
               weeklyChange >= 0
                 ? "bg-emerald-500/10 text-emerald-500"
-                : "text-red-700 bg-red-300 "
+                : "bg-red-500/10 text-red-500"
             } `}
           >
             {weeklyChange >= 0 ? "+" : ""}
@@ -215,35 +144,70 @@ export default function WeeklyProgressChart() {
         </div>
       </div>
 
-      {/* ECharts Bar Chart */}
-      <div className="h-60">
-        <ReactECharts
-          option={chartOptions}
-          style={{ height: "100%", width: "100%" }}
-          opts={{ renderer: "svg" }}
-        />
-      </div>
+      {/* Bar Chart */}
+      <ChartContainer config={chartConfig} className="h-60 w-full aspect-auto">
+        <BarChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+          <XAxis
+            dataKey="range"
+            tickLine={false}
+            axisLine={false}
+            interval={0}
+            tickMargin={8}
+            fontSize={11}
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            allowDecimals={false}
+            fontSize={10}
+            width={40}
+            tickFormatter={(value: number) => `${value}h`}
+          />
+          <ChartTooltip
+            cursor={false}
+            content={({ active, payload }) => {
+              const week = payload?.[0]?.payload as ChartRow | undefined;
+              if (!active || !week) return null;
+              return (
+                <div className="rounded-lg border border-border bg-background px-3 py-2 text-xs shadow-xl">
+                  <div className="font-semibold text-foreground mb-1">
+                    {week.weekLabel}
+                  </div>
+                  <div className="text-muted-foreground mb-1">
+                    {week.weekStart} to {week.weekEnd}
+                  </div>
+                  <div className="font-semibold text-foreground tabular-nums">
+                    {week.hours}h logged
+                  </div>
+                </div>
+              );
+            }}
+          />
+          <Bar dataKey="hours" radius={[2, 2, 0, 0]} maxBarSize={48}>
+            {chartData.map((week, index) => (
+              <Cell
+                key={week.weekStart}
+                fill={index === chartData.length - 1 ? CURRENT_COLOR : PAST_COLOR}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ChartContainer>
 
       {/* Legend / Footer */}
       <div className="flex items-center justify-between border-t border-border pt-4 mt-2">
         <p className="text-xs text-text-secondary">
-          {currentWeekHours === 0
-            ? "No hours logged , bitch ass"
-            : weeklyChange > 20
-            ? "slow ass work , Lock in more ! "
-            : weeklyChange < -20
-            ? "Consider increasing your weekly hours"
-            : "Steady progress! Keep it up "}
+          {getTakeaway(currentWeekHours, weeklyChange)}
         </p>
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
-            <div className="h-2 w-4 rounded-xs bg-blue-500" />
+            <div className="h-2 w-4 rounded-xs" style={{ background: PAST_COLOR }} />
             <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wide">
               Past Weeks
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-2 w-4 rounded-xs bg-emerald-500" />
+            <div className="h-2 w-4 rounded-xs" style={{ background: CURRENT_COLOR }} />
             <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wide">
               Current Week
             </span>
@@ -252,4 +216,4 @@ export default function WeeklyProgressChart() {
       </div>
     </motion.div>
   );
-} 
+}
