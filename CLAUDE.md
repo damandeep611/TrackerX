@@ -2,7 +2,7 @@
 
 Personal skill-mastery and time-auditing dashboard. Users track hours on skills (tasks in a To do / Doing / Done list, quick time logging), run open-ended deep-work projects in "sandboxes" (hour target, quick session logging, a milestone marker every 20h on a radial dial).
 
-Refactor work is tracked in **`refactor-claude.md`**. Check it before changing code. Its top section, **SESSION HANDOFF**, says where work stopped and what comes next.
+Refactor work (P1–P9, complete) is tracked in **`refactor-claude.md`**. Open follow-ups (rate limiting, tests) are in **`features-todo.md`**. Check it before changing code. Its top section, **SESSION HANDOFF**, says where work stopped and what comes next.
 
 ## Stack (versions from pnpm-lock.yaml)
 - Next.js **16.4.5** (App Router), React **19.3**, TypeScript 5.9
@@ -104,7 +104,7 @@ All FKs `ON DELETE CASCADE` (delete the parent only). `skillCard.slug` is unique
 Server code calls `requireUser()` / `requirePageUser()` / `getCurrentUser()` from `@/lib/require-user` (never `auth.api.getSession` directly). Sign-out redirects to `/` (the theme is kept; the landing page supports light + dark).
 
 ## Design system (P4, `src/components/ui/` + `src/app/globals.css` + `src/lib/motion.ts`)
-- **Look** (from `public/design-inspiration/`): calm near-black / soft-white surfaces, **panel inside panel**, hairline borders, monospace tabular numbers with a muted unit, small bar sparklines, segmented progress, delta chips ("▲ +12% vs last week"), pill tabs, one accent per metric.
+- **Look** (from the reference images formerly in `public/design-inspiration/`, removed 2026-11-08; restore with `git checkout e75c6cd -- public/design-inspiration`): calm near-black / soft-white surfaces, **panel inside panel**, hairline borders, monospace tabular numbers with a muted unit, small bar sparklines, segmented progress, delta chips ("▲ +12% vs last week"), pill tabs, one accent per metric.
 - **Surface tokens** (light + dark in globals.css): `bg-background` (canvas) → `bg-card` (panel) → `bg-surface-2` (inner well) → `bg-surface-3` (raised/hover). Text: `text-foreground`, `text-muted-foreground` (labels), `text-subtle-foreground` (captions). Lines: `border-border`, `border-border-strong`.
 - **Accent/status tokens**: `brand` (blue: progress, active nav, main CTA; `bg-brand`, `text-brand`, `bg-brand-soft`), `success|warning|danger` (+ `-soft` backgrounds), metric palette `var(--chart-1..5)` = blue, violet, orange, emerald, rose. shadcn `accent` = subtle hover surface (NOT a brand color).
 - **Shadows**: `shadow-panel`, `shadow-raised` (theme-aware via `--panel-shadow` / `--raised-shadow`). Radius base 0.75rem: cards `rounded-2xl`, wells `rounded-xl`, controls `rounded-lg`, chips `rounded-full`.
