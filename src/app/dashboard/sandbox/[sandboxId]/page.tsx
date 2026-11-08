@@ -1,26 +1,32 @@
 import { notFound } from "next/navigation";
-import SandboxDetailView from "@/components/dashboard/sandbox/sandbox-detail-view";
-import { getSandboxDetail } from "@/actions/sandboxActions";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { getSandboxLogs, getSandboxOverview, getSandboxResources } from "@/actions/sandboxActions";
+import SandboxDetailView from "@/components/dashboard/sandbox/SandboxDetailView";
+import { getQueryClient } from "@/lib/query-client";
+import { queryKeys } from "@/lib/query-keys";
+import { requireUser } from "@/lib/require-user";
 
-interface PageProps {
-  params: Promise<{
-    sandboxId: string;
-  }>;
-}
+export default async function SandboxDetailPage({ params }: { params: Promise<{ sandboxId: string }> }) {
+  const { sandboxId } = await params;
+  await requireUser();
 
-export default async function SandboxDetailPage(props: PageProps) {
-  const { sandboxId } = await props.params;
+  // Owner-scoped: anyone else (or a bad id) gets a 404 before the children load.
+  const overview = await getSandboxOverview(sandboxId);
+  if (!overview) notFound();
 
-  // Scoped to the signed-in owner; anyone else gets a 404.
-  const detail = await getSandboxDetail(sandboxId);
-  if (!detail) notFound();
+  const queryClient = getQueryClient();
+  queryClient.setQueryData(queryKeys.sandboxes.overview(sandboxId), overview);
+  await Promise.all([
+    queryClient.prefetchQuery({ queryKey: queryKeys.sandboxes.logs(sandboxId), queryFn: () => getSandboxLogs(sandboxId) }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.sandboxes.resources(sandboxId),
+      queryFn: () => getSandboxResources(sandboxId),
+    }),
+  ]);
 
   return (
-    <SandboxDetailView
-      sandbox={detail.sandbox}
-      initialPhases={detail.phases}
-      initialLogs={detail.logs}
-      initialResources={detail.resources}
-    />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <SandboxDetailView sandboxId={sandboxId} />
+    </HydrationBoundary>
   );
 }

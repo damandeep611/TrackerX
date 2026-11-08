@@ -7,10 +7,8 @@ import { timeLog } from "@/db/schema/schema";
 import { requireUser } from "@/lib/require-user";
 import { getOwnedTask } from "@/lib/ownership";
 import { recomputeSkillHours } from "@/lib/skill-hours";
-import { tryParseInput, zId } from "@/lib/validation";
+import { tryParseInput, zId, zLocalDate } from "@/lib/validation";
 import { MAX_ENTRY_MINUTES, type NewTimeLog } from "@/types/skillDashboardTypes";
-
-const DAY_MS = 86_400_000;
 
 const newTimeLogInput = z.object({
   task_id: zId,
@@ -21,14 +19,8 @@ const newTimeLogInput = z.object({
     .int()
     .min(1)
     .max(MAX_ENTRY_MINUTES, `Max ${MAX_ENTRY_MINUTES / 60}h per entry`),
-  // The user's local calendar day. Allow ±1 day around UTC "today" for time zones.
-  logged_date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .refine((v) => {
-      const t = Date.parse(`${v}T00:00:00Z`);
-      return !Number.isNaN(t) && Math.abs(t - Date.now()) <= 2 * DAY_MS;
-    }, "Invalid date"),
+  // The user's local calendar day.
+  logged_date: zLocalDate,
 });
 
 /** Log minutes against a task, on the user's local date. */

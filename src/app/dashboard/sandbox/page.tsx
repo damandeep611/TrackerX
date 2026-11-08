@@ -1,12 +1,20 @@
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getSandboxes } from "@/actions/sandboxActions";
-import SandboxPageContent from "@/components/dashboard/sandbox/sandbox-page-content";
+import SandboxListView from "@/components/dashboard/sandbox/SandboxListView";
+import { getQueryClient } from "@/lib/query-client";
+import { queryKeys } from "@/lib/query-keys";
+import { requireUser } from "@/lib/require-user";
 
 export default async function SandboxPage() {
-  const sandboxes = await getSandboxes();
-  
+  // Outside prefetchQuery: keeps the route dynamic and fails fast when signed out.
+  await requireUser();
+
+  const queryClient = getQueryClient();
+  await queryClient.prefetchQuery({ queryKey: queryKeys.sandboxes.list(), queryFn: () => getSandboxes() });
+
   return (
-    <div className="p-6">
-      <SandboxPageContent initialSandboxes={sandboxes} />
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <SandboxListView />
+    </HydrationBoundary>
   );
 }

@@ -4,7 +4,6 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import {
   sandboxes,
-  sandboxPhases,
   sandboxResources,
   skillCard,
   skillTask,
@@ -26,23 +25,6 @@ export async function assertSandboxOwner(sandboxId: string, userId: string) {
     .where(and(eq(sandboxes.id, sandboxId), eq(sandboxes.userId, userId)))
     .limit(1);
   if (!row) throw new NotFoundError("Sandbox");
-}
-
-/** Throws unless `phaseId` belongs to `sandboxId` and the sandbox belongs to `userId`. */
-export async function assertPhaseOwner(phaseId: string, sandboxId: string, userId: string) {
-  const [row] = await db
-    .select({ id: sandboxPhases.id })
-    .from(sandboxPhases)
-    .innerJoin(sandboxes, eq(sandboxPhases.sandboxId, sandboxes.id))
-    .where(
-      and(
-        eq(sandboxPhases.id, phaseId),
-        eq(sandboxPhases.sandboxId, sandboxId),
-        eq(sandboxes.userId, userId)
-      )
-    )
-    .limit(1);
-  if (!row) throw new NotFoundError("Phase");
 }
 
 /** Throws unless `resourceId` belongs to `sandboxId` and the sandbox belongs to `userId`. */

@@ -31,6 +31,18 @@ export const zHttpUrl = z
     }
   }, "Must be an http(s) URL");
 
+/**
+ * The user's local calendar day, "YYYY-MM-DD" (from `localDateKey()` in the browser).
+ * Only ±2 days around the server's now are accepted, which covers every time zone.
+ */
+export const zLocalDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((v) => {
+    const t = Date.parse(`${v}T00:00:00Z`);
+    return !Number.isNaN(t) && Math.abs(t - Date.now()) <= 2 * 86_400_000;
+  }, "Invalid date");
+
 export class ValidationError extends Error {
   constructor(message = "Invalid input") {
     super(message);

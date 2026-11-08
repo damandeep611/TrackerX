@@ -169,6 +169,20 @@
       "when": 1794069217175,
       "tag": "0023_indexes_per_user_slugs",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794127048440,
+      "tag": "0024_sandbox_logs_backfill",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1794127060555,
+      "tag": "0025_drop_sandbox_phases",
+      "breakpoints": true
     }
   ]
 }

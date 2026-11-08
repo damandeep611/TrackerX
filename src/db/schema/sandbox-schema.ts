@@ -3,9 +3,9 @@ import {
   uuid,
   text,
   integer,
-  numeric,
   timestamp,
   index,
+  unique,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
@@ -16,46 +16,26 @@ export const sandboxes = pgTable("sandboxes", {
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   targetHours: integer("target_hours").notNull(),
-  currentHours: numeric("current_hours", { precision: 5, scale: 2 })
-    .default("0.00")
-    .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => [index("sandboxes_user_idx").on(t.userId)]);
 
-export const sandboxPhases = pgTable("sandbox_phases", {
+/** A logged work session: minutes on the user's local calendar date (stored at UTC midnight, like timeLog). */
+export const sandboxLogs = pgTable("sandbox_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
   sandboxId: uuid("sandbox_id")
     .notNull()
     .references(() => sandboxes.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  // Storing milestones as a simple array of strings for now.
-  // In Postgres this will be text[]
-  milestones: text("milestones").array(), 
-  allocatedHours: numeric("allocated_hours", { precision: 5, scale: 2 }).notNull(),
-  orderIndex: integer("order_index").default(0).notNull(),
+  title: text("title"),
+  minutes: integer("minutes").notNull(),
+  loggedDate: timestamp("logged_date").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (t) => [index("sandbox_phases_sandbox_idx").on(t.sandboxId)]);
-
-export const sandboxLogs = pgTable("sandbox_logs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  phaseId: uuid("phase_id")
-    .notNull()
-    .references(() => sandboxPhases.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time").notNull(),
-  duration: numeric("duration", { precision: 5, scale: 2 }).notNull(), // stored in hours
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (t) => [index("sandbox_logs_phase_idx").on(t.phaseId)]);
+}, (t) => [index("sandbox_logs_sandbox_date_idx").on(t.sandboxId, t.loggedDate)]);
 
 export const sandboxResources = pgTable("sandbox_resources", {
   id: uuid("id").primaryKey().defaultRandom(),
   sandboxId: uuid("sandbox_id")
     .notNull()
     .references(() => sandboxes.id, { onDelete: "cascade" }),
-  phaseId: uuid("phase_id")
-    .references(() => sandboxPhases.id, { onDelete: "set null" }),
   title: text("title").notNull(),
   url: text("url").notNull(),
   thumbnailUrl: text("thumbnail_url"),
@@ -63,3 +43,14 @@ export const sandboxResources = pgTable("sandbox_resources", {
   status: text("status").default("unread").notNull(), // 'unread', 'read'
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => [index("sandbox_resources_sandbox_idx").on(t.sandboxId)]);
+
+/** Named 20h markers on the dial. Unnamed markers are derived, not stored. */
+export const sandboxMilestones = pgTable("sandbox_milestones", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sandboxId: uuid("sandbox_id")
+    .notNull()
+    .references(() => sandboxes.id, { onDelete: "cascade" }),
+  hourMark: integer("hour_mark").notNull(),
+  label: text("label").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [unique("sandbox_milestones_sandbox_hour_uq").on(t.sandboxId, t.hourMark)]);

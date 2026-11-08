@@ -1,255 +1,344 @@
 "use server";
 
-import { db } from "@/db/drizzle";
-import { sandboxes, sandboxPhases, sandboxLogs, sandboxResources } from "@/db/schema/schema";
-import { and, eq, desc, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import * as cheerio from "cheerio";
 import { z } from "zod";
+import { db } from "@/db/drizzle";
+import { sandboxes, sandboxLogs, sandboxMilestones, sandboxResources } from "@/db/schema/schema";
 import { requireUser } from "@/lib/require-user";
-import { parseInput, zHttpUrl, zId, zText } from "@/lib/validation";
-import {
-  assertPhaseOwner,
-  assertResourceOwner,
-  assertSandboxOwner,
-} from "@/lib/ownership";
+import { assertResourceOwner, assertSandboxOwner, NotFoundError } from "@/lib/ownership";
+import { buildProjectInsights, INSIGHTS_WINDOW_DAYS, lastNDays } from "@/lib/insights";
+import { getUserToday } from "@/lib/user-today";
 import { safeFetchHtml } from "@/lib/safe-fetch";
+import {
+  parseInput,
+  tryParseInput,
+  zHttpUrl,
+  zId,
+  zLocalDate,
+  zOptionalText,
+  zText,
+} from "@/lib/validation";
+import { MAX_ENTRY_MINUTES } from "@/types/skillDashboardTypes";
+import {
+  MILESTONE_STEP_HOURS,
+  RESOURCE_TYPES,
+  type NewSandboxLog,
+  type SandboxLog,
+  type SandboxOverview,
+  type SandboxResource,
+  type SandboxSummary,
+} from "@/types/sandbox";
 
-const MAX_HOURS = 999; // numeric(5,2) columns
+type Result<T = object> = ({ success: true } & T) | { success: false; error: string };
+
+const fail = (error: string) => ({ success: false as const, error });
+
+/** Owner check that turns "not yours / doesn't exist" into a result instead of a throw. */
+async function ownsSandbox(sandboxId: string, userId: string) {
+  try {
+    await assertSandboxOwner(sandboxId, userId);
+    return true;
+  } catch (e) {
+    if (e instanceof NotFoundError) return false;
+    throw e;
+  }
+}
+
+const day = sql<string>`to_char(${sandboxLogs.loggedDate}, 'YYYY-MM-DD')`;
+const minutesSum = sql<number>`coalesce(sum(${sandboxLogs.minutes}), 0)`.mapWith(Number);
+const lastDay = sql<string | null>`to_char(max(${sandboxLogs.loggedDate}), 'YYYY-MM-DD')`;
+const startOf = (key: string) => new Date(`${key}T00:00:00.000Z`);
+
+/* -------------------------------------------------------------------------- */
+/* Sandboxes                                                                  */
+/* -------------------------------------------------------------------------- */
 
 const sandboxInput = z.object({
   name: zText(120),
   targetHours: z.number().int().min(1).max(100_000),
 });
 
-const phaseInput = z.object({
-  title: zText(200),
-  description: z.string().trim().max(2000),
-  milestones: z.array(z.string().trim().max(300)).max(50),
-  allocatedHours: z.number().min(0).max(MAX_HOURS),
-});
-
-const sessionInput = z
-  .object({
-    title: z.string().trim().max(255),
-    startTime: z.coerce.date(),
-    endTime: z.coerce.date(),
-    // Accepted for backwards compatibility; the server recomputes it from the times.
-    duration: z.number().optional(),
-  })
-  .refine((s) => s.endTime > s.startTime, "End time must be after start time")
-  .refine(
-    (s) => s.endTime.getTime() - s.startTime.getTime() <= 24 * 60 * 60 * 1000,
-    "A session can't be longer than 24 hours"
-  );
-
-const resourceTypes = ["video", "article", "repo", "documentation"] as const;
-
-const resourceInput = z.object({
-  title: zText(300),
-  url: zHttpUrl,
-  phaseId: zId.nullable(),
-  resourceType: z.enum(resourceTypes).catch("article"),
-  thumbnailUrl: zHttpUrl.optional().or(z.literal("")).transform((v) => v || undefined),
-});
-
-export async function createSandbox(data: { name: string; targetHours: number }) {
+/** Every sandbox of the user with total time and 14 days of activity (2 grouped queries). */
+export async function getSandboxes(): Promise<{ today: string; sandboxes: SandboxSummary[] }> {
   const userId = await requireUser();
-  const input = parseInput(sandboxInput, data);
+  const keys = lastNDays(14, await getUserToday());
 
-  const [newSandbox] = await db
+  const [rows, daily] = await Promise.all([
+    db
+      .select({
+        id: sandboxes.id,
+        name: sandboxes.name,
+        targetHours: sandboxes.targetHours,
+        createdAt: sandboxes.createdAt,
+        totalMinutes: minutesSum,
+        lastLogged: lastDay,
+      })
+      .from(sandboxes)
+      .leftJoin(sandboxLogs, eq(sandboxLogs.sandboxId, sandboxes.id))
+      .where(eq(sandboxes.userId, userId))
+      .groupBy(sandboxes.id)
+      .orderBy(desc(sandboxes.createdAt)),
+    db
+      .select({ sandboxId: sandboxLogs.sandboxId, day, minutes: minutesSum })
+      .from(sandboxLogs)
+      .innerJoin(sandboxes, eq(sandboxLogs.sandboxId, sandboxes.id))
+      .where(and(eq(sandboxes.userId, userId), gte(sandboxLogs.loggedDate, startOf(keys[0]))))
+      .groupBy(sandboxLogs.sandboxId, day),
+  ]);
+
+  const byKey = new Map(daily.map((r) => [`${r.sandboxId}|${r.day}`, r.minutes]));
+  return {
+    today: keys.at(-1)!,
+    sandboxes: rows.map((r) => {
+      const daily14 = keys.map((k) => byKey.get(`${r.id}|${k}`) ?? 0);
+      return {
+        ...r,
+        createdAt: r.createdAt.toISOString(),
+        daily14,
+        minutes7d: daily14.slice(-7).reduce((a, b) => a + b, 0),
+      };
+    }),
+  };
+}
+
+export async function createSandbox(data: {
+  name: string;
+  targetHours: number;
+}): Promise<Result<{ sandbox: SandboxSummary }>> {
+  const userId = await requireUser();
+  const input = tryParseInput(sandboxInput, data);
+  if (!input) return fail("Give the sandbox a name and a target of at least 1 hour");
+
+  const [row] = await db
     .insert(sandboxes)
     .values({ name: input.name, targetHours: input.targetHours, userId })
     .returning();
 
-  revalidatePath("/dashboard/sandbox");
-  return newSandbox;
+  return {
+    success: true,
+    sandbox: {
+      id: row.id,
+      name: row.name,
+      targetHours: row.targetHours,
+      createdAt: row.createdAt.toISOString(),
+      totalMinutes: 0,
+      minutes7d: 0,
+      daily14: Array(14).fill(0),
+      lastLogged: null,
+    },
+  };
 }
 
-export async function deleteSandbox(sandboxId: string) {
+export async function deleteSandbox(sandboxId: string): Promise<Result> {
   const userId = await requireUser();
-  const id = parseInput(zId, sandboxId);
+  const id = tryParseInput(zId, sandboxId);
+  if (!id) return fail("Sandbox not found");
 
-  // Children are removed by ON DELETE CASCADE.
-  await db
+  // Logs, resources and milestones go with it (ON DELETE CASCADE).
+  const [deleted] = await db
     .delete(sandboxes)
-    .where(and(eq(sandboxes.id, id), eq(sandboxes.userId, userId)));
-
-  revalidatePath("/dashboard/sandbox");
-}
-
-export async function getSandboxes() {
-  const userId = await requireUser();
-
-  return db.select().from(sandboxes).where(eq(sandboxes.userId, userId));
+    .where(and(eq(sandboxes.id, id), eq(sandboxes.userId, userId)))
+    .returning({ id: sandboxes.id });
+  return deleted ? { success: true } : fail("Sandbox not found");
 }
 
 /**
- * Everything the sandbox detail page needs, scoped to the owner.
- * Returns null when the sandbox doesn't exist or isn't the user's.
+ * The detail page header: the sandbox, its trend/streak/pace insights and its
+ * named milestones. Null when it doesn't exist or isn't the user's.
  */
-export async function getSandboxDetail(sandboxId: string) {
+export async function getSandboxOverview(sandboxId: string): Promise<SandboxOverview | null> {
   const userId = await requireUser();
-  const parsed = zId.safeParse(sandboxId);
-  if (!parsed.success) return null;
-  const id = parsed.data;
+  const id = tryParseInput(zId, sandboxId);
+  if (!id) return null;
 
   const [sandbox] = await db
-    .select()
+    .select({
+      id: sandboxes.id,
+      name: sandboxes.name,
+      targetHours: sandboxes.targetHours,
+      createdAt: sandboxes.createdAt,
+    })
     .from(sandboxes)
     .where(and(eq(sandboxes.id, id), eq(sandboxes.userId, userId)));
   if (!sandbox) return null;
 
-  const [phasesData, logsData, resources] = await Promise.all([
+  const today = await getUserToday();
+  const keys = lastNDays(INSIGHTS_WINDOW_DAYS, today);
+  const [daily, [totals], milestones] = await Promise.all([
     db
-      .select()
-      .from(sandboxPhases)
-      .where(eq(sandboxPhases.sandboxId, id))
-      .orderBy(sandboxPhases.orderIndex),
-    db
-      .select({
-        id: sandboxLogs.id,
-        phaseId: sandboxLogs.phaseId,
-        title: sandboxLogs.title,
-        startTime: sandboxLogs.startTime,
-        endTime: sandboxLogs.endTime,
-        duration: sandboxLogs.duration,
-      })
+      .select({ day, minutes: minutesSum })
       .from(sandboxLogs)
-      .innerJoin(sandboxPhases, eq(sandboxLogs.phaseId, sandboxPhases.id))
-      .where(eq(sandboxPhases.sandboxId, id))
-      .orderBy(desc(sandboxLogs.startTime)),
+      .where(and(eq(sandboxLogs.sandboxId, id), gte(sandboxLogs.loggedDate, startOf(keys[0]))))
+      .groupBy(day),
     db
-      .select()
-      .from(sandboxResources)
-      .where(eq(sandboxResources.sandboxId, id))
-      .orderBy(desc(sandboxResources.createdAt)),
+      .select({ minutes: minutesSum, last: lastDay })
+      .from(sandboxLogs)
+      .where(eq(sandboxLogs.sandboxId, id)),
+    db
+      .select({ hourMark: sandboxMilestones.hourMark, label: sandboxMilestones.label })
+      .from(sandboxMilestones)
+      .where(eq(sandboxMilestones.sandboxId, id))
+      .orderBy(sandboxMilestones.hourMark),
   ]);
 
   return {
-    sandbox,
-    phases: phasesData.map((p) => ({ ...p, allocatedHours: Number(p.allocatedHours) })),
-    logs: logsData.map((l) => ({ ...l, duration: Number(l.duration) })),
-    resources,
+    sandbox: { ...sandbox, createdAt: sandbox.createdAt.toISOString() },
+    insights: buildProjectInsights(new Map(daily.map((r) => [r.day, r.minutes])), totals, today),
+    milestones,
   };
 }
 
-// Phase Actions
+/* -------------------------------------------------------------------------- */
+/* Sessions (minutes + local date, like skill time logs)                      */
+/* -------------------------------------------------------------------------- */
 
-export async function createPhase(
-  sandboxId: string,
-  data: { title: string; description: string; milestones: string[]; allocatedHours: number }
-) {
+const LOG_LIMIT = 100;
+
+const logInput = z.object({
+  sandboxId: zId,
+  // One entry is capped at 3h (owner decision); longer sessions are split.
+  minutes: z
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_ENTRY_MINUTES, `Max ${MAX_ENTRY_MINUTES / 60}h per entry`),
+  date: zLocalDate,
+  title: zOptionalText(200),
+});
+
+const toLog = (r: {
+  id: string;
+  title: string | null;
+  minutes: number;
+  loggedDate: Date;
+  createdAt: Date;
+}): SandboxLog => ({
+  id: r.id,
+  title: r.title,
+  minutes: r.minutes,
+  date: r.loggedDate.toISOString().slice(0, 10),
+  createdAt: r.createdAt.toISOString(),
+});
+
+/** The most recent sessions, newest first. */
+export async function getSandboxLogs(sandboxId: string): Promise<SandboxLog[]> {
   const userId = await requireUser();
   const id = parseInput(zId, sandboxId);
-  const input = parseInput(phaseInput, data);
   await assertSandboxOwner(id, userId);
 
-  const [last] = await db
-    .select({ orderIndex: sandboxPhases.orderIndex })
-    .from(sandboxPhases)
-    .where(eq(sandboxPhases.sandboxId, id))
-    .orderBy(desc(sandboxPhases.orderIndex))
-    .limit(1);
+  const rows = await db
+    .select()
+    .from(sandboxLogs)
+    .where(eq(sandboxLogs.sandboxId, id))
+    .orderBy(desc(sandboxLogs.loggedDate), desc(sandboxLogs.createdAt))
+    .limit(LOG_LIMIT);
+  return rows.map(toLog);
+}
 
-  const [newPhase] = await db
-    .insert(sandboxPhases)
+/** Log a session that ended now, on the user's local date. */
+export async function logSandboxSession(data: NewSandboxLog): Promise<Result<{ log: SandboxLog }>> {
+  const userId = await requireUser();
+  const parsed = logInput.safeParse(data);
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid session");
+  const input = parsed.data;
+  if (!(await ownsSandbox(input.sandboxId, userId))) return fail("Sandbox not found");
+
+  const [row] = await db
+    .insert(sandboxLogs)
     .values({
-      sandboxId: id,
+      sandboxId: input.sandboxId,
       title: input.title,
-      description: input.description,
-      milestones: input.milestones,
-      allocatedHours: input.allocatedHours.toString(),
-      orderIndex: last ? last.orderIndex + 1 : 0,
+      minutes: input.minutes,
+      loggedDate: startOf(input.date),
     })
     .returning();
-
-  revalidatePath(`/dashboard/sandbox/${id}`);
-  return newPhase;
+  return { success: true, log: toLog(row) };
 }
 
-export async function updatePhase(
-  phaseId: string,
-  sandboxId: string,
-  data: { title: string; description: string; milestones: string[]; allocatedHours: number }
-) {
+/** Remove a session (the Undo toast and the delete button in the session list). */
+export async function deleteSandboxLog(logId: string): Promise<Result> {
   const userId = await requireUser();
-  const pid = parseInput(zId, phaseId);
-  const sid = parseInput(zId, sandboxId);
-  const input = parseInput(phaseInput, data);
-  await assertPhaseOwner(pid, sid, userId);
+  const id = tryParseInput(zId, logId);
+  if (!id) return fail("Session not found");
 
-  const [updatedPhase] = await db
-    .update(sandboxPhases)
-    .set({
-      title: input.title,
-      description: input.description,
-      milestones: input.milestones,
-      allocatedHours: input.allocatedHours.toString(),
-    })
-    .where(and(eq(sandboxPhases.id, pid), eq(sandboxPhases.sandboxId, sid)))
-    .returning();
-
-  revalidatePath(`/dashboard/sandbox/${sid}`);
-  return updatedPhase;
+  const owned = db.select({ id: sandboxes.id }).from(sandboxes).where(eq(sandboxes.userId, userId));
+  const [deleted] = await db
+    .delete(sandboxLogs)
+    .where(and(eq(sandboxLogs.id, id), inArray(sandboxLogs.sandboxId, owned)))
+    .returning({ id: sandboxLogs.id });
+  return deleted ? { success: true } : fail("Session not found");
 }
 
-export async function deletePhase(phaseId: string, sandboxId: string) {
+/* -------------------------------------------------------------------------- */
+/* Milestones (only named markers are stored)                                 */
+/* -------------------------------------------------------------------------- */
+
+const milestoneInput = z.object({
+  sandboxId: zId,
+  hourMark: z.number().int().min(MILESTONE_STEP_HOURS).max(100_000).multipleOf(MILESTONE_STEP_HOURS),
+  label: zOptionalText(80),
+});
+
+/** Name a dial marker. An empty label removes the name (the marker itself stays). */
+export async function setMilestoneLabel(data: {
+  sandboxId: string;
+  hourMark: number;
+  label: string | null;
+}): Promise<Result> {
   const userId = await requireUser();
-  const pid = parseInput(zId, phaseId);
-  const sid = parseInput(zId, sandboxId);
-  await assertPhaseOwner(pid, sid, userId);
+  const input = tryParseInput(milestoneInput, data);
+  if (!input) return fail("Invalid milestone");
+  if (!(await ownsSandbox(input.sandboxId, userId))) return fail("Sandbox not found");
 
-  await db
-    .delete(sandboxPhases)
-    .where(and(eq(sandboxPhases.id, pid), eq(sandboxPhases.sandboxId, sid)));
-
-  revalidatePath(`/dashboard/sandbox/${sid}`);
+  const where = and(
+    eq(sandboxMilestones.sandboxId, input.sandboxId),
+    eq(sandboxMilestones.hourMark, input.hourMark)
+  );
+  if (!input.label) {
+    await db.delete(sandboxMilestones).where(where);
+  } else {
+    await db
+      .insert(sandboxMilestones)
+      .values({ sandboxId: input.sandboxId, hourMark: input.hourMark, label: input.label })
+      .onConflictDoUpdate({
+        target: [sandboxMilestones.sandboxId, sandboxMilestones.hourMark],
+        set: { label: input.label },
+      });
+  }
+  return { success: true };
 }
 
-// Log Actions
+/* -------------------------------------------------------------------------- */
+/* Resources                                                                  */
+/* -------------------------------------------------------------------------- */
 
-export async function logSession(
-  sandboxId: string,
-  phaseId: string,
-  data: { title: string; startTime: Date; endTime: Date; duration: number }
-) {
+const resourceInput = z.object({
+  title: zText(300),
+  url: zHttpUrl,
+  resourceType: z.enum(RESOURCE_TYPES).catch("article"),
+  thumbnailUrl: zHttpUrl.optional().or(z.literal("")).transform((v) => v || undefined),
+});
+
+const toResource = (r: typeof sandboxResources.$inferSelect): SandboxResource => ({
+  ...r,
+  createdAt: r.createdAt.toISOString(),
+});
+
+export async function getSandboxResources(sandboxId: string): Promise<SandboxResource[]> {
   const userId = await requireUser();
-  const sid = parseInput(zId, sandboxId);
-  const pid = parseInput(zId, phaseId);
-  const input = parseInput(sessionInput, data);
-  await assertPhaseOwner(pid, sid, userId);
+  const id = parseInput(zId, sandboxId);
+  await assertSandboxOwner(id, userId);
 
-  const hours = (input.endTime.getTime() - input.startTime.getTime()) / 3_600_000;
-  const duration = (Math.round(hours * 100) / 100).toFixed(2);
-
-  const newLog = await db.transaction(async (tx) => {
-    const [log] = await tx
-      .insert(sandboxLogs)
-      .values({
-        phaseId: pid,
-        title: input.title,
-        startTime: input.startTime,
-        endTime: input.endTime,
-        duration,
-      })
-      .returning();
-
-    await tx
-      .update(sandboxes)
-      .set({ currentHours: sql`${sandboxes.currentHours} + ${duration}` })
-      .where(and(eq(sandboxes.id, sid), eq(sandboxes.userId, userId)));
-
-    return log;
-  });
-
-  revalidatePath(`/dashboard/sandbox/${sid}`);
-  return newLog;
+  const rows = await db
+    .select()
+    .from(sandboxResources)
+    .where(eq(sandboxResources.sandboxId, id))
+    .orderBy(desc(sandboxResources.createdAt));
+  return rows.map(toResource);
 }
 
-// Resource Actions
-
-const FALLBACK_METADATA = { title: "New Resource", thumbnailUrl: "", resourceType: "article" };
+const FALLBACK_METADATA = { title: "", thumbnailUrl: "", resourceType: "article" };
 
 function detectResourceType(url: URL): { resourceType: string; thumbnailUrl?: string } {
   const host = url.hostname.replace(/^www\./, "");
@@ -273,15 +362,13 @@ export async function fetchResourceMetadata(url: string) {
   if (!parsed.success) return FALLBACK_METADATA;
   const target = new URL(parsed.data);
   const detected = detectResourceType(target);
+  const fallback = { ...FALLBACK_METADATA, ...detected, thumbnailUrl: detected.thumbnailUrl ?? "" };
 
   try {
     const res = await safeFetchHtml(target.toString());
-    if (res.status >= 400 || !/html/i.test(res.contentType)) {
-      return { ...FALLBACK_METADATA, ...detected, thumbnailUrl: detected.thumbnailUrl ?? "" };
-    }
+    if (res.status >= 400 || !/html/i.test(res.contentType)) return fallback;
     const $ = cheerio.load(res.body);
-    const title =
-      $('meta[property="og:title"]').attr("content") || $("title").first().text() || "Untitled Resource";
+    const title = $('meta[property="og:title"]').attr("content") || $("title").first().text() || "";
     const ogImage = $('meta[property="og:image"]').attr("content") || "";
     const ogImageOk = zHttpUrl.safeParse(ogImage).success ? ogImage : "";
 
@@ -292,58 +379,34 @@ export async function fetchResourceMetadata(url: string) {
     };
   } catch (error) {
     console.error("Scraping error:", error instanceof Error ? error.message : error);
-    return { ...FALLBACK_METADATA, ...detected, thumbnailUrl: detected.thumbnailUrl ?? "" };
+    return fallback;
   }
 }
 
 export async function addResource(
   sandboxId: string,
-  data: {
-    title: string;
-    url: string;
-    phaseId: string | null;
-    resourceType: string;
-    thumbnailUrl?: string;
-  }
-) {
+  data: { title: string; url: string; resourceType: string; thumbnailUrl?: string }
+): Promise<Result<{ resource: SandboxResource }>> {
   const userId = await requireUser();
-  const sid = parseInput(zId, sandboxId);
-  const input = parseInput(resourceInput, data);
-  if (input.phaseId) {
-    await assertPhaseOwner(input.phaseId, sid, userId);
-  } else {
-    await assertSandboxOwner(sid, userId);
-  }
+  const sid = tryParseInput(zId, sandboxId);
+  const input = tryParseInput(resourceInput, data);
+  if (!sid || !input) return fail("Add a title and an http(s) link");
+  if (!(await ownsSandbox(sid, userId))) return fail("Sandbox not found");
 
-  const [newResource] = await db
+  const [row] = await db
     .insert(sandboxResources)
     .values({
       sandboxId: sid,
-      phaseId: input.phaseId,
       title: input.title,
       url: input.url,
       resourceType: input.resourceType,
       thumbnailUrl: input.thumbnailUrl,
     })
     .returning();
-
-  revalidatePath(`/dashboard/sandbox/${sid}`);
-  return newResource;
+  return { success: true, resource: toResource(row) };
 }
 
-export async function getResources(sandboxId: string) {
-  const userId = await requireUser();
-  const sid = parseInput(zId, sandboxId);
-  await assertSandboxOwner(sid, userId);
-
-  return db
-    .select()
-    .from(sandboxResources)
-    .where(eq(sandboxResources.sandboxId, sid))
-    .orderBy(desc(sandboxResources.createdAt));
-}
-
-export async function deleteResource(resourceId: string, sandboxId: string) {
+export async function deleteResource(resourceId: string, sandboxId: string): Promise<Result> {
   const userId = await requireUser();
   const rid = parseInput(zId, resourceId);
   const sid = parseInput(zId, sandboxId);
@@ -352,21 +415,24 @@ export async function deleteResource(resourceId: string, sandboxId: string) {
   await db
     .delete(sandboxResources)
     .where(and(eq(sandboxResources.id, rid), eq(sandboxResources.sandboxId, sid)));
-
-  revalidatePath(`/dashboard/sandbox/${sid}`);
+  return { success: true };
 }
 
-export async function toggleResourceStatus(resourceId: string, sandboxId: string, currentStatus: string) {
+/** Set a resource to read/unread (idempotent, so a double click can't flip it back). */
+export async function setResourceStatus(
+  resourceId: string,
+  sandboxId: string,
+  status: "read" | "unread"
+): Promise<Result> {
   const userId = await requireUser();
   const rid = parseInput(zId, resourceId);
   const sid = parseInput(zId, sandboxId);
-  const status = parseInput(z.enum(["read", "unread"]), currentStatus);
+  const next = parseInput(z.enum(["read", "unread"]), status);
   await assertResourceOwner(rid, sid, userId);
 
   await db
     .update(sandboxResources)
-    .set({ status: status === "unread" ? "read" : "unread" })
+    .set({ status: next })
     .where(and(eq(sandboxResources.id, rid), eq(sandboxResources.sandboxId, sid)));
-
-  revalidatePath(`/dashboard/sandbox/${sid}`);
+  return { success: true };
 }

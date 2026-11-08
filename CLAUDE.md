@@ -1,6 +1,6 @@
 # CLAUDE.md — TrackerX (buildxskill)
 
-Personal skill-mastery and time-auditing dashboard. Users track hours on skills (tasks in a To do / Doing / Done list, quick time logging), run 80-hour deep-work goal sprints, and plan open-ended projects in "sandboxes".
+Personal skill-mastery and time-auditing dashboard. Users track hours on skills (tasks in a To do / Doing / Done list, quick time logging), run open-ended deep-work projects in "sandboxes" (hour target, quick session logging, a milestone marker every 20h on a radial dial). 80-hour goals still exist but are removed in P8.
 
 Refactor work is tracked in **`refactor-claude.md`**. Check it before changing code. Its top section, **SESSION HANDOFF**, says where work stopped and what comes next.
 
@@ -18,7 +18,7 @@ Refactor work is tracked in **`refactor-claude.md`**. Check it before changing c
 
 ## Commands
 - `pnpm dev` / `pnpm build` / `pnpm lint` (`eslint .` with the native flat config from `eslint-config-next`; `next lint` no longer exists in Next 16). `react-hooks/set-state-in-effect` is temporarily set to warn (see eslint.config.mjs).
-- DB: `drizzle.config.ts` → migrations in `migrations/` (`pnpm generate` / `pnpm migrate`). **Generated but not yet applied:** `0021_drop_daily_logs.sql` (drops `entries` + `time_slots`), `0022_better_auth_1_7.sql` (auth-table defaults + 3 indexes), `0023_indexes_per_user_slugs.sql` (indexes on all FK/filter columns; slug unique per user instead of globally).
+- DB: `drizzle.config.ts` → migrations in `migrations/` (`pnpm generate` / `pnpm migrate`). **Generated but not yet applied:** `0021_drop_daily_logs.sql` (drops `entries` + `time_slots`), `0022_better_auth_1_7.sql` (auth-table defaults + 3 indexes), `0023_indexes_per_user_slugs.sql` (indexes on all FK/filter columns; slug unique per user instead of globally), `0024_sandbox_logs_backfill.sql` (adds `sandbox_logs.sandbox_id/minutes/logged_date` + `sandbox_milestones`, hand-written backfill from phases), `0025_drop_sandbox_phases.sql` (**destructive**: drops `sandbox_phases`, the phase/start/end/duration columns and `sandboxes.current_hours`; hand-reordered). Apply in order.
 - No test suite exists.
 
 ## Folder map
@@ -26,7 +26,9 @@ Refactor work is tracked in **`refactor-claude.md`**. Check it before changing c
 src/
   actions/            Server Actions ("use server"): all data reads/writes
     goalActions.ts, goalLogActions.ts        80-hour goals + session logs
-    sandboxActions.ts                        sandboxes, phases, sessions, resources, OG scraping
+    sandboxActions.ts                        sandboxes (list w/ totals, overview = insights + named milestones), sessions
+                                             (logSandboxSession 1–180 min on the local date / deleteSandboxLog), setMilestoneLabel,
+                                             resources (add/delete/setResourceStatus) + fetchResourceMetadata (OG scraping)
     skillCardAction.ts, skillTaskAction.ts   skills + tasks (getSkillTasks returns each task with its logged minutes)
     timeLogAction.ts                         createTimeLog (1–180 min, user's local date) / deleteTimeLog (undo) + 7-week rollup
     dashboardInsightsAction.ts               home insights: streak, consistency, week-over-week, per-skill activity
@@ -42,10 +44,13 @@ src/
   components/
     ui/                       DESIGN SYSTEM (P4). See "Design system" below. button, card (+Well), badge, metric
                               (MetricValue, AnimatedNumber, DeltaChip, BarSparkline, SegmentedProgress, ProgressBar),
-                              stat-card (StatCard, StatGrid), dialog, sheet, modal (wraps dialog), tooltip, input (+Textarea),
+                              stat-card (StatCard, StatGrid), dialog, sheet, modal (wraps dialog), tooltip, input (+Textarea), chip,
                               tabs (pill), empty-state, page (PageShell, PageHeader, SectionHeader), skeleton, dropdown-menu, chart
     dashboard/<feature>/      feature widgets: home (HomeDashboard, KpiRow, TrendCard, ConsistencyCard, SkillsSection),
-                              80-hour-goals (GoalsView, GoalDetailView…), sandbox, sidebar,
+                              80-hour-goals (GoalsView, GoalDetailView…), sidebar,
+                              sandbox (SandboxListView, SandboxCard, SandboxDetailView, MilestoneDial, MilestoneList,
+                              QuickLog (chips + panel), SessionList, SandboxInsightsTab, ResourcesPanel, SandboxDialogs),
+                              insights (WeeklyHoursCard, shared by the skill + sandbox Insights tabs),
                               skillcardComponents (skill-card = <Link> + useLinkStatus pending state, add-skill-dialog),
                               skill-page (SkillPage, QuickAddTask, TaskList/TaskRow, LogTimeControl, TagPicker,
                               TaskEditDialog, SkillInsightsTab), TimeZoneCookie (writes the `tz` cookie)
@@ -57,18 +62,21 @@ src/
     schema/sandbox-schema.ts  sandboxes, sandbox_phases, sandbox_logs, sandbox_resources
     schema/auth-schema.ts     Better Auth: user, session, account, verification
   hooks/                      one React Query hook file per domain: useSkills (list, per-skill data, time logs),
-                              useDashboardAnalytics, useSkillPage (tasks/insights/tags + optimistic task & time-log mutations), useGoals
+                              useDashboardAnalytics, useSkillPage (tasks/insights/tags + optimistic task & time-log mutations), useGoals,
+                              useSandbox (list/overview/logs/resources + optimistic log/undo, milestone, resource mutations)
   lib/                        auth.ts (Better Auth server config), auth-client.ts, utils.ts (cn),
                               query-keys.ts (hierarchical RQ key factory), query-client.ts (getQueryClient)
                               server-only: require-user.ts (requireUser/getCurrentUser, cached per request),
-                              ownership.ts (assertSandboxOwner/PhaseOwner/ResourceOwner, getOwnedSkill/Task),
-                              validation.ts (zod helpers: zId, zText, zHttpUrl, parseInput/tryParseInput),
+                              ownership.ts (assertSandboxOwner/ResourceOwner, getOwnedSkill/Task),
+                              validation.ts (zod helpers: zId, zText, zOptionalText, zHttpUrl, zLocalDate, parseInput/tryParseInput),
                               safe-fetch.ts (SSRF-safe HTML fetch for link previews), skill-hours.ts (recompute cached skill hours)
                               user-today.ts (user's calendar "today" from the `tz` cookie)
-                              shared/pure: duration.ts (parseDuration "1h 30m", formatDuration, localDateKey), insights.ts (UTC day keys, streak/consistency math, takeaway sentence, formatHours),
+                              shared/pure: duration.ts (parseDuration "1h 30m", formatDuration, localDateKey), insights.ts (UTC day keys, streak/consistency math, buildProjectInsights for skills + sandboxes, projectEta/weeklyPace/etaAtPace, takeaway sentences, formatHours),
+                              milestones.ts (dial markers every 20h + named ones: buildMarkers, markerStep),
                               skill-colors.ts (preset skill accents; stored as hex data)
   proxy.ts                    optimistic redirect to `/` for `/dashboard/*` without a session cookie (not an auth check)
-  types/                      shared types (SkillTask, TaskStatus, NewTimeLog, MAX_ENTRY_MINUTES = 180)
+  types/                      shared types: skillDashboardTypes (SkillTask, TaskStatus, NewTimeLog, MAX_ENTRY_MINUTES = 180),
+                              sandbox (SandboxSummary/Overview/Log/Resource, MILESTONE_STEP_HOURS = 20)
 ```
 
 ## Route map
@@ -79,8 +87,8 @@ src/
 | `/dashboard/skills/[slug]` | Server prefetch → client `SkillPage` (`loading.tsx` skeleton) | requireUser; 404 if not owner | tasks (+minutes), skill insights, tag suggestions |
 | `/dashboard/80-hour-goals` | Server prefetch → client `GoalsView` | requireUser in page | goals list (optimistic add/delete) |
 | `/dashboard/80-hour-goals/[goalId]` | Server prefetch → client `GoalDetailView` | in actions; 404 if not owner | goal + logs (optimistic add/delete) |
-| `/dashboard/sandbox` | Server → client | in actions | getSandboxes, create/delete |
-| `/dashboard/sandbox/[sandboxId]` | Server → client | owner-scoped via `getSandboxDetail` (404 otherwise) | sandbox, phases, logs, resources |
+| `/dashboard/sandbox` | Server prefetch → client `SandboxListView` (`loading.tsx`) | requireUser in page | sandboxes with totals + 14-day activity (optimistic create/delete/quick log) |
+| `/dashboard/sandbox/[sandboxId]` | Server prefetch → client `SandboxDetailView` (`loading.tsx`) | requireUser; 404 via `getSandboxOverview` if not owner | overview (insights + named milestones), sessions, resources |
 | `/dashboard/help`, `/dashboard/usersetting` | Server | none | placeholder pages |
 
 `src/proxy.ts` redirects signed-out visitors away from `/dashboard/*`.
@@ -88,7 +96,7 @@ src/
 ## Data model
 `user` 1:N → `skillCard` 1:N → `skillTask` 1:N → `timeLog` (timeLog also has skill_id, user_id)
 `user` 1:N → `goals` 1:N → `goal_logs`
-`user` 1:N → `sandboxes` 1:N → `sandbox_phases` 1:N → `sandbox_logs`; `sandbox_resources` → sandbox (+ optional phase)
+`user` 1:N → `sandboxes` 1:N → `sandbox_logs` (minutes + `logged_date`), `sandbox_resources`, `sandbox_milestones` (named markers only, unique `(sandbox_id, hour_mark)`). Sandbox totals are summed from `sandbox_logs` (no cached hours column).
 All FKs `ON DELETE CASCADE` (delete the parent only). `skillCard.slug` and `goals.slug` are unique **per user** (after migration 0023). Sandbox child tables have no `userId`, so ownership has to be checked through the parent sandbox.
 
 ## Auth flow
@@ -117,8 +125,8 @@ Server code calls `requireUser()` from `@/lib/require-user` (never `auth.api.get
 - Use `db.transaction` for multi-table writes (see `logSession`).
 - **Data fetching pattern:** the server page calls `await requireUser()` first (this keeps the route dynamic; `prefetchQuery` swallows errors), then `getQueryClient()` → `prefetchQuery` with keys from `lib/query-keys.ts` → `<HydrationBoundary state={dehydrate(qc)}>`. Client components read the same data through the domain hook in `hooks/`. No `useEffect` fetching.
 - **Mutations** go through hooks: optimistic `setQueryData` in `onMutate`, rollback in `onError`, targeted `invalidateQueries` in `onSettled` (e.g. `queryKeys.skills.detail(id)` refreshes all of a skill's data). Ignore optimistic `temp-` ids in follow-up actions.
-- **Dates:** `timeLog.logged_date` holds the user's *local* calendar date at UTC midnight (the client sends `localDateKey()`). Server "today" = `getUserToday()` (from the `tz` cookie set by `TimeZoneCookie`). Bucket days with `to_char(logged_date,'YYYY-MM-DD')`, compare with date keys from `lib/insights.ts` (`lastNDays`, `dateKey`), and format them with `timeZone: "UTC"`.
-- **Time entries** are capped at 3h (`MAX_ENTRY_MINUTES`) in the UI and in `createTimeLog`'s zod schema. Reversible actions use `undoToast` (`components/ui/undo-toast.tsx`) instead of a confirm dialog.
+- **Dates:** `timeLog.logged_date` and `sandbox_logs.logged_date` hold the user's *local* calendar date at UTC midnight (the client sends `localDateKey()`). Server "today" = `getUserToday()` (from the `tz` cookie set by `TimeZoneCookie`). Bucket days with `to_char(logged_date,'YYYY-MM-DD')`, compare with date keys from `lib/insights.ts` (`lastNDays`, `dateKey`), and format them with `timeZone: "UTC"`.
+- **Time entries** (skill time logs and sandbox sessions) are capped at 3h (`MAX_ENTRY_MINUTES`) in the UI and in the zod schemas of `createTimeLog` / `logSandboxSession`. Reversible actions use `undoToast` (`components/ui/undo-toast.tsx`) instead of a confirm dialog.
 - Avoid N+1s: aggregate with `GROUP BY` / `inArray` / a joined subquery instead of a query per item.
 
 ## Env vars (names only, from .env.example)

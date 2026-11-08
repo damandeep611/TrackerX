@@ -7,9 +7,12 @@ import { requireUser } from "@/lib/require-user";
 import { getOwnedSkill, NotFoundError } from "@/lib/ownership";
 import { getUserToday } from "@/lib/user-today";
 import { parseInput, zId } from "@/lib/validation";
-import { lastNDays, summarize, type SkillInsights } from "@/lib/insights";
-
-const WINDOW_DAYS = 56; // 8 weekly blocks; also covers the 2×28-day consistency comparison
+import {
+  buildProjectInsights,
+  INSIGHTS_WINDOW_DAYS,
+  lastNDays,
+  type SkillInsights,
+} from "@/lib/insights";
 
 /** Trend, streak, consistency and totals for one skill (2 queries in parallel). */
 export async function getSkillInsights(skillId: string): Promise<SkillInsights> {
@@ -18,7 +21,7 @@ export async function getSkillInsights(skillId: string): Promise<SkillInsights> 
   if (!(await getOwnedSkill(skillId, userId))) throw new NotFoundError("Skill");
 
   const today = await getUserToday();
-  const keys = lastNDays(WINDOW_DAYS, today);
+  const keys = lastNDays(INSIGHTS_WINDOW_DAYS, today);
   const start = new Date(`${keys[0]}T00:00:00.000Z`);
   const day = sql<string>`to_char(${timeLog.logged_date}, 'YYYY-MM-DD')`;
   const mine = and(eq(timeLog.skill_id, skillId), eq(timeLog.user_id, userId));
@@ -39,19 +42,7 @@ export async function getSkillInsights(skillId: string): Promise<SkillInsights> 
   ]);
 
   const byDay = new Map(daily.map((r) => [r.day, r.minutes]));
-  const series = keys.map((k) => byDay.get(k) ?? 0);
-  const weekly = Array.from({ length: WINDOW_DAYS / 7 }, (_, i) => ({
-    start: keys[i * 7],
-    end: keys[i * 7 + 6],
-    minutes: series.slice(i * 7, i * 7 + 7).reduce((a, b) => a + b, 0),
-  }));
-
-  return {
-    ...summarize(byDay, today, WINDOW_DAYS),
-    totalMinutes: totals?.minutes ?? 0,
-    lastLogged: totals?.last ?? null,
-    weekly,
-  };
+  return buildProjectInsights(byDay, totals, today);
 }
 
 /**

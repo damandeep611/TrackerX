@@ -18,6 +18,14 @@ export const queryKeys = {
     insights: () => [...queryKeys.dashboard.all, "insights"] as const,
     weeklyProgress: () => [...queryKeys.dashboard.all, "weeklyProgress"] as const,
   },
+  sandboxes: {
+    all: ["sandboxes"] as const,
+    list: () => [...queryKeys.sandboxes.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.sandboxes.all, "detail", id] as const,
+    overview: (id: string) => [...queryKeys.sandboxes.detail(id), "overview"] as const,
+    logs: (id: string) => [...queryKeys.sandboxes.detail(id), "logs"] as const,
+    resources: (id: string) => [...queryKeys.sandboxes.detail(id), "resources"] as const,
+  },
   goals: {
     all: ["goals"] as const,
     list: () => [...queryKeys.goals.all, "list"] as const,

@@ -166,6 +166,46 @@ export type SkillInsights = Omit<DashboardInsights, "skills"> & {
 
 export const PACE_WEEKS = 4;
 
+/** Days of history behind SkillInsights: 8 weekly blocks, also covers the 2×28-day consistency comparison. */
+export const INSIGHTS_WINDOW_DAYS = 56;
+
+/**
+ * Builds the per-project insights (used by skills and sandboxes) from minutes
+ * per day over the last INSIGHTS_WINDOW_DAYS plus all-time totals.
+ */
+export function buildProjectInsights(
+  byDay: Map<string, number>,
+  totals: { minutes: number; last: string | null } | undefined,
+  today: Date
+): SkillInsights {
+  const keys = lastNDays(INSIGHTS_WINDOW_DAYS, today);
+  const series = keys.map((k) => byDay.get(k) ?? 0);
+  const weekly = Array.from({ length: INSIGHTS_WINDOW_DAYS / 7 }, (_, i) => ({
+    start: keys[i * 7],
+    end: keys[i * 7 + 6],
+    minutes: sum(series.slice(i * 7, i * 7 + 7)),
+  }));
+  return {
+    ...summarize(byDay, today, INSIGHTS_WINDOW_DAYS),
+    totalMinutes: totals?.minutes ?? 0,
+    lastLogged: totals?.last ?? null,
+    weekly,
+  };
+}
+
+/** Average minutes per week over the last PACE_WEEKS weekly blocks. */
+export function weeklyPace(insights: SkillInsights): number {
+  const recent = insights.weekly.slice(-PACE_WEEKS);
+  return sum(recent.map((w) => w.minutes)) / Math.max(recent.length, 1);
+}
+
+/** Date key `minutes` from today at `weeklyMinutes` per week, or null without a pace. */
+export function etaAtPace(today: string, minutes: number, weeklyMinutes: number): string | null {
+  if (minutes <= 0) return today;
+  if (weeklyMinutes <= 0) return null;
+  return dateKey(new Date(Date.parse(`${today}T00:00:00Z`) + (minutes / weeklyMinutes) * 7 * 86_400_000));
+}
+
 /**
  * Projected finish at the recent pace (average of the last `PACE_WEEKS` weekly
  * blocks). Null when the target is reached or there is no recent activity.
@@ -174,14 +214,13 @@ export function projectEta(
   insights: SkillInsights,
   targetHours: number
 ): { weeklyMinutes: number; remainingMinutes: number; date: string | null; weeks: number | null } {
-  const recent = insights.weekly.slice(-PACE_WEEKS);
-  const weeklyMinutes = recent.reduce((a, w) => a + w.minutes, 0) / Math.max(recent.length, 1);
+  const weeklyMinutes = weeklyPace(insights);
   const remainingMinutes = Math.max(targetHours * 60 - insights.totalMinutes, 0);
   if (remainingMinutes === 0 || weeklyMinutes <= 0) {
     return { weeklyMinutes, remainingMinutes, date: null, weeks: null };
   }
   const weeks = remainingMinutes / weeklyMinutes;
-  const date = dateKey(new Date(Date.parse(`${insights.today}T00:00:00Z`) + weeks * 7 * 86_400_000));
+  const date = etaAtPace(insights.today, remainingMinutes, weeklyMinutes);
   return { weeklyMinutes, remainingMinutes, date, weeks };
 }
 
@@ -198,8 +237,12 @@ export function formatDay(key: string, today?: string): string {
 }
 
 /** One or two plain-language sentences for the skill page header. */
-export function buildSkillTakeaway(i: SkillInsights, targetHours: number): string {
-  if (i.totalMinutes === 0) return "No time logged yet. Pick a task and log your first session.";
+export function buildSkillTakeaway(
+  i: SkillInsights,
+  targetHours: number,
+  emptyText = "No time logged yet. Pick a task and log your first session."
+): string {
+  if (i.totalMinutes === 0) return emptyText;
   const eta = projectEta(i, targetHours);
   if (eta.remainingMinutes === 0) {
     return `Target reached with ${formatHours(i.totalMinutes)} logged. Keep going or raise the target.`;
