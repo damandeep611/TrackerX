@@ -37,8 +37,10 @@ src/
     dashboard/                All app pages (see route map); layout.tsx = Sidebar + ThemeProvider + Toaster;
                               loading.tsx (skeleton), error.tsx, not-found.tsx cover every dashboard route
     providers/QueryProvider.tsx
-    layout.tsx                root: fonts, QueryProvider, the ONLY <Toaster> (token-styled), Vercel Analytics/SpeedInsights
-    page.tsx                  public landing page
+    providers/AppearanceProvider.tsx  next-themes (light/dark/system) + MotionConfig reducedMotion, for every page
+    layout.tsx                root: fonts, AppearanceProvider, QueryProvider, the ONLY <Toaster> (token-styled), Vercel Analytics/SpeedInsights
+    page.tsx                  public landing page (server: getCurrentUser → "Open dashboard" vs sign-in CTAs)
+    sign-in/page.tsx          sign-in screen: Google button, `?next=` (sanitised) + `?error=` (OAuth error codes → messages); signed in → redirect
   components/
     ui/                       DESIGN SYSTEM (P4). See "Design system" below. button, card (+Well), badge, metric
                               (MetricValue, AnimatedNumber, DeltaChip, BarSparkline, SegmentedProgress, ProgressBar),
@@ -52,8 +54,10 @@ src/
                               skillcardComponents (skill-card = <Link> + useLinkStatus pending state, add-skill-dialog),
                               skill-page (SkillPage, QuickAddTask, TaskList/TaskRow, LogTimeControl, TagPicker,
                               TaskEditDialog, SkillInsightsTab), TimeZoneCookie (writes the `tz` cookie)
-    layout/                   landing page sections (no mock UI or testimonials)
-    auth/                     sign-in / sign-out buttons
+    landing/                  landing page (P9): LandingNav, ThemeToggle, Sections (Hero, HowItWorks, Features, Principles, Faq,
+                              FinalCta, LandingFooter), Previews (REAL dashboard components with demo-data.ts, rendered `inert`)
+    auth/GoogleSignInButton   "Continue with Google": honest pending state, errors → toast; GoogleMark (brand hex allowed)
+    brand.tsx                 Brand / BrandMark (sidebar, landing, sign-in)
   db/
     drizzle.ts                Pool + drizzle client (schema = auth + main; main re-exports sandbox-schema)
     schema/schema.ts          skillCard, skillTask, timeLog (re-exports sandbox-schema)
@@ -64,15 +68,16 @@ src/
                               useSandbox (list/overview/logs/resources + optimistic log/undo, milestone, resource mutations)
   lib/                        auth.ts (Better Auth server config), auth-client.ts, utils.ts (cn),
                               query-keys.ts (hierarchical RQ key factory), query-client.ts (getQueryClient)
-                              server-only: require-user.ts (requireUser/getCurrentUser, cached per request),
+                              server-only: require-user.ts (requireUser for actions; requirePageUser(path) for pages → redirect to sign-in; getCurrentUser, cached per request),
                               ownership.ts (assertSandboxOwner/ResourceOwner, getOwnedSkill/Task),
                               validation.ts (zod helpers: zId, zText, zOptionalText, zHttpUrl, zLocalDate, parseInput/tryParseInput),
                               safe-fetch.ts (SSRF-safe HTML fetch for link previews), skill-hours.ts (recompute cached skill hours)
                               user-today.ts (user's calendar "today" from the `tz` cookie)
+                              safe-next.ts (safeNext/signInHref: only /dashboard paths allowed as `?next=`)
                               shared/pure: duration.ts (parseDuration "1h 30m", formatDuration, localDateKey), insights.ts (UTC day keys, streak/consistency math, buildProjectInsights for skills + sandboxes, projectEta/weeklyPace/etaAtPace, takeaway sentences, formatHours),
                               milestones.ts (dial markers every 20h + named ones: buildMarkers, markerStep),
                               skill-colors.ts (preset skill accents; stored as hex data)
-  proxy.ts                    optimistic redirect to `/` for `/dashboard/*` without a session cookie (not an auth check)
+  proxy.ts                    optimistic redirect to `/sign-in?next=<path>` for `/dashboard/*` without a session cookie (not an auth check)
   types/                      shared types: skillDashboardTypes (SkillTask, TaskStatus, NewTimeLog, MAX_ENTRY_MINUTES = 180),
                               sandbox (SandboxSummary/Overview/Log/Resource, MILESTONE_STEP_HOURS = 20)
 ```
@@ -80,13 +85,14 @@ src/
 ## Route map
 | URL | Rendering | Auth check | Data |
 |---|---|---|---|
-| `/` | Server | none | — |
-| `/dashboard` | Server prefetch → client `HomeDashboard` | requireUser in page | skills list, dashboard insights, 7-week progress |
+| `/` | Server (dynamic: session check) | none | — (demo data only) |
+| `/sign-in` | Server | redirects to `next` if signed in | — |
+| `/dashboard` | Server prefetch → client `HomeDashboard` | requirePageUser in page | skills list, dashboard insights, 7-week progress |
 | `/dashboard/skills/[slug]` | Server prefetch → client `SkillPage` (`loading.tsx` skeleton) | requireUser; 404 if not owner | tasks (+minutes), skill insights, tag suggestions |
-| `/dashboard/sandbox` | Server prefetch → client `SandboxListView` (`loading.tsx`) | requireUser in page | sandboxes with totals + 14-day activity (optimistic create/delete/quick log) |
+| `/dashboard/sandbox` | Server prefetch → client `SandboxListView` (`loading.tsx`) | requirePageUser in page | sandboxes with totals + 14-day activity (optimistic create/delete/quick log) |
 | `/dashboard/sandbox/[sandboxId]` | Server prefetch → client `SandboxDetailView` (`loading.tsx`) | requireUser; 404 via `getSandboxOverview` if not owner | overview (insights + named milestones), sessions, resources |
 
-`src/proxy.ts` redirects signed-out visitors away from `/dashboard/*`.
+`src/proxy.ts` sends signed-out visitors from `/dashboard/*` to `/sign-in?next=…`; pages use `requirePageUser(path)` so an expired session also lands on sign-in (not the error page).
 
 ## Data model
 `user` 1:N → `skillCard` 1:N → `skillTask` 1:N → `timeLog` (timeLog also has skill_id, user_id)
@@ -94,8 +100,8 @@ src/
 All FKs `ON DELETE CASCADE` (delete the parent only). `skillCard.slug` is unique **per user**. Sandbox child tables have no `userId`, so ownership has to be checked through the parent sandbox.
 
 ## Auth flow
-`authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" })` → `/api/auth/[...all]` → session cookie.
-Server code calls `requireUser()` from `@/lib/require-user` (never `auth.api.getSession` directly). Sign-out redirects to `/` and forces the light theme.
+`GoogleSignInButton` → `authClient.signIn.social({ provider: "google", callbackURL: safeNext(next), errorCallbackURL: "/sign-in?next=…" })` → `/api/auth/[...all]` → session cookie. OAuth failures come back as `/sign-in?error=<code>`.
+Server code calls `requireUser()` / `requirePageUser()` / `getCurrentUser()` from `@/lib/require-user` (never `auth.api.getSession` directly). Sign-out redirects to `/` (the theme is kept; the landing page supports light + dark).
 
 ## Design system (P4, `src/components/ui/` + `src/app/globals.css` + `src/lib/motion.ts`)
 - **Look** (from `public/design-inspiration/`): calm near-black / soft-white surfaces, **panel inside panel**, hairline borders, monospace tabular numbers with a muted unit, small bar sparklines, segmented progress, delta chips ("▲ +12% vs last week"), pill tabs, one accent per metric.
@@ -104,7 +110,7 @@ Server code calls `requireUser()` from `@/lib/require-user` (never `auth.api.get
 - **Shadows**: `shadow-panel`, `shadow-raised` (theme-aware via `--panel-shadow` / `--raised-shadow`). Radius base 0.75rem: cards `rounded-2xl`, wells `rounded-xl`, controls `rounded-lg`, chips `rounded-full`.
 - **Composition**: page = `<PageShell><PageHeader title description actions/>…</PageShell>`; KPI = `<StatCard icon title value unit sparkline color delta caption/>` inside `<StatGrid>`; custom card = `<Card><CardHeader><CardTitle><Icon/>Title</CardTitle><CardAction>…</CardAction></CardHeader><Well>…</Well><CardFooter>…</CardFooter></Card>`; empty list = `<EmptyState icon title description action/>`; overlay = `Dialog` (or `Sheet`); `Modal` is a legacy-API wrapper over Dialog.
 - **Button variants**: default (primary), brand (one per view), outline, secondary, ghost, destructive, destructive-ghost, link; sizes xs/sm/default/lg/icon/icon-sm/icon-xs. **Badge variants**: neutral, outline, brand, success, warning, danger, solid (+ `dot`).
-- **Motion**: presets in `lib/motion.ts` (fadeIn, stagger, listItem, hoverLift, popIn, spring, layoutTransition). `components/dashboard/DashboardProviders.tsx` wraps the dashboard in `<MotionConfig reducedMotion="user">`, and globals.css disables CSS animation under prefers-reduced-motion. `AnimatedNumber` counts up once in view.
+- **Motion**: presets in `lib/motion.ts` (fadeIn, stagger, listItem, hoverLift, popIn, spring, layoutTransition). `app/providers/AppearanceProvider.tsx` wraps every page in `<MotionConfig reducedMotion="user">`, and globals.css disables CSS animation under prefers-reduced-motion. `AnimatedNumber` counts up once in view.
 - **Sidebar** (`components/dashboard/sidebar/`): nav items in `nav-config.ts`; collapse persisted in localStorage via `hooks/useLocalStorageState.ts`; tooltips when collapsed; animated brand indicator on the active item; mobile = fixed top bar + left `Sheet` drawer (the dashboard `<main>` has `pt-14 md:pt-0`); user menu = Radix dropdown with Light/Dark/System switch + log out.
 - Hydration-safe helpers: `hooks/useHydrated.ts`, `hooks/useLocalStorageState.ts` (useSyncExternalStore, so no setState-in-effect).
 - **Visual QA without login**: temporarily add a public route (e.g. `src/app/design-preview/`) rendering the components, `pnpm build && PORT=3458 pnpm start`, then screenshot with the cached Chromium: `~/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome --headless=new --no-sandbox --hide-scrollbars --window-size=1440,1250 --virtual-time-budget=4000 --screenshot=<scratchpad>/x.png "http://localhost:3458/design-preview?theme=dark"` (also `?theme=light` and `--window-size=390,1400`). Delete the route before committing. Stop the server by PID, never with `pkill -f "next start"` (that matches and kills the shell itself). **Port 3000 is the owner's other project (ai-writer-ui); never kill it.**

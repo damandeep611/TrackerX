@@ -4,13 +4,13 @@ import { getSkillCard } from "@/actions/skillCardAction";
 import { getDashboardInsights } from "@/actions/dashboardInsightsAction";
 import { getLastSevenWeeksProgress } from "@/actions/timeLogAction";
 import { getQueryClient } from "@/lib/query-client";
-import { getCurrentUser, requireUser } from "@/lib/require-user";
+import { getCurrentUser, requirePageUser } from "@/lib/require-user";
 import { queryKeys } from "@/lib/query-keys";
 
 export default async function DashboardPage() {
   // Must run outside prefetchQuery: it marks the route dynamic (headers()) and
   // fails fast when signed out. prefetchQuery would swallow both.
-  await requireUser();
+  await requirePageUser("/dashboard");
   const user = await getCurrentUser(); // cached: no second session lookup
 
   const queryClient = getQueryClient();

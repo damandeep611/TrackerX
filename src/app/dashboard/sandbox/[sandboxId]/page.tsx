@@ -4,11 +4,11 @@ import { getSandboxLogs, getSandboxOverview, getSandboxResources } from "@/actio
 import SandboxDetailView from "@/components/dashboard/sandbox/SandboxDetailView";
 import { getQueryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
-import { requireUser } from "@/lib/require-user";
+import { requirePageUser } from "@/lib/require-user";
 
 export default async function SandboxDetailPage({ params }: { params: Promise<{ sandboxId: string }> }) {
   const { sandboxId } = await params;
-  await requireUser();
+  await requirePageUser(`/dashboard/sandbox/${sandboxId}`);
 
   // Owner-scoped: anyone else (or a bad id) gets a 404 before the children load.
   const overview = await getSandboxOverview(sandboxId);

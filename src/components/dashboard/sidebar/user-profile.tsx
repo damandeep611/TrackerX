@@ -87,17 +87,13 @@ function ThemeSwitcher() {
 
 export default function UserProfile({ isCollapsed = false }: UserProfileProps) {
   const router = useRouter();
-  const { setTheme } = useTheme();
   const { data } = authClient.useSession();
   const user = data?.user;
 
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
-        onSuccess: () => {
-          router.push("/");
-          setTheme("light"); // the landing page is light-only
-        },
+        onSuccess: () => router.push("/"),
       },
     });
   };

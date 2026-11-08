@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutGroup } from "motion/react";
-import { Box, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Brand } from "@/components/brand";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -15,18 +16,13 @@ import SidebarItem from "./sidebar-item";
 import UserProfile from "./user-profile";
 import { isNavActive, mainNav } from "./nav-config";
 
-function Brand({ isCollapsed = false }: { isCollapsed?: boolean }) {
+function SidebarBrand({ isCollapsed = false }: { isCollapsed?: boolean }) {
   return (
     <Link
       href="/dashboard"
-      className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+      className="rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
     >
-      <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <Box className="size-4" strokeWidth={2.5} />
-      </span>
-      {!isCollapsed && (
-        <span className="text-[15px] font-semibold tracking-tight text-foreground">BuildxSkill</span>
-      )}
+      <Brand hideName={isCollapsed} />
     </Link>
   );
 }
@@ -81,7 +77,7 @@ export default function Sidebar() {
             isCollapsed ? "justify-center" : "justify-between"
           )}
         >
-          {!isCollapsed && <Brand />}
+          {!isCollapsed && <SidebarBrand />}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -107,7 +103,7 @@ export default function Sidebar() {
 
       {/* Mobile top bar + drawer */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-sidebar-border bg-sidebar/90 px-4 backdrop-blur md:hidden">
-        <Brand />
+        <SidebarBrand />
         <Button variant="ghost" size="icon-sm" onClick={() => setMobileOpen(true)} aria-label="Open menu">
           <Menu />
         </Button>
@@ -116,7 +112,7 @@ export default function Sidebar() {
         <SheetContent side="left" className="w-72 gap-0 bg-sidebar p-0">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <div className="flex h-14 items-center px-4">
-            <Brand />
+            <SidebarBrand />
           </div>
           <NavContent layoutGroup="sidebar-mobile" onNavigate={() => setMobileOpen(false)} />
           <div className="border-t border-sidebar-border p-3">

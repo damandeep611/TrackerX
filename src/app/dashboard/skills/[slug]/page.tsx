@@ -8,12 +8,12 @@ import { getSkillInsights, getTagSuggestions } from "@/actions/skillInsightsActi
 import SkillPage from "@/components/dashboard/skill-page/SkillPage";
 import { getQueryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
-import { requireUser } from "@/lib/require-user";
+import { requirePageUser } from "@/lib/require-user";
 
 export default async function SkillRoute({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   // Outside prefetchQuery: keeps the route dynamic and fails fast when signed out.
-  const userId = await requireUser();
+  const userId = await requirePageUser(`/dashboard/skills/${slug}`);
 
   const [skill] = await db
     .select({
