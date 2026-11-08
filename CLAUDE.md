@@ -2,11 +2,12 @@
 
 Personal skill-mastery and time-auditing dashboard. Users track hours on skills (with a Kanban task board), run 80-hour deep-work goal sprints, and plan open-ended projects in "sandboxes".
 
-Refactor work is tracked in **`refactor-claude.md`**. Check it before changing code.
+Refactor work is tracked in **`refactor-claude.md`**. Check it before changing code. Its top section, **SESSION HANDOFF**, says where work stopped and what comes next.
 
 ## Stack (versions from pnpm-lock.yaml)
 - Next.js **16.4.5** (App Router), React **19.3**, TypeScript 5.9
-- Tailwind CSS 4 (`@tailwindcss/postcss`, tokens in `src/app/globals.css`), shadcn/ui (`components.json`, `src/components/ui/`), Radix, `motion` (import from `"motion/react"`; framer-motion is gone), `next-themes`
+- Tailwind CSS 4 (`@tailwindcss/postcss`, tokens in `src/app/globals.css`), shadcn/ui (`components.json`, `src/components/ui/`), Radix (dialog, tooltip, dropdown, tabs…), `motion` (import from `"motion/react"`; framer-motion is gone), `next-themes`
+- Fonts: Inter (`--font-inter` → `font-sans`) + Geist Mono (`--font-geist-mono` → `font-mono` / `.tabular` for metric numbers), loaded in `app/layout.tsx`
 - PostgreSQL on Neon (`@neondatabase/serverless` Pool) + Drizzle ORM 0.45 / drizzle-kit 0.31
 - Auth: Better Auth **1.7.18**, Google OAuth only, Drizzle adapter
 - Data fetching: TanStack Query 5 over Server Actions, with server prefetch + `HydrationBoundary`; the only Route Handler is Better Auth
@@ -35,10 +36,13 @@ src/
                               loading.tsx (skeleton), error.tsx, not-found.tsx cover every dashboard route
     dashboard/help/           placeholder page
     providers/QueryProvider.tsx
-    layout.tsx                root: Inter via next/font, QueryProvider, Vercel Analytics/SpeedInsights
+    layout.tsx                root: fonts, QueryProvider, the ONLY <Toaster> (token-styled), Vercel Analytics/SpeedInsights
     page.tsx                  public landing page
   components/
-    ui/                       shadcn primitives (button, card, tabs, chart, modal, skeleton…)
+    ui/                       DESIGN SYSTEM (P4). See "Design system" below. button, card (+Well), badge, metric
+                              (MetricValue, AnimatedNumber, DeltaChip, BarSparkline, SegmentedProgress, ProgressBar),
+                              stat-card (StatCard, StatGrid), dialog, sheet, modal (wraps dialog), tooltip, input (+Textarea),
+                              tabs (pill), empty-state, page (PageShell, PageHeader, SectionHeader), skeleton, dropdown-menu, chart
     dashboard/<feature>/      feature widgets: 80-hour-goals (GoalsView, GoalDetailView…), analytics-components,
                               header, sandbox, sidebar, skillcardComponents, skills (SkillPageWrapper, SkillHeader…), skilltodos
     layout/                   landing page sections (no mock UI or testimonials)
@@ -85,12 +89,25 @@ All FKs `ON DELETE CASCADE` (delete the parent only). `skillCard.slug` and `goal
 `authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" })` → `/api/auth/[...all]` → session cookie.
 Server code calls `requireUser()` from `@/lib/require-user` (never `auth.api.getSession` directly). Sign-out redirects to `/` and forces the light theme.
 
+## Design system (P4, `src/components/ui/` + `src/app/globals.css` + `src/lib/motion.ts`)
+- **Look** (from `public/design-inspiration/`): calm near-black / soft-white surfaces, **panel inside panel**, hairline borders, monospace tabular numbers with a muted unit, small bar sparklines, segmented progress, delta chips ("▲ +12% vs last week"), pill tabs, one accent per metric.
+- **Surface tokens** (light + dark in globals.css): `bg-background` (canvas) → `bg-card` (panel) → `bg-surface-2` (inner well) → `bg-surface-3` (raised/hover). Text: `text-foreground`, `text-muted-foreground` (labels), `text-subtle-foreground` (captions). Lines: `border-border`, `border-border-strong`.
+- **Accent/status tokens**: `brand` (blue: progress, active nav, main CTA; `bg-brand`, `text-brand`, `bg-brand-soft`), `success|warning|danger` (+ `-soft` backgrounds), metric palette `var(--chart-1..5)` = blue, violet, orange, emerald, rose. shadcn `accent` = subtle hover surface (NOT a brand color).
+- **Shadows**: `shadow-panel`, `shadow-raised` (theme-aware via `--panel-shadow` / `--raised-shadow`). Radius base 0.75rem: cards `rounded-2xl`, wells `rounded-xl`, controls `rounded-lg`, chips `rounded-full`.
+- **Legacy aliases** still exist for old components: `bg-surface`, `bg-surface-highlight`, `text-text-secondary`, `text-text-tertiary`. Don't use them in new code; delete them once P5–P8 migrate the remaining usages.
+- **Composition**: page = `<PageShell><PageHeader title description actions/>…</PageShell>`; KPI = `<StatCard icon title value unit sparkline color delta caption/>` inside `<StatGrid>`; custom card = `<Card><CardHeader><CardTitle><Icon/>Title</CardTitle><CardAction>…</CardAction></CardHeader><Well>…</Well><CardFooter>…</CardFooter></Card>`; empty list = `<EmptyState icon title description action/>`; overlay = `Dialog` (or `Sheet`); `Modal` is a legacy-API wrapper over Dialog.
+- **Button variants**: default (primary), brand (one per view), outline, secondary, ghost, destructive, destructive-ghost, link; sizes xs/sm/default/lg/icon/icon-sm/icon-xs. **Badge variants**: neutral, outline, brand, success, warning, danger, solid (+ `dot`).
+- **Motion**: presets in `lib/motion.ts` (fadeIn, stagger, listItem, hoverLift, popIn, spring, layoutTransition). `components/dashboard/DashboardProviders.tsx` wraps the dashboard in `<MotionConfig reducedMotion="user">`, and globals.css disables CSS animation under prefers-reduced-motion. `AnimatedNumber` counts up once in view.
+- **Sidebar** (`components/dashboard/sidebar/`): nav items in `nav-config.ts`; collapse persisted in localStorage via `hooks/useLocalStorageState.ts`; tooltips when collapsed; animated brand indicator on the active item; mobile = fixed top bar + left `Sheet` drawer (the dashboard `<main>` has `pt-14 md:pt-0`); user menu = Radix dropdown with Light/Dark/System switch + log out.
+- Hydration-safe helpers: `hooks/useHydrated.ts`, `hooks/useLocalStorageState.ts` (useSyncExternalStore, so no setState-in-effect).
+- **Visual QA without login**: temporarily add a public route (e.g. `src/app/design-preview/`) rendering the components, `pnpm build && PORT=3458 pnpm start`, then screenshot with the cached Chromium: `~/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome --headless=new --no-sandbox --hide-scrollbars --window-size=1440,1250 --virtual-time-budget=4000 --screenshot=<scratchpad>/x.png "http://localhost:3458/design-preview?theme=dark"` (also `?theme=light` and `--window-size=390,1400`). Delete the route before committing. Stop the server by PID, never with `pkill -f "next start"` (that matches and kills the shell itself). **Port 3000 is the owner's other project (ai-writer-ui); never kill it.**
+
 ## Conventions (current reality; standardize per refactor-claude.md)
 - Path alias `@/` → `src/`.
 - Every Server Action: `const userId = await requireUser()` → validate args with zod (`parseInput`, or `tryParseInput` for actions that return `{ success, error }`) → check ownership of every client-supplied id (`lib/ownership.ts`) → scope every query by `userId` (sandbox children via the parent sandbox).
 - Every export of a `"use server"` file is a public endpoint. Put internal helpers in `src/lib/` (with `import "server-only"`), not in action files.
 - Never `fetch()` a user-supplied URL directly; use `safeFetchHtml` from `lib/safe-fetch.ts`.
-- Prefer semantic Tailwind tokens (`bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`) and shadcn `Button`/`Card`/`Dialog` over raw hex values and hand-rolled elements.
+- Use the design-system tokens and `components/ui` primitives (see Design system). No raw hex colors, no hand-rolled buttons/modals, nothing below `text-[11px]`.
 - Use `db.transaction` for multi-table writes (see `logSession`).
 - **Data fetching pattern:** the server page calls `await requireUser()` first (this keeps the route dynamic; `prefetchQuery` swallows errors), then `getQueryClient()` → `prefetchQuery` with keys from `lib/query-keys.ts` → `<HydrationBoundary state={dehydrate(qc)}>`. Client components read the same data through the domain hook in `hooks/`. No `useEffect` fetching.
 - **Mutations** go through hooks: optimistic `setQueryData` in `onMutate`, rollback in `onError`, targeted `invalidateQueries` in `onSettled` (e.g. `queryKeys.skills.detail(id)` refreshes all of a skill's data). Ignore optimistic `temp-` ids in follow-up actions.

@@ -5,8 +5,19 @@ Repo context lives in `CLAUDE.md`. Work top to bottom and tick items off as you 
 
 ---
 
+# SESSION HANDOFF (read first; last updated 2026-11-08)
+- **Branch:** `refactor` (branched from `main`). Commits: P1 `612a4c1`, P2 `32a5502`, P3 `e103b7c`. **P4 is finished; the owner commits it themselves** (build passed; lint had 0 errors, 7 warnings). Check `git log` at the start of the next session to confirm the P4 commit exists. Leave the owner's own uncommitted changes (`D GEMINI.md`, untracked `public/design-inspiration/`) out of any commits.
+- **Plan revised 2026-11-08** (see ROADMAP P5–P8 and Decisions): the skill page rebuild moves up to P6, the Kanban is replaced by a status list, 80-hour goals are **removed** (Sandbox is the single deep-work feature), sandbox phases/Structure are **removed**, and the radial dial gets auto markers every 20h that the owner can name.
+- **Migrations generated but NOT applied** (the owner runs `pnpm migrate`): `0021_drop_daily_logs` (destroys daily-log data; the owner approved dropping it), `0022_better_auth_1_7` (safe), `0023_indexes_per_user_slugs` (safe).
+- **Next phase: P5** (home dashboard + skill cards). At the start of P5, **ask the owner which insights to prioritize** (see Decisions). Rebuild `/dashboard` with `PageShell`/`PageHeader`/`StatCard`/`Card`+`Well`/`SegmentedProgress`: greeting header with an insight sentence + range pill tabs + brand "New skill" button, 4 KPI StatCards (hours this week, streak, consistency, active skills), a skills grid of redesigned skill cards. **No 80h sprint card** (goals are being removed); show a compact "active sandbox" card instead if useful. Data plumbing already exists: `hooks/useDashboardAnalytics.ts`, `hooks/useSkills.ts`, server prefetch in `app/dashboard/page.tsx`. New insight queries go in `actions/` + `lib/query-keys.ts` + a hook, with a matching prefetch in the page.
+- **Working agreements with the owner:** do one phase at a time; finish each with `pnpm build` + `pnpm lint` (0 errors), update CLAUDE.md + this file, commit on `refactor` when the owner says "yes/proceed", then ask before starting the next phase. Don't push. Can't log in locally (Google OAuth), so verify UI with the screenshot workflow in CLAUDE.md → Design system.
+- **Known leftovers:** `react-hooks/set-state-in-effect` is set to warn (restore to error after P8). Legacy token aliases in globals.css. Old dashboard components still use raw zinc/hex classes (migrated in P5–P8). The landing page uses undefined classes (`bg-paper-blue`, `text-brand-orange`, `accent-electric`); not on the roadmap, so flag it to the owner. Rate limiting (SEC-08) is undecided. No tests yet.
+- **Local login is broken on the owner's WSL2 setup (environment issue, not code; deferred by the owner).** Google sign-in on `localhost:3000` fails with `Failed query: insert into "verification"` + `[cause]: ErrorEvent`, meaning the Neon WebSocket connection failed. It works from Windows and from the hosted site. Done so far: fixed the `generateResolvConf` typo in `/etc/wsl.conf`, and set `/etc/resolv.conf` to `nameserver 8.8.8.8` + `1.1.1.1` + `options single-request-reopen timeout:1 attempts:2` (immutable, `chattr +i`). That cut DNS lookups from ~5.1s to ~0.05s, and a standalone `select 1` over the Neon WebSocket Pool then succeeded. The Neon HTTP driver (`neon()`, not used by the app) still fails with `fetch failed`. Login still failed afterwards. Next ideas: run `next dev` under plain Node rather than `bun run dev`, set `dnsTunneling=true` / `networkingMode=mirrored` in `%UserProfile%\.wslconfig`, and check IPv6 / MTU.
+
+---
+
 # ROADMAP (execution order)
-This combines the owner's todos (T1–T9) with the audit items below. Implement **one phase at a time** and only when asked. Every phase ends with `pnpm build` + `pnpm lint` passing and `CLAUDE.md` updated if structure/conventions changed.
+This combines the owner's todos (T1–T12) with the audit items below. Implement **one phase at a time** and only when asked. Every phase ends with `pnpm build` + `pnpm lint` passing and `CLAUDE.md` updated if structure/conventions changed.
 Order principle: delete first (less code to fix) → make it safe → make data fast → build a design system → redesign pages on top of it → polish.
 
 ## P1 — Cleanup & removals  (T3, T6, T7 + audit DES-05/07, DES-01, DES-02) — ✅ DONE 2026-11-07 (except applying migration 0021)
@@ -29,32 +40,50 @@ Order principle: delete first (less code to fix) → make it safe → make data 
 - ✅ `loading.tsx` (skeletons) / `error.tsx` / `not-found.tsx` for dashboard segments (+ `ui/skeleton.tsx`). ⏳ `Suspense` around slow widgets: deferred. Pages await all prefetches in parallel and `loading.tsx` covers navigation; revisit streaming per widget in P5 if TTFB matters.
 - ✅ Move route-folder components into `components/` (DES-06).
 
-## P4 — Design system foundation  (enables T2, T5, T8; audit Phase 6 baseline)
+## P4 — Design system foundation  (enables T2, T5, T8; audit Phase 6 baseline) — ✅ DONE 2026-11-07 (not committed yet, see handoff)
 - Direction from `public/design-inspiration/`: calm near-black / soft-white neutral surfaces, **panel-inside-panel cards** with hairline borders, generous spacing, monospace tabular numerals for metrics, small inline bar sparklines, segmented progress bars, muted labels, a single accent per metric, delta chips ("+12% vs last week"), pill tab switchers. Keep light + dark themes.
-- Tokens in `globals.css` (surface levels, border, accent, success/warn/danger), type scale, spacing, radius.
-- Primitives: `Button`, `Card`/`Panel`, `StatCard`, `Dialog`/`Sheet`, `Input`, `Tabs`, `Badge`, `EmptyState`, `Skeleton`, `PageHeader`, `PageShell`.
-- Motion presets (`lib/motion.ts`): page fade-in, list stagger, hover lift, number count-up, layout transitions; respect `prefers-reduced-motion`.
-- Sidebar rebuilt on tokens (fixes light mode), with active states.
+- ✅ Tokens in `globals.css` (surface levels, border, accent, success/warn/danger), type scale, spacing, radius. → Rewritten from scratch (oklch, light + dark). Fixes DES-08 (`--text-primary` undefined, body/layout `text-primary`). Fonts are now actually loaded (`--font-sans` used to point at an unloaded Geist). shadcn `accent` restored to its hover-surface meaning; brand accent is `--brand`.
+- ✅ Primitives: `Button`, `Card`/`Panel`, `StatCard`, `Dialog`/`Sheet`, `Input`, `Tabs`, `Badge`, `EmptyState`, `Skeleton`, `PageHeader`, `PageShell`. → Plus `Well`, `metric.tsx` (MetricValue, AnimatedNumber, DeltaChip, BarSparkline, SegmentedProgress, ProgressBar), `Textarea`, `Tooltip`, `SectionHeader`. New deps: `@radix-ui/react-dialog`, `@radix-ui/react-tooltip`. `ui/modal.tsx` now wraps Radix Dialog (focus trap/Escape/aria) with the same props, so its 4 users got a11y for free. Visually QA'd in dark, light, and 390px via headless screenshots.
+- ✅ Motion presets (`lib/motion.ts`): page fade-in, list stagger, hover lift, number count-up, layout transitions; respect `prefers-reduced-motion`. → `MotionConfig reducedMotion="user"` in `components/dashboard/DashboardProviders.tsx` + a CSS reduced-motion rule; count-up = `AnimatedNumber`.
+- ✅ Sidebar rebuilt on tokens (fixes light mode), with active states. → Fixes UI-02. Persisted collapse, tooltips, animated active indicator, mobile top bar + drawer, Radix user menu with a Light/Dark/System switch. **Removed dummy UI:** the "Upgrade to Pro" card, dead Profile/Feedback menu items, the robohash avatar fallback (now initials). Deleted the now-unused `layout/mode-toggle.tsx` and `auth/sign-out.tsx`. **[new] Bug fixed:** dashboard layout rendered a second `<Toaster>`, so every toast showed twice.
 
-## P5 — Home dashboard redesign + insights  (T2, T9)
-- Rebuild `/dashboard` on P4 primitives: header with greeting + range picker, KPI stat cards with sparklines and deltas, skills grid with segmented progress, working filters, a real "add skill" card.
+## P5 — Home dashboard + skill cards  (T2, T9, T10)
+- Rebuild `/dashboard` on P4 primitives: header with greeting + range picker, KPI stat cards with sparklines and deltas, working filters (fixes UI-04), a real "add skill" card.
+- **Redesign the skill cards.** Keep the colored progress-chip idea (the owner likes it), but execute it properly: one accent per skill, segmented progress, monospace hours with a muted unit, calm hierarchy.
+- **[new] Instant-feeling navigation to the skill page.** Today `skill-card.tsx:82` navigates with `onClick={() => router.push(...)}`, so there is no prefetch and no feedback until the page is ready. Fix: wrap the card in `<Link href>` (prefetch), show a pending/pressed state on the clicked card (`useLinkStatus` or `useTransition`), and add `app/dashboard/skills/[slug]/loading.tsx` with a skeleton shaped like the new skill page.
 - Insights rather than raw numbers: week-over-week trend, streaks, consistency score, best day/time, projected completion date per skill at the current pace, a "neglected skill" nudge, plain-language takeaways ("You're 3h behind last week; Rust hasn't been touched in 6 days").
+- Remove the planned "80h sprint" card from the mock (goals are being removed in P8). Optionally show the most active sandbox instead.
 
-## P6 — 80-Hour Goals: frictionless logging  (T1)
-- Today: you have to open a detail page → open a modal → type a title → enter start/end times by hand, and only same-day sessions work.
-- Target (no timer, see Decisions): one-tap quick log (+25m / +50m / +1h / +2h chips) right on the goal card; custom duration input ("1h 30m") ending now by default; title optional (remembers the last one); keyboard shortcut; undo toast instead of confirmation dialogs; sessions that cross midnight.
-- Real progress on cards (fixes UI-08), milestone markers every 20h, pace/ETA insight. Restyle on P4.
+## P6 — Skill page rebuild: work-first task + time flow  (T8, T9, T11)
+- Purpose of the page: create tasks and log time on them, with as little friction as possible so the focus stays on the work.
+- **Remove the Kanban** (`skilltodos/kanban/*`, the `@dnd-kit` dependency if nothing else uses it). Replace it with a **status list**: tasks grouped or filtered by **To do → Doing → Done**, with status changed by a click/shortcut, not by dragging. Keep the existing `status` column (`todo|in_progress|done`).
+- **Remove the date box / date filter** on the workflow tab. **[new] Bug:** `SkillKanbanBoard.tsx:144-170` shows only tasks whose `date` equals the selected day, so in-progress or done tasks from earlier days disappear. All open tasks are always visible after the rebuild. The task `date` column becomes plain metadata ("created …").
+- **Fast task creation:** an inline quick-add row (type a title + Enter), with description and tags optional and expandable. No modal for the common case.
+- **Tags:** in the create/edit form, show clickable chips above the input: the skill's **recently used tags** plus **2–3 suggested tags** (most frequent across the user's tasks). Typing filters the chips; Enter creates a new tag. The tag input already receives `recentTags` (`skill-todo-form.tsx:103`) but only shows them while typing.
+- **Fast time logging on each task:** quick chips (+15m / +30m / +1h) plus a custom amount ("1h 30m"), logged as "ended now"; undo toast instead of confirmations. **One time entry is capped at 3h**, enforced in the UI **and** in the zod schema of `createTimeLog` (`minutes` 1–180). Entering more shows a warning ("Max 3h per entry; split longer sessions") instead of failing silently. (Today it is a single fixed "+30m" button, `KanbanTaskCard.tsx:65`; no cap exists anywhere.)
+- **Analytics tab redesign:** replace the stitched-together cards with a few useful views on P4 primitives (StatCard/Card+Well/Recharts via `ui/chart`): hours trend vs last period, time by task/tag, consistency, ETA to the target hours at the current pace, plus a short plain-language takeaway. Every widget has to answer "how am I doing / what should I do next".
+- Skill header, timeline and dropdown menu moved onto the design system.
 
-## P7 — Sandbox redesign  (T5)
-- Keep all functionality: phases, sessions, resources, and the radial dial (re-implemented cleanly). Rebuild the list + detail pages on P4 primitives, unify the modals, polish the tabs/command bar, and add consistent empty/loading states.
+## P7 — Sandbox: the single deep-work project feature  (T1, T5, T12)
+- **Sandbox replaces 80-hour goals** (see P8 for the removal). Carry over the frictionless-logging ideas originally planned for goals (no timer, see Decisions): one-tap quick log (+25m / +50m / +1h / +2h) on the sandbox card and detail page; custom duration ("1h 30m") ending now by default; title optional (remembers the last one); keyboard shortcut; undo toast instead of confirmation dialogs; sessions that cross midnight; pace/ETA insight. Apply the same **3h cap + warning per entry** as P6.
+- **Remove phases / the Structure tab.** Delete `sandbox-structure.tsx`, `add-phase-modal.tsx`, the phase actions, and the `assertPhaseOwner` helper. **Migration:** add `sandbox_logs.sandbox_id` (FK → sandboxes, cascade, indexed), backfill it from `sandbox_phases.sandbox_id`, drop `sandbox_logs.phase_id`, drop `sandbox_resources.phase_id`, then drop `sandbox_phases` (phase milestones are discarded; the owner approved). Logs now hang directly off the sandbox, which also simplifies the ownership checks.
+- **Radial dial rebuilt cleanly** with **auto milestone markers every 20h** up to the target (20, 40, 60, …). The owner can **name any marker** (click the marker → inline label edit). Storage: a new `sandbox_milestones` table (`sandbox_id` FK cascade, `hour_mark` integer, `label` text, unique `(sandbox_id, hour_mark)`). Only named markers are stored; unnamed ones are derived. Show reached/next marker + ETA to the next marker.
+- Keep resources (link previews via `safeFetchHtml`). Rebuild the list + detail pages on P4 primitives, unify the modals (UI-06), polish the resource command bar, and add consistent empty/loading states.
 
-## P8 — Remaining pages + polish pass  (T8, T9, audit UI-01…07)
-- Skill detail page (Kanban, timeline, analytics with insights) moved onto the system; help/settings built or removed from the nav; sweep the remaining raw buttons, hex colors, and 8–9px text; final animation/transition pass; responsive + a11y check (focus rings, labels).
+## P8 — Remove 80-hour goals + polish pass  (T8, T12, audit UI-01…07)
+- **Remove 80-hour goals entirely; the existing goal data is deleted (the owner approved, no migration into sandboxes).** Delete `app/dashboard/80-hour-goals/`, `components/dashboard/80-hour-goals/`, `actions/goalActions.ts` + `goalLogActions.ts`, `hooks/useGoals.ts`, the goal keys in `lib/query-keys.ts`, the sidebar item in `nav-config.ts`, any goal references in overview analytics, and the `goals` + `goal_logs` tables (migration that drops them). UI-08 becomes obsolete. Update the CLAUDE.md route map and data model. (This can be done earlier, right after P7, so the sidebar never shows two overlapping features.)
+- Help/settings built or removed from the nav (UI-07); sweep the remaining raw buttons, hex colors, and 8–9px text (UI-01/03/05); delete the legacy token aliases; final animation/transition pass; responsive + a11y check (focus rings, labels); restore `react-hooks/set-state-in-effect` to error.
 
 ## Decisions
 - P1: ✅ Drop the daily-log tables and their data. ✅ Remove the fake landing-page screenshots/mock UI (`app-mockup.tsx`, `mock-ui.tsx`, fake testimonials).
-- P6: ✅ **No timer.** The owner logs after the fact. Reduce friction with quick-log chips (+25m/+50m/+1h/+2h), optional/remembered title, "ended now" default, editable duration, undo toast. Drop the start/stop timer bullet.
+- ✅ **No timer** (originally decided for goals, now applies to Sandbox in P7). The owner logs after the fact. Reduce friction with quick-log chips (+25m/+50m/+1h/+2h), optional/remembered title, "ended now" default, editable duration, undo toast. Drop the start/stop timer bullet.
 - P5: ⏳ Which insights to prioritize. Ask at the start of the phase.
+- 2026-11-08 plan revision (owner):
+  - ✅ **Remove 80-hour goals** and **delete their existing data** (no conversion into sandboxes). Sandbox is the one deep-work feature.
+  - ✅ **Remove sandbox phases / Structure.** Keep **auto milestone markers every 20h** on the radial dial, and each marker can be **named** by the owner.
+  - ✅ **No Kanban** on the skill page. Use a task **status list** (To do → Doing → Done).
+  - ✅ **One time entry is capped at 3h** (UI + server validation), with a warning when the user tries to log more.
+  - ✅ Remove the date box on the skill workflow tab. Tags get recent + suggested chips.
 
 ## Owner's original todos (verbatim intent)
 - **T1** 80-hour goals: make logging hours/sprint time easy and smooth; the current flow causes friction and mental fatigue.
@@ -66,6 +95,9 @@ Order principle: delete first (less code to fix) → make it safe → make data 
 - **T7** Remove gsap; use `motion` (successor to framer-motion).
 - **T8** Add subtle animations/transitions so the app feels premium, smooth, and responsive.
 - **T9** Charts/analytics should give insights (how the user is performing and what to do better), not just raw data.
+- **T10** (2026-11-08) Redesign the skill cards (keep the colored progress chips but do them well). Clicking a card should give immediate feedback / a loading animation while the skill page opens.
+- **T11** (2026-11-08) Rebuild the skill page: no Kanban, no date box, a better task-creation flow, tag suggestions (recent + 2–3 suggested), an efficient time-adding flow (quick chips, max 3h per entry with a warning), and useful analytics instead of copy-pasted cards.
+- **T12** (2026-11-08) 80-hour goals duplicate Sandbox: remove goals (and their data), keep and improve Sandbox, remove phases/Structure, and keep auto 20h milestone markers that can be named on the radial dial.
 
 ---
 
@@ -112,7 +144,7 @@ Pattern: every action already checks that a session exists, but many never check
 - [x] **DES-02** `src/components/modals/DeleteModal.tsx:105` — `onCanPlay={handleCancel}` should be `onClick`. The Cancel button currently does nothing.
 - [ ] **UI-04** `src/components/dashboard/skillcardComponents/all-skill-cards.tsx:18,75` — the `filter` state is never applied to the rendered skills, and the dashed "Create new project" card has no handler.
 - [ ] **UI-08** `src/app/dashboard/80-hour-goals/page.tsx:210-215` — "0 / 80 Hours" and "0%" are hardcoded. Compute them from `goal_logs`.
-- [ ] **DES-08 [expanded]** `src/app/globals.css:187` uses the undefined `var(--text-primary)`; globals.css:199 **and** `src/app/dashboard/layout.tsx` (`text-primary` on the wrapper) set every text color to the primary color. Switch to `text-foreground`.
+- [x] **DES-08 [expanded]** `src/app/globals.css:187` uses the undefined `var(--text-primary)`; globals.css:199 **and** `src/app/dashboard/layout.tsx` (`text-primary` on the wrapper) set every text color to the primary color. Switch to `text-foreground`.
 
 ## Phase 4 — Performance (High–Low)
 - [x] **PERF-01** `src/actions/skillCardAction.ts:50` — N+1: one `sum(timeLog)` query per skill. *[corrected: these run in parallel via `Promise.all`, not sequentially, but it's still N+1.]* Replace with a single `LEFT JOIN … GROUP BY`.
@@ -135,7 +167,7 @@ Pattern: every action already checks that a session exists, but many never check
 ## Phase 6 — UI consistency
 Inventory (verified counts): 112 raw `<button>` tags vs shadcn `Button` imported in 5 files; 65 distinct hex colors; `text-[10px]` ×64, `text-[9px]` ×29, `text-[8px]` ×4; 5 `<img>` tags.
 
-- [ ] **UI-02** `src/components/dashboard/sidebar/Sidebar.tsx:78` — hardcoded `bg-[#09090b] border-zinc-800 text-zinc-400` ignores the light theme. Use the `sidebar` tokens.
+- [x] **UI-02** `src/components/dashboard/sidebar/Sidebar.tsx:78` — hardcoded `bg-[#09090b] border-zinc-800 text-zinc-400` ignores the light theme. Use the `sidebar` tokens.
 - [ ] **UI-01** Migrate the raw buttons to `<Button variant size>`.
 - [ ] **UI-03** Replace the hex colors (worst offender: `daily-logs/ClockVisualizer.tsx`) with tokens.
 - [ ] **UI-05** Set the minimum text size to `text-xs`; ban 8/9px.

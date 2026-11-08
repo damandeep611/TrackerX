@@ -1,60 +1,68 @@
-import { ReactNode } from "react";
-import { motion } from "motion/react";
+"use client";
+
 import Link from "next/link";
+import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { NavItem } from "./nav-config";
 
 interface SidebarItemProps {
-  icon: ReactNode;
-  label: string;
-  href: string;
-  onClick?: () => void;
-  isActive?: boolean;
+  item: NavItem;
+  isActive: boolean;
   isCollapsed?: boolean;
+  /** Distinguishes the shared active-indicator animation per sidebar instance. */
+  layoutGroup?: string;
+  onNavigate?: () => void;
 }
 
 export default function SidebarItem({
-  icon,
-  label,
-  href,
-  onClick,
-  isActive = false,
+  item,
+  isActive,
   isCollapsed = false,
+  layoutGroup = "sidebar",
+  onNavigate,
 }: SidebarItemProps) {
-  return (
-    <Link href={href} className="block px-2">
-      <motion.div
-        whileHover={{ x: 2 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={onClick}
-        className={`relative group flex items-center px-3 py-2 cursor-pointer transition-all duration-200 
-          ${
-            isActive
-              ? "bg-zinc-800 text-white dark:bg-white/10 dark:text-white"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5"
-          } 
-          ${isCollapsed ? "justify-center px-2 rounded-lg" : "rounded-lg"} 
-        `}
-      >
-        <div
-          className={`${
-            isCollapsed ? "" : "mr-3"
-          } ${
-            !isActive &&
-            "group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors"
-          }`}
-        >
-          {icon}
-        </div>
-        {!isCollapsed && (
-          <span className={`text-[13px] font-medium ${isActive ? "text-white" : ""}`}>
-            {label}
-          </span>
-        )}
+  const Icon = item.icon;
 
-        {/* Active Indicator (Right Blue Line for active state, similar to reference) */}
-        {!isCollapsed && isActive && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-blue-500 rounded-l-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+  const link = (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      aria-current={isActive ? "page" : undefined}
+      className={cn(
+        "group relative flex h-9 items-center gap-3 rounded-lg px-2.5 text-[13px] font-medium outline-none transition-colors duration-150",
+        "focus-visible:ring-[3px] focus-visible:ring-ring",
+        isActive
+          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+        isCollapsed && "justify-center px-0"
+      )}
+    >
+      {isActive && (
+        <motion.span
+          layoutId={`${layoutGroup}-active`}
+          aria-hidden
+          className="absolute top-1/2 -left-2 h-4 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
+          transition={{ type: "spring", stiffness: 500, damping: 40 }}
+        />
+      )}
+      <Icon
+        className={cn(
+          "size-[17px] shrink-0 transition-colors",
+          isActive ? "text-brand" : "text-sidebar-foreground group-hover:text-sidebar-accent-foreground"
         )}
-      </motion.div>
+        strokeWidth={1.9}
+      />
+      {!isCollapsed && <span className="truncate">{item.title}</span>}
     </Link>
+  );
+
+  if (!isCollapsed) return link;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
+      <TooltipContent side="right">{item.title}</TooltipContent>
+    </Tooltip>
   );
 }

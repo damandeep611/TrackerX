@@ -2,15 +2,17 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+const fieldBase =
+  "w-full min-w-0 rounded-lg border border-input bg-card px-3 text-sm text-foreground shadow-panel transition-[border-color,box-shadow] outline-none placeholder:text-subtle-foreground selection:bg-brand selection:text-brand-foreground disabled:cursor-not-allowed disabled:opacity-50 hover:border-border-strong focus-visible:border-brand/60 focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-danger aria-invalid:ring-danger/20 dark:bg-surface-2"
+
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input
       type={type}
       data-slot="input"
       className={cn(
-        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        fieldBase,
+        "h-9 py-1 file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
         className
       )}
       {...props}
@@ -18,4 +20,14 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   )
 }
 
-export { Input }
+function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
+  return (
+    <textarea
+      data-slot="textarea"
+      className={cn(fieldBase, "min-h-20 resize-y py-2 leading-relaxed", className)}
+      {...props}
+    />
+  )
+}
+
+export { Input, Textarea, fieldBase }

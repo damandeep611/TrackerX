@@ -1,164 +1,141 @@
 "use client";
-import {
-  Box,
-  HelpCircle,
-  Hourglass,
-  House,
-  PanelLeft,
-  PanelRight,
-  Settings,
-  Terminal,
-  Zap,
-} from "lucide-react";
-import { useState } from "react";
 
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutGroup } from "motion/react";
+import { Box, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useLocalStorageBoolean } from "@/hooks/useLocalStorageState";
 import SidebarSection from "./sidebar-section";
 import SidebarItem from "./sidebar-item";
-import { usePathname } from "next/navigation";
 import UserProfile from "./user-profile";
+import { isNavActive, mainNav, supportNav } from "./nav-config";
 
-const navigation = {
-  quicklinks: [
-    {
-      id: "settings",
-      title: "Settings",
-      icon: Settings,
-      path: "/dashboard/usersetting",
-    },
-    {
-      id: "Help",
-      title: "Help Center",
-      icon: HelpCircle,
-      path: "/dashboard/help",
-    },
-  ],
-  mainMenu: [
-    {
-      id: "dashboard-main",
-      title: "Dashboard",
-      icon: House,
-      path: "/dashboard",
-    },
-    {
-      id: "80-hour-goals",
-      title: "80 Hour Goals",
-      icon: Hourglass,
-      path: "/dashboard/80-hour-goals",
-    },
-    {
-      id: "sandbox",
-      title: "Sandbox",
-      icon: Terminal,
-      path: "/dashboard/sandbox",
-    },
-  ],
-};
+function Brand({ isCollapsed = false }: { isCollapsed?: boolean }) {
+  return (
+    <Link
+      href="/dashboard"
+      className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+    >
+      <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <Box className="size-4" strokeWidth={2.5} />
+      </span>
+      {!isCollapsed && (
+        <span className="text-[15px] font-semibold tracking-tight text-foreground">BuildxSkill</span>
+      )}
+    </Link>
+  );
+}
+
+function NavContent({
+  isCollapsed = false,
+  layoutGroup,
+  onNavigate,
+}: {
+  isCollapsed?: boolean;
+  layoutGroup: string;
+  onNavigate?: () => void;
+}) {
+  const pathname = usePathname();
+  return (
+    <LayoutGroup id={layoutGroup}>
+      <div className="flex-1 space-y-2 overflow-x-hidden overflow-y-auto scrollbar-hide px-3">
+        <SidebarSection title="Workspace" isCollapsed={isCollapsed}>
+          {mainNav.map((item) => (
+            <SidebarItem
+              key={item.href}
+              item={item}
+              isActive={isNavActive(pathname, item.href)}
+              isCollapsed={isCollapsed}
+              layoutGroup={layoutGroup}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </SidebarSection>
+        <SidebarSection title="Support" isCollapsed={isCollapsed}>
+          {supportNav.map((item) => (
+            <SidebarItem
+              key={item.href}
+              item={item}
+              isActive={isNavActive(pathname, item.href)}
+              isCollapsed={isCollapsed}
+              layoutGroup={layoutGroup}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </SidebarSection>
+      </div>
+    </LayoutGroup>
+  );
+}
 
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useLocalStorageBoolean("sidebar-collapsed", false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const ToggleIcon = isCollapsed ? PanelLeftOpen : PanelLeftClose;
 
-  //for path checking
-  const isActive = (path: string) => {
-    // For the dashboard main page, only be active on exact match
-    if (path === "/dashboard") {
-      return pathname === "/dashboard";
-    }
-    return pathname === path || pathname?.startsWith(`${path}/`);
-  };
   return (
-    <div
-      className={`relative h-screen flex flex-col border-r border-zinc-800 bg-[#09090b] text-zinc-400 transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-18" : "w-65"
-      }`}
-    >
-      {/* Header / Logo Area */}
-      <div
-        className={`flex items-center justify-between mb-4 pt-5 px-4 ${isCollapsed ? "flex-col gap-4 px-2" : ""}`}
-      >
-        {!isCollapsed ? (
-          <div className="flex items-center gap-3">
-            <div className="bg-white text-black p-1 rounded-md">
-              <Box size={18} strokeWidth={3} />
-            </div>
-            <span className="text-[15px] font-bold tracking-tight text-white">
-              BuildxSkill
-            </span>
-          </div>
-        ) : (
-          <div className="bg-white text-black p-1 rounded-md">
-            <Box size={20} strokeWidth={3} />
-          </div>
+    <TooltipProvider>
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden h-dvh shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-300 ease-[var(--ease-out-soft)] md:flex",
+          isCollapsed ? "w-[68px]" : "w-60"
         )}
-
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="text-zinc-500 hover:text-zinc-300 transition-colors"
+      >
+        <div
+          className={cn(
+            "flex h-14 items-center px-4",
+            isCollapsed ? "justify-center" : "justify-between"
+          )}
         >
-          {isCollapsed ? <PanelRight size={18} /> : <PanelLeft size={18} />}
-        </button>
-      </div>
-
-      {/* User Profile */}
-      <UserProfile isCollapsed={isCollapsed} />
-
-      {/* Navigation Items */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-2 scrollbar-hide py-2 px-2">
-        <SidebarSection title="Main Menu" isCollapsed={isCollapsed}>
-          {navigation.mainMenu.map((item) => (
-            <SidebarItem
-              href={item.path}
-              key={item.id}
-              label={item.title}
-              icon={<item.icon size={18} strokeWidth={2} />}
-              isActive={isActive(item.path)}
-              isCollapsed={isCollapsed}
-            />
-          ))}
-        </SidebarSection>
-
-        <SidebarSection title="Support" isCollapsed={isCollapsed}>
-          {navigation.quicklinks.map((item) => (
-            <SidebarItem
-              href={item.path}
-              key={item.id}
-              label={item.title}
-              icon={<item.icon size={18} strokeWidth={2} />}
-              isActive={isActive(item.path)}
-              isCollapsed={isCollapsed}
-            />
-          ))}
-        </SidebarSection>
-      </div>
-
-      {/* Compact Upgrade Card */}
-      {!isCollapsed && (
-        <div className="p-3 mt-auto">
-          <div className="relative group overflow-hidden rounded-xl bg-linear-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 p-3 shadow-lg">
-            {/* Subtle Gradient Glow */}
-            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 blur-xl rounded-full"></div>
-
-            <div className="relative z-10 flex flex-col gap-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-white font-semibold text-[11px] leading-tight">
-                    Access Pro Features
-                  </h3>
-                  <p className="text-zinc-500 text-[10px] leading-tight mt-1">
-                    Upgrade for exclusive tools & analytics.
-                  </p>
-                </div>
-                {/* <Zap size={14} className="text-yellow-400 fill-yellow-400" /> */}
-              </div>
-
-              <button className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-white hover:bg-zinc-100 text-black text-[10px] font-bold uppercase tracking-wide rounded-md transition-all shadow-sm">
-                <Zap size={10} className="fill-black" />
-                Upgrade to Pro
-              </button>
-            </div>
-          </div>
+          {!isCollapsed && <Brand />}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-expanded={!isCollapsed}
+              >
+                <ToggleIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">{isCollapsed ? "Expand" : "Collapse"}</TooltipContent>
+          </Tooltip>
         </div>
-      )}
-    </div>
+
+        <NavContent isCollapsed={isCollapsed} layoutGroup="sidebar-desktop" />
+
+        <div className="border-t border-sidebar-border p-3">
+          <UserProfile isCollapsed={isCollapsed} />
+        </div>
+      </aside>
+
+      {/* Mobile top bar + drawer */}
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-sidebar-border bg-sidebar/90 px-4 backdrop-blur md:hidden">
+        <Brand />
+        <Button variant="ghost" size="icon-sm" onClick={() => setMobileOpen(true)} aria-label="Open menu">
+          <Menu />
+        </Button>
+      </div>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="w-72 gap-0 bg-sidebar p-0">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <div className="flex h-14 items-center px-4">
+            <Brand />
+          </div>
+          <NavContent layoutGroup="sidebar-mobile" onNavigate={() => setMobileOpen(false)} />
+          <div className="border-t border-sidebar-border p-3">
+            <UserProfile />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </TooltipProvider>
   );
 }

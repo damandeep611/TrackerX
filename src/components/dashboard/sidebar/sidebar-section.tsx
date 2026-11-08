@@ -1,4 +1,5 @@
-import { ReactNode } from "react"
+import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface SidebarSectionProps {
   title: string;
@@ -6,19 +7,17 @@ interface SidebarSectionProps {
   isCollapsed?: boolean;
 }
 
-export default function SidebarSection({
-  title,
-  children,
-  isCollapsed,
-}: SidebarSectionProps) {
+export default function SidebarSection({ title, children, isCollapsed }: SidebarSectionProps) {
   return (
-    <div className={`${isCollapsed ? "mt-4 pt-2" : "mt-4"}`}>
-      {!isCollapsed && (
-        <h3 className="px-4 mb-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest animate-in fade-in duration-300">
-          {title}
-        </h3>
+    <div className="space-y-1">
+      {isCollapsed ? (
+        <div className="mx-auto my-2 h-px w-6 bg-sidebar-border" aria-hidden />
+      ) : (
+        <h3 className={cn("px-2.5 pt-3 pb-1 text-[11px] font-medium text-subtle-foreground")}>{title}</h3>
       )}
-      <div className="space-y-0.5">{children}</div>
+      <nav aria-label={title} className="space-y-0.5">
+        {children}
+      </nav>
     </div>
   );
 }

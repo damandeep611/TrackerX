@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import QueryProvider from "./providers/QueryProvider";
@@ -8,12 +8,20 @@ import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ["latin"],
-  display: "auto",
+  display: "swap",
   variable: "--font-inter",
 });
+
+// Monospace for metric numerals (`.tabular` / `font-mono`).
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist-mono",
+});
+
 export const metadata: Metadata = {
   title: "buildxSkill",
-  description: "Skilll building and Habit Tracker web application",
+  description: "Skill building and habit tracker",
 };
 
 export default function RootLayout({
@@ -22,37 +30,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={` ${inter.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${geistMono.variable}`}>
+      <body className="antialiased">
         <QueryProvider>
-          <main className="">
+          <main>
             {children}
             <SpeedInsights />
             <Analytics />
           </main>
         </QueryProvider>
         <Toaster
-          position="top-right"
+          position="bottom-right"
           toastOptions={{
             duration: 3000,
             style: {
-              background: "#363636",
-              color: "#fff",
+              background: "var(--popover)",
+              color: "var(--popover-foreground)",
+              border: "1px solid var(--border)",
+              borderRadius: "12px",
+              boxShadow: "var(--raised-shadow)",
+              fontSize: "13px",
+              padding: "10px 12px",
             },
-            success: {
-              duration: 3000,
-              iconTheme: {
-                primary: "#10b981",
-                secondary: "#fff",
-              },
-            },
-            error: {
-              duration: 4000,
-              iconTheme: {
-                primary: "#ef4444",
-                secondary: "#fff",
-              },
-            },
+            success: { iconTheme: { primary: "var(--success)", secondary: "var(--popover)" } },
+            error: { duration: 4000, iconTheme: { primary: "var(--danger)", secondary: "var(--popover)" } },
           }}
         />
       </body>

@@ -1,26 +1,13 @@
 import Sidebar from "@/components/dashboard/sidebar/Sidebar";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "react-hot-toast";
+import DashboardProviders from "@/components/dashboard/DashboardProviders";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <div className="flex h-screen bg-background text-primary ">
+    <DashboardProviders>
+      <div className="flex h-dvh bg-background text-foreground">
         <Sidebar />
-        <main className="flex-1 overflow-auto  mr-2  scrollbar-hide">
-          {children}
-        </main>
-        <Toaster position="top-right" />
+        <main className="min-w-0 flex-1 overflow-y-auto pt-14 md:pt-0">{children}</main>
       </div>
-    </ThemeProvider>
+    </DashboardProviders>
   );
 }
