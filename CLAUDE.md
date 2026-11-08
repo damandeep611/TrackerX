@@ -18,7 +18,7 @@ Refactor work is tracked in **`refactor-claude.md`**. Check it before changing c
 
 ## Commands
 - `pnpm dev` / `pnpm build` / `pnpm lint` (`eslint .` with the native flat config from `eslint-config-next`; `next lint` no longer exists in Next 16). `react-hooks/set-state-in-effect` is temporarily set to warn (see eslint.config.mjs).
-- DB: `drizzle.config.ts` → migrations in `migrations/` (`pnpm generate` / `pnpm migrate`). **Generated but not yet applied:** `0021_drop_daily_logs.sql` (drops `entries` + `time_slots`), `0022_better_auth_1_7.sql` (auth-table defaults + 3 indexes), `0023_indexes_per_user_slugs.sql` (indexes on all FK/filter columns; slug unique per user instead of globally), `0024_sandbox_logs_backfill.sql` (adds `sandbox_logs.sandbox_id/minutes/logged_date` + `sandbox_milestones`, hand-written backfill from phases), `0025_drop_sandbox_phases.sql` (**destructive**: drops `sandbox_phases`, the phase/start/end/duration columns and `sandboxes.current_hours`; hand-reordered). Apply in order.
+- DB: `drizzle.config.ts` → migrations in `migrations/` (`pnpm generate` / `pnpm migrate`). All migrations through `0025` are **applied** (2026-11-08). The prod DB was originally built with `drizzle-kit push`, so 0010–0020 were baselined into `drizzle.__drizzle_migrations` by hand; use `pnpm generate` + `pnpm migrate` from now on, never `drizzle:push`. Migrations can't run from the owner's WSL2 (Neon WebSocket fails); the owner runs them from a Windows checkout. `drizzle-kit migrate` can exit 1 without printing the error: run the drizzle-orm migrator in a small node script to see it.
 - No test suite exists.
 
 ## Folder map
