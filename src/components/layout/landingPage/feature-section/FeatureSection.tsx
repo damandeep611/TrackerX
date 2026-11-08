@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { BarChart3, Hourglass, KanbanSquare, Terminal, type LucideIcon } from 'lucide-react';
+import { BarChart3, ListChecks, Terminal, type LucideIcon } from 'lucide-react';
 
 interface FeatureCardProps {
   title: string;
@@ -61,31 +61,23 @@ const FeatureSection: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed"
         >
-          Log focused time against the skills you care about, run deep-work sprints, and see exactly where your hours go.
+          Log focused time against the skills you care about, run deep-work projects, and see exactly where your hours go.
         </motion.p>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <FeatureCard 
           title="Skill Tracking" 
-          description="Break each skill into tasks on a Kanban board and log time as you go." 
+          description="Break each skill into tasks and log time on them in one tap." 
           bgColor="bg-[#0096FF]"
           delay={0.2}
-          icon={KanbanSquare}
-        />
-
-        <FeatureCard 
-          title="80-Hour Goals" 
-          description="Commit to an 80-hour deep-work sprint and watch the hours stack up." 
-          bgColor="bg-[#0096FF]"
-          delay={0.3}
-          icon={Hourglass}
+          icon={ListChecks}
         />
 
         <FeatureCard 
           title="Sandboxes" 
-          description="Plan open-ended projects in phases, with sessions and saved resources." 
+          description="Deep-work projects with an hour target, a milestone every 20h, and saved resources." 
           bgColor="bg-[#7470E9]"
           delay={0.4}
           icon={Terminal}

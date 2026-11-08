@@ -13,7 +13,7 @@ import { useLocalStorageBoolean } from "@/hooks/useLocalStorageState";
 import SidebarSection from "./sidebar-section";
 import SidebarItem from "./sidebar-item";
 import UserProfile from "./user-profile";
-import { isNavActive, mainNav, supportNav } from "./nav-config";
+import { isNavActive, mainNav } from "./nav-config";
 
 function Brand({ isCollapsed = false }: { isCollapsed?: boolean }) {
   return (
@@ -46,18 +46,6 @@ function NavContent({
       <div className="flex-1 space-y-2 overflow-x-hidden overflow-y-auto scrollbar-hide px-3">
         <SidebarSection title="Workspace" isCollapsed={isCollapsed}>
           {mainNav.map((item) => (
-            <SidebarItem
-              key={item.href}
-              item={item}
-              isActive={isNavActive(pathname, item.href)}
-              isCollapsed={isCollapsed}
-              layoutGroup={layoutGroup}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </SidebarSection>
-        <SidebarSection title="Support" isCollapsed={isCollapsed}>
-          {supportNav.map((item) => (
             <SidebarItem
               key={item.href}
               item={item}

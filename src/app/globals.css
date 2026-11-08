@@ -78,13 +78,6 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Legacy aliases. Old components still use these; remove once P5–P8 migrate them. */
-  --color-surface: var(--card);
-  --color-surface-highlight: var(--surface-2);
-  --color-surfaceHighlight: var(--surface-2);
-  --color-text-secondary: var(--muted-foreground);
-  --color-text-tertiary: var(--subtle-foreground);
-
   /* Radius scale: chips are rounded-full, controls rounded-lg, cards rounded-xl/2xl */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

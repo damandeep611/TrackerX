@@ -73,37 +73,3 @@ export const timeLog = pgTable("timelog", {
   index("time_log_task_idx").on(t.task_id),
   index("time_log_skill_idx").on(t.skill_id),
 ]);
-
-// Goals schema for tracking personal goals
-export const goals = pgTable("goals", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  title: varchar("title", { length: 255 }).notNull(),
-  // Unique per user (see goals_user_slug_uq), not globally.
-  slug: text("slug").notNull(),
-  startDate: timestamp("start_date"),
-  completedDate: timestamp("completed_date"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (t) => [
-  uniqueIndex("goals_user_slug_uq").on(t.userId, t.slug),
-]);
-
-export const goalLogs = pgTable("goal_logs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  goalId: uuid("goal_id")
-    .notNull()
-    .references(() => goals.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  title: varchar("title", { length: 255 }).notNull(),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time").notNull(),
-  durationMinutes: integer("duration_minutes").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (t) => [
-  index("goal_logs_goal_user_idx").on(t.goalId, t.userId),
-]);

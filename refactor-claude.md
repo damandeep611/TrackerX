@@ -5,14 +5,15 @@ Repo context lives in `CLAUDE.md`. Work top to bottom and tick items off as you 
 
 ---
 
-# SESSION HANDOFF (read first; last updated 2026-11-08, end of P7)
+# SESSION HANDOFF (read first; last updated 2026-11-08, end of P8)
 - **Branch:** `refactor` (branched from `main`). **P1–P7 were fast-forward merged into `main` and pushed to GitHub on 2026-11-08** (production deploys from `main`). Keep doing phase work on `refactor`, then fast-forward `main` when the owner asks. Commits: P1 `612a4c1`, P2 `32a5502`, P3 `e103b7c`, P4 `bd27296` (committed by the owner), P5 `bfd41d4`, P6 `629f930`, P7 `4abbebe`. Leave the owner's own uncommitted changes (if any) out of commits.
 - **Plan revised 2026-11-08** (see ROADMAP P5–P8 and Decisions): Kanban replaced by a status list (done, P6), 80-hour goals are **removed** in P8 (Sandbox is the single deep-work feature), sandbox phases/Structure are **removed** (done, P7), and the radial dial has auto markers every 20h that the owner can name (done, P7).
 - **Migrations: all applied through 0025 (2026-11-08)** by the owner from the Windows checkout (WSL2 can't reach Neon). The DB had been built with `push`, so drizzle's log stopped before 0010; 0010–0020 were baselined by hand (checked first: tables/constraints matched 0020), then `pnpm migrate` ran 0021–0025. Verified afterwards: all 26 recorded; phases, daily-log tables and old columns gone; new columns, indexes and `sandbox_milestones` present. From now on: `generate` + `migrate`, never `drizzle:push`.
 - **Smoke-test P6 + P7 on the hosted site (or once local login works)**: both were only QA'd with seeded data, never against the DB. P6: add a task, change status (click + S/X keys), log +15m and "1h 30m", Undo, "4h" (3h warning), delete a task with time, tag chips, Insights tab, streak/"today" vs your local date. **P7:** create a sandbox (lands on its page), quick-log from a card (+25m) and the panel (title remembered, "1h 30m", "4h" → warning, press L), Undo, delete a session, name a milestone (click a dial marker or a row; empty clears), Insights tab, add a resource (paste → title fetched), mark read, remove + Undo, delete the sandbox. Check that old sessions survived the migration with their hours.
-- **Next: P8 (remove 80-hour goals + polish pass).** Ask the owner before starting. Starting points: delete `app/dashboard/80-hour-goals/`, `components/dashboard/80-hour-goals/`, `actions/goalActions.ts` + `goalLogActions.ts`, `hooks/useGoals.ts`, the `goals` keys in `lib/query-keys.ts`, the sidebar item in `nav-config.ts`; migration dropping `goals` + `goal_logs` (next number `0026`; the owner applies it from Windows). Then the UI-01/03/05/07 sweep (`rg "text-\[(8|9|10)px\]|#[0-9a-fA-F]{3,6}|<button"`), delete the legacy token aliases, restore `react-hooks/set-state-in-effect` to error. Optional: an "active sandbox" card on the home dashboard (deferred from P5).
+- **P8 done (not committed until the owner says so).** **Migration `0026_drop_goals` is generated, NOT applied.** Order matters: deploy the P8 code (merge `refactor` → `main`, push) **before** the owner runs `pnpm migrate` from Windows, so the live site never runs goal pages against dropped tables. The P7 order was the other way round and briefly broke the live sandbox pages.
+- **Next: P9 (landing page + sign-in).** Ask the owner before starting. Starting points: `app/page.tsx`, `components/layout/landingPage/*` (Navbar, Hero, HeroFoot, FeatureSection, ShowcaseCards (`StackedCards.tsx` has the last lint warning, a raw `<img>`), FaqSection, Footer), `components/layout/Navigation.tsx` (check whether both navs are needed), `components/auth/sign-in.tsx` (fake 7s countdown, errors only `console.log`ged), `src/proxy.ts` (add `?next=`). The hero still says "LEARN" / "all-in-one learning platform" and has nav links (Blog, Feedback) to nothing; the landing uses raw hex + undefined classes (`bg-paper-blue`, `text-brand-orange`, `accent-electric`). P8 only corrected the feature-card copy (no goals/Kanban/phases).
 - **Working agreements with the owner:** do one phase at a time; finish each with `pnpm build` + `pnpm lint` (0 errors), update CLAUDE.md + this file, commit on `refactor` when the owner says "yes/proceed", then ask before starting the next phase. Don't push. Can't log in locally (Google OAuth), so verify UI with the screenshot workflow in CLAUDE.md → Design system. When restarting the preview server, kill the `next-server` PID from `ss -ltnp | grep 3458` (the `pnpm start` PID is only the wrapper).
-- **Known leftovers:** `react-hooks/set-state-in-effect` is set to warn (restore to error after P8). Legacy token aliases in globals.css. Old dashboard components (goals, landing) still use raw zinc/hex classes. The landing page uses undefined classes (`bg-paper-blue`, `text-brand-orange`, `accent-electric`); now covered by P9 (landing + sign-in redesign). Rate limiting (SEC-08) is undecided. No tests yet. Headless screenshots freeze count-up/Recharts animations at 0: use `--force-prefers-reduced-motion` to see final values.
+- **Known leftovers:** the landing page (P9) still uses raw hex/zinc classes and `text-[10px]`-style sizes; the dashboard is clean. The landing page uses undefined classes (`bg-paper-blue`, `text-brand-orange`, `accent-electric`); now covered by P9 (landing + sign-in redesign). Rate limiting (SEC-08) is undecided. No tests yet. Headless screenshots freeze count-up/Recharts animations at 0: use `--force-prefers-reduced-motion` to see final values.
 - **Local login is broken on the owner's WSL2 setup (environment issue, not code; deferred by the owner).** Google sign-in on `localhost:3000` fails with `Failed query: insert into "verification"` + `[cause]: ErrorEvent`, meaning the Neon WebSocket connection failed. It works from Windows and from the hosted site. Done so far: fixed the `generateResolvConf` typo in `/etc/wsl.conf`, and set `/etc/resolv.conf` to `nameserver 8.8.8.8` + `1.1.1.1` + `options single-request-reopen timeout:1 attempts:2` (immutable, `chattr +i`). That cut DNS lookups from ~5.1s to ~0.05s, and a standalone `select 1` over the Neon WebSocket Pool then succeeded. The Neon HTTP driver (`neon()`, not used by the app) still fails with `fetch failed`. Login still failed afterwards. Next ideas: run `next dev` under plain Node rather than `bun run dev`, set `dnsTunneling=true` / `networkingMode=mirrored` in `%UserProfile%\.wslconfig`, and check IPv6 / MTU.
 
 ---
@@ -95,7 +96,14 @@ Order principle: delete first (less code to fix) → make it safe → make data 
 - **Radial dial rebuilt cleanly** with **auto milestone markers every 20h** up to the target (20, 40, 60, …). The owner can **name any marker** (click the marker → inline label edit). Storage: a new `sandbox_milestones` table (`sandbox_id` FK cascade, `hour_mark` integer, `label` text, unique `(sandbox_id, hour_mark)`). Only named markers are stored; unnamed ones are derived. Show reached/next marker + ETA to the next marker.
 - Keep resources (link previews via `safeFetchHtml`). Rebuild the list + detail pages on P4 primitives, unify the modals (UI-06), polish the resource command bar, and add consistent empty/loading states.
 
-## P8 — Remove 80-hour goals + polish pass  (T8, T12, audit UI-01…07)
+## P8 — Remove 80-hour goals + polish pass  (T8, T12, audit UI-01…07) — ✅ DONE 2026-11-08 (migration 0026 not applied)
+- ✅ **Goals removed:** `app/dashboard/80-hour-goals/`, `components/dashboard/80-hour-goals/` (5 files), `goalActions.ts`, `goalLogActions.ts`, `hooks/useGoals.ts`, `queryKeys.goals`, the sidebar item, the `goals` + `goal_logs` tables (`migrations/0026_drop_goals.sql`, destructive, not applied). UI-08 is obsolete.
+- ✅ **UI-07:** `/dashboard/help` and `/dashboard/usersetting` were empty stubs: deleted with the sidebar "Support" section (theme + log out already live in the user menu). The nav is Dashboard + Sandboxes.
+- ✅ **UI-01/03/05 sweep (dashboard):** no raw palette classes, no hex (only `lib/skill-colors.ts` data and Recharts default-colour selectors in `ui/chart.tsx`), nothing below 11px. The remaining raw `<button>`s are deliberate custom controls (chips, status icons, dial markers, ghost add cards, avatar trigger); the three without a focus ring got one (tag remove ×, Done-group toggle, toast Undo).
+- ✅ Legacy token aliases deleted from globals.css (last users were the goal components). `react-hooks/set-state-in-effect` restored to error: 0 violations. Icon buttons all have `aria-label`; images have `alt`.
+- Landing copy corrected so it doesn't advertise removed features (goals card removed, no "Kanban"/"phases"); the redesign is still P9.
+- Not needed: a separate "final animation pass" (P5–P7 already use the motion presets + reduced-motion everywhere).
+- *Original plan (kept for reference):*
 - **Remove 80-hour goals entirely; the existing goal data is deleted (the owner approved, no migration into sandboxes).** Delete `app/dashboard/80-hour-goals/`, `components/dashboard/80-hour-goals/`, `actions/goalActions.ts` + `goalLogActions.ts`, `hooks/useGoals.ts`, the goal keys in `lib/query-keys.ts`, the sidebar item in `nav-config.ts`, any goal references in overview analytics, and the `goals` + `goal_logs` tables (migration that drops them). UI-08 becomes obsolete. Update the CLAUDE.md route map and data model. (This can be done earlier, right after P7, so the sidebar never shows two overlapping features.)
 - Help/settings built or removed from the nav (UI-07); sweep the remaining raw buttons, hex colors, and 8–9px text (UI-01/03/05); delete the legacy token aliases; final animation/transition pass; responsive + a11y check (focus rings, labels); restore `react-hooks/set-state-in-effect` to error.
 
@@ -180,7 +188,7 @@ Pattern: every action already checks that a session exists, but many never check
 - [x] **DES-01** `src/components/dashboard/analytics-components/WeeklyProgressChart.tsx:231-233` — profanity shown to users ("No hours logged , bitch ass", "slow ass work") **and** inverted logic: `weeklyChange > 20` (an improvement) shows the scolding message.
 - [x] **DES-02** `src/components/modals/DeleteModal.tsx:105` — `onCanPlay={handleCancel}` should be `onClick`. The Cancel button currently does nothing.
 - [x] **UI-04** *(fixed in P5; file since replaced by `home/SkillsSection.tsx`)* `src/components/dashboard/skillcardComponents/all-skill-cards.tsx:18,75` — the `filter` state is never applied to the rendered skills, and the dashed "Create new project" card has no handler.
-- [ ] **UI-08** *(becomes obsolete when goals are removed in P8)* `src/app/dashboard/80-hour-goals/page.tsx:210-215` — "0 / 80 Hours" and "0%" are hardcoded. Compute them from `goal_logs`.
+- [x] **UI-08** *(obsolete: goals removed in P8)* *(becomes obsolete when goals are removed in P8)* `src/app/dashboard/80-hour-goals/page.tsx:210-215` — "0 / 80 Hours" and "0%" are hardcoded. Compute them from `goal_logs`.
 - [x] **DES-08 [expanded]** `src/app/globals.css:187` uses the undefined `var(--text-primary)`; globals.css:199 **and** `src/app/dashboard/layout.tsx` (`text-primary` on the wrapper) set every text color to the primary color. Switch to `text-foreground`.
 
 ## Phase 4 — Performance (High–Low)
@@ -205,22 +213,19 @@ Pattern: every action already checks that a session exists, but many never check
 Inventory (verified counts): 112 raw `<button>` tags vs shadcn `Button` imported in 5 files; 65 distinct hex colors; `text-[10px]` ×64, `text-[9px]` ×29, `text-[8px]` ×4; 5 `<img>` tags.
 
 - [x] **UI-02** `src/components/dashboard/sidebar/Sidebar.tsx:78` — hardcoded `bg-[#09090b] border-zinc-800 text-zinc-400` ignores the light theme. Use the `sidebar` tokens.
-- [ ] **UI-01** Migrate the raw buttons to `<Button variant size>`.
-- [ ] **UI-03** Replace the hex colors (worst offender: `daily-logs/ClockVisualizer.tsx`) with tokens.
-- [ ] **UI-05** Set the minimum text size to `text-xs`; ban 8/9px.
+- [x] **UI-01** *(P8: the remaining raw buttons are custom controls with focus rings; landing in P9)* Migrate the raw buttons to `<Button variant size>`.
+- [x] **UI-03** *(dashboard done; landing in P9)* Replace the hex colors (worst offender: `daily-logs/ClockVisualizer.tsx`) with tokens.
+- [x] **UI-05** *(dashboard done; landing in P9)* Set the minimum text size to `text-xs`; ban 8/9px.
 - [x] **UI-06** *(skills side done in P5/P6, sandbox in P7; goals' `SprintSessionModal` disappears with P8)* Unify the modals (bottom drawer in `add-skill-modal.tsx`, plus custom `SprintSessionModal`, `EntryModal`, `AddPhaseModal`, `DeleteModal`, `DeleteSandboxModal`, and shadcn Dialog in `CreateSandboxModal`) onto one Dialog.
-- [ ] **UI-07** `/dashboard/help` and `/dashboard/usersetting` are stubs (help renders a test `DateChecker` with indigo styling). Build them or hide them from the sidebar.
+- [x] **UI-07** *(P8: removed)* `/dashboard/help` and `/dashboard/usersetting` are stubs (help renders a test `DateChecker` with indigo styling). Build them or hide them from the sidebar.
 
 ### Page consistency matrix (deviations to fix)
 | Route | Title style | Container | Loading / empty | Notable deviation |
 |---|---|---|---|---|
 | `/dashboard` | ✅ P5: PageShell/PageHeader | ✅ | ✅ skeleton + EmptyState | — |
-| `/dashboard/80-hour-goals` | `text-2xl font-bold text-foreground` | `max-w-400 p-6` | "Loading goals..." text | hardcoded 0% |
-| `/dashboard/80-hour-goals/[goalId]` | `text-lg font-bold` | `max-w-7xl px-4 py-6` | "Loading reactor core..." | sci-fi styling |
 | `/dashboard/sandbox` | ✅ P7: PageShell/PageHeader | ✅ | ✅ loading.tsx + EmptyState | — |
 | `/dashboard/sandbox/[sandboxId]` | ✅ P7: PageShell/PageHeader | ✅ | ✅ loading.tsx + EmptyState | — |
 | `/dashboard/skills/[slug]` | ✅ P6: PageShell/PageHeader | ✅ max-w-5xl | ✅ loading.tsx + EmptyState | — |
-| `/dashboard/help`, `/usersetting` | bare / none | none | none | stubs |
 
 ### Target design baseline
 - **Color**: shadcn semantic tokens only (`background`, `card`, `muted`, `border`, `foreground`, `muted-foreground`, `sidebar-*`), plus a single accent (blue-500/600) for progress.

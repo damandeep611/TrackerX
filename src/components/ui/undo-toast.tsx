@@ -14,7 +14,7 @@ export function undoToast(message: string, onUndo: () => void, duration = 6000) 
             toast.dismiss(t.id);
             onUndo();
           }}
-          className="rounded-md px-2 py-1 text-xs font-medium text-brand hover:bg-brand-soft"
+          className="rounded-md px-2 py-1 text-xs font-medium text-brand hover:bg-brand-soft outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
         >
           Undo
         </button>

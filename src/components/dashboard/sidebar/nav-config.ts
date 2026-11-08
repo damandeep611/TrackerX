@@ -1,4 +1,4 @@
-import { Hourglass, House, LifeBuoy, Settings, Terminal, type LucideIcon } from "lucide-react";
+import { House, Terminal, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   title: string;
@@ -8,13 +8,7 @@ export interface NavItem {
 
 export const mainNav: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: House },
-  { title: "80 Hour Goals", href: "/dashboard/80-hour-goals", icon: Hourglass },
-  { title: "Sandbox", href: "/dashboard/sandbox", icon: Terminal },
-];
-
-export const supportNav: NavItem[] = [
-  { title: "Settings", href: "/dashboard/usersetting", icon: Settings },
-  { title: "Help Center", href: "/dashboard/help", icon: LifeBuoy },
+  { title: "Sandboxes", href: "/dashboard/sandbox", icon: Terminal },
 ];
 
 export function isNavActive(pathname: string | null, href: string) {

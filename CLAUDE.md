@@ -1,6 +1,6 @@
 # CLAUDE.md — TrackerX (buildxskill)
 
-Personal skill-mastery and time-auditing dashboard. Users track hours on skills (tasks in a To do / Doing / Done list, quick time logging), run open-ended deep-work projects in "sandboxes" (hour target, quick session logging, a milestone marker every 20h on a radial dial). 80-hour goals still exist but are removed in P8.
+Personal skill-mastery and time-auditing dashboard. Users track hours on skills (tasks in a To do / Doing / Done list, quick time logging), run open-ended deep-work projects in "sandboxes" (hour target, quick session logging, a milestone marker every 20h on a radial dial).
 
 Refactor work is tracked in **`refactor-claude.md`**. Check it before changing code. Its top section, **SESSION HANDOFF**, says where work stopped and what comes next.
 
@@ -17,15 +17,14 @@ Refactor work is tracked in **`refactor-claude.md`**. Check it before changing c
 - Package manager: **pnpm**
 
 ## Commands
-- `pnpm dev` / `pnpm build` / `pnpm lint` (`eslint .` with the native flat config from `eslint-config-next`; `next lint` no longer exists in Next 16). `react-hooks/set-state-in-effect` is temporarily set to warn (see eslint.config.mjs).
-- DB: `drizzle.config.ts` → migrations in `migrations/` (`pnpm generate` / `pnpm migrate`). All migrations through `0025` are **applied** (2026-11-08). The prod DB was originally built with `drizzle-kit push`, so 0010–0020 were baselined into `drizzle.__drizzle_migrations` by hand; use `pnpm generate` + `pnpm migrate` from now on, never `drizzle:push`. Migrations can't run from the owner's WSL2 (Neon WebSocket fails); the owner runs them from a Windows checkout. `drizzle-kit migrate` can exit 1 without printing the error: run the drizzle-orm migrator in a small node script to see it.
+- `pnpm dev` / `pnpm build` / `pnpm lint` (`eslint .` with the native flat config from `eslint-config-next`; `next lint` no longer exists in Next 16). All rules at their defaults (`react-hooks/set-state-in-effect` is an error again since P8).
+- DB: `drizzle.config.ts` → migrations in `migrations/` (`pnpm generate` / `pnpm migrate`). All migrations through `0025` are **applied** (2026-11-08); **`0026_drop_goals.sql` (destructive: drops `goals` + `goal_logs`) is generated, not applied**: deploy the P8 code first, then the owner runs `pnpm migrate` from Windows. The prod DB was originally built with `drizzle-kit push`, so 0010–0020 were baselined into `drizzle.__drizzle_migrations` by hand; use `pnpm generate` + `pnpm migrate` from now on, never `drizzle:push`. Migrations can't run from the owner's WSL2 (Neon WebSocket fails); the owner runs them from a Windows checkout. `drizzle-kit migrate` can exit 1 without printing the error: run the drizzle-orm migrator in a small node script to see it.
 - No test suite exists.
 
 ## Folder map
 ```
 src/
   actions/            Server Actions ("use server"): all data reads/writes
-    goalActions.ts, goalLogActions.ts        80-hour goals + session logs
     sandboxActions.ts                        sandboxes (list w/ totals, overview = insights + named milestones), sessions
                                              (logSandboxSession 1–180 min on the local date / deleteSandboxLog), setMilestoneLabel,
                                              resources (add/delete/setResourceStatus) + fetchResourceMetadata (OG scraping)
@@ -37,7 +36,6 @@ src/
     api/auth/[...all]/        Better Auth handler
     dashboard/                All app pages (see route map); layout.tsx = Sidebar + ThemeProvider + Toaster;
                               loading.tsx (skeleton), error.tsx, not-found.tsx cover every dashboard route
-    dashboard/help/           placeholder page
     providers/QueryProvider.tsx
     layout.tsx                root: fonts, QueryProvider, the ONLY <Toaster> (token-styled), Vercel Analytics/SpeedInsights
     page.tsx                  public landing page
@@ -47,7 +45,7 @@ src/
                               stat-card (StatCard, StatGrid), dialog, sheet, modal (wraps dialog), tooltip, input (+Textarea), chip,
                               tabs (pill), empty-state, page (PageShell, PageHeader, SectionHeader), skeleton, dropdown-menu, chart
     dashboard/<feature>/      feature widgets: home (HomeDashboard, KpiRow, TrendCard, ConsistencyCard, SkillsSection),
-                              80-hour-goals (GoalsView, GoalDetailView…), sidebar,
+                              sidebar (nav-config: Dashboard + Sandboxes),
                               sandbox (SandboxListView, SandboxCard, SandboxDetailView, MilestoneDial, MilestoneList,
                               QuickLog (chips + panel), SessionList, SandboxInsightsTab, ResourcesPanel, SandboxDialogs),
                               insights (WeeklyHoursCard, shared by the skill + sandbox Insights tabs),
@@ -58,11 +56,11 @@ src/
     auth/                     sign-in / sign-out buttons
   db/
     drizzle.ts                Pool + drizzle client (schema = auth + main; main re-exports sandbox-schema)
-    schema/schema.ts          skillCard, skillTask, timeLog, goals, goal_logs
+    schema/schema.ts          skillCard, skillTask, timeLog (re-exports sandbox-schema)
     schema/sandbox-schema.ts  sandboxes, sandbox_phases, sandbox_logs, sandbox_resources
     schema/auth-schema.ts     Better Auth: user, session, account, verification
   hooks/                      one React Query hook file per domain: useSkills (list, per-skill data, time logs),
-                              useDashboardAnalytics, useSkillPage (tasks/insights/tags + optimistic task & time-log mutations), useGoals,
+                              useDashboardAnalytics, useSkillPage (tasks/insights/tags + optimistic task & time-log mutations),
                               useSandbox (list/overview/logs/resources + optimistic log/undo, milestone, resource mutations)
   lib/                        auth.ts (Better Auth server config), auth-client.ts, utils.ts (cn),
                               query-keys.ts (hierarchical RQ key factory), query-client.ts (getQueryClient)
@@ -85,19 +83,15 @@ src/
 | `/` | Server | none | — |
 | `/dashboard` | Server prefetch → client `HomeDashboard` | requireUser in page | skills list, dashboard insights, 7-week progress |
 | `/dashboard/skills/[slug]` | Server prefetch → client `SkillPage` (`loading.tsx` skeleton) | requireUser; 404 if not owner | tasks (+minutes), skill insights, tag suggestions |
-| `/dashboard/80-hour-goals` | Server prefetch → client `GoalsView` | requireUser in page | goals list (optimistic add/delete) |
-| `/dashboard/80-hour-goals/[goalId]` | Server prefetch → client `GoalDetailView` | in actions; 404 if not owner | goal + logs (optimistic add/delete) |
 | `/dashboard/sandbox` | Server prefetch → client `SandboxListView` (`loading.tsx`) | requireUser in page | sandboxes with totals + 14-day activity (optimistic create/delete/quick log) |
 | `/dashboard/sandbox/[sandboxId]` | Server prefetch → client `SandboxDetailView` (`loading.tsx`) | requireUser; 404 via `getSandboxOverview` if not owner | overview (insights + named milestones), sessions, resources |
-| `/dashboard/help`, `/dashboard/usersetting` | Server | none | placeholder pages |
 
 `src/proxy.ts` redirects signed-out visitors away from `/dashboard/*`.
 
 ## Data model
 `user` 1:N → `skillCard` 1:N → `skillTask` 1:N → `timeLog` (timeLog also has skill_id, user_id)
-`user` 1:N → `goals` 1:N → `goal_logs`
 `user` 1:N → `sandboxes` 1:N → `sandbox_logs` (minutes + `logged_date`), `sandbox_resources`, `sandbox_milestones` (named markers only, unique `(sandbox_id, hour_mark)`). Sandbox totals are summed from `sandbox_logs` (no cached hours column).
-All FKs `ON DELETE CASCADE` (delete the parent only). `skillCard.slug` and `goals.slug` are unique **per user** (after migration 0023). Sandbox child tables have no `userId`, so ownership has to be checked through the parent sandbox.
+All FKs `ON DELETE CASCADE` (delete the parent only). `skillCard.slug` is unique **per user**. Sandbox child tables have no `userId`, so ownership has to be checked through the parent sandbox.
 
 ## Auth flow
 `authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" })` → `/api/auth/[...all]` → session cookie.
@@ -108,7 +102,6 @@ Server code calls `requireUser()` from `@/lib/require-user` (never `auth.api.get
 - **Surface tokens** (light + dark in globals.css): `bg-background` (canvas) → `bg-card` (panel) → `bg-surface-2` (inner well) → `bg-surface-3` (raised/hover). Text: `text-foreground`, `text-muted-foreground` (labels), `text-subtle-foreground` (captions). Lines: `border-border`, `border-border-strong`.
 - **Accent/status tokens**: `brand` (blue: progress, active nav, main CTA; `bg-brand`, `text-brand`, `bg-brand-soft`), `success|warning|danger` (+ `-soft` backgrounds), metric palette `var(--chart-1..5)` = blue, violet, orange, emerald, rose. shadcn `accent` = subtle hover surface (NOT a brand color).
 - **Shadows**: `shadow-panel`, `shadow-raised` (theme-aware via `--panel-shadow` / `--raised-shadow`). Radius base 0.75rem: cards `rounded-2xl`, wells `rounded-xl`, controls `rounded-lg`, chips `rounded-full`.
-- **Legacy aliases** still exist for old components: `bg-surface`, `bg-surface-highlight`, `text-text-secondary`, `text-text-tertiary`. Don't use them in new code; delete them once P5–P8 migrate the remaining usages.
 - **Composition**: page = `<PageShell><PageHeader title description actions/>…</PageShell>`; KPI = `<StatCard icon title value unit sparkline color delta caption/>` inside `<StatGrid>`; custom card = `<Card><CardHeader><CardTitle><Icon/>Title</CardTitle><CardAction>…</CardAction></CardHeader><Well>…</Well><CardFooter>…</CardFooter></Card>`; empty list = `<EmptyState icon title description action/>`; overlay = `Dialog` (or `Sheet`); `Modal` is a legacy-API wrapper over Dialog.
 - **Button variants**: default (primary), brand (one per view), outline, secondary, ghost, destructive, destructive-ghost, link; sizes xs/sm/default/lg/icon/icon-sm/icon-xs. **Badge variants**: neutral, outline, brand, success, warning, danger, solid (+ `dot`).
 - **Motion**: presets in `lib/motion.ts` (fadeIn, stagger, listItem, hoverLift, popIn, spring, layoutTransition). `components/dashboard/DashboardProviders.tsx` wraps the dashboard in `<MotionConfig reducedMotion="user">`, and globals.css disables CSS animation under prefers-reduced-motion. `AnimatedNumber` counts up once in view.

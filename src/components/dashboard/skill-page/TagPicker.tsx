@@ -63,7 +63,7 @@ export function TagPicker({
             <button
               type="button"
               onClick={() => onChange(value.filter((t) => t !== tag))}
-              className="rounded-full p-0.5 hover:bg-brand/15"
+              className="rounded-full p-0.5 hover:bg-brand/15 outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
               aria-label={`Remove tag ${tag}`}
             >
               <X className="size-3" />

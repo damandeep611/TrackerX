@@ -183,6 +183,13 @@
       "when": 1794127060555,
       "tag": "0025_drop_sandbox_phases",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794132895118,
+      "tag": "0026_drop_goals",
+      "breakpoints": true
     }
   ]
 }

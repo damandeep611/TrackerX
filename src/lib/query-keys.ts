@@ -26,10 +26,4 @@ export const queryKeys = {
     logs: (id: string) => [...queryKeys.sandboxes.detail(id), "logs"] as const,
     resources: (id: string) => [...queryKeys.sandboxes.detail(id), "resources"] as const,
   },
-  goals: {
-    all: ["goals"] as const,
-    list: () => [...queryKeys.goals.all, "list"] as const,
-    detail: (slug: string) => [...queryKeys.goals.all, "detail", slug] as const,
-    logs: (goalId: string) => [...queryKeys.goals.all, "logs", goalId] as const,
-  },
 };

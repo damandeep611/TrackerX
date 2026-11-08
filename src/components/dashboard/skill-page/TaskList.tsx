@@ -87,7 +87,7 @@ export function TaskList({ skillId, tasks }: { skillId: string; tasks: SkillTask
               disabled={!isDone}
               onClick={() => setShowDone((v) => !v)}
               aria-expanded={isDone ? !collapsed : undefined}
-              className="mb-1 flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs text-muted-foreground enabled:hover:text-foreground"
+              className="mb-1 flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs text-muted-foreground outline-none enabled:hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring"
             >
               {isDone && (
                 <ChevronRight
