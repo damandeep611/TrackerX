@@ -19,9 +19,8 @@ export const queryKeys = {
   },
   dashboard: {
     all: ["dashboard"] as const,
-    overview: () => [...queryKeys.dashboard.all, "overview"] as const,
+    insights: () => [...queryKeys.dashboard.all, "insights"] as const,
     weeklyProgress: () => [...queryKeys.dashboard.all, "weeklyProgress"] as const,
-    weeklyRhythm: () => [...queryKeys.dashboard.all, "weeklyRhythm"] as const,
   },
   goals: {
     all: ["goals"] as const,

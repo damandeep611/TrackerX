@@ -29,7 +29,8 @@ src/
     sandboxActions.ts                        sandboxes, phases, sessions, resources, OG scraping
     skillCardAction.ts, skillTaskAction.ts   skills + tasks
     timeLogAction.ts                         time logs + weekly/daily rollups (544 lines)
-    overviewAnalyticsAction.ts, skillAnalyticsAction.ts
+    dashboardInsightsAction.ts               home insights: streak, consistency, week-over-week, per-skill activity
+    skillAnalyticsAction.ts
   app/
     api/auth/[...all]/        Better Auth handler
     dashboard/                All app pages (see route map); layout.tsx = Sidebar + ThemeProvider + Toaster;
@@ -43,8 +44,10 @@ src/
                               (MetricValue, AnimatedNumber, DeltaChip, BarSparkline, SegmentedProgress, ProgressBar),
                               stat-card (StatCard, StatGrid), dialog, sheet, modal (wraps dialog), tooltip, input (+Textarea),
                               tabs (pill), empty-state, page (PageShell, PageHeader, SectionHeader), skeleton, dropdown-menu, chart
-    dashboard/<feature>/      feature widgets: 80-hour-goals (GoalsView, GoalDetailView…), analytics-components,
-                              header, sandbox, sidebar, skillcardComponents, skills (SkillPageWrapper, SkillHeader…), skilltodos
+    dashboard/<feature>/      feature widgets: home (HomeDashboard, KpiRow, TrendCard, ConsistencyCard, SkillsSection),
+                              80-hour-goals (GoalsView, GoalDetailView…), sandbox, sidebar,
+                              skillcardComponents (skill-card = <Link> + useLinkStatus pending state, add-skill-dialog),
+                              skills (SkillPageWrapper, SkillHeader…), skilltodos
     layout/                   landing page sections (no mock UI or testimonials)
     auth/                     sign-in / sign-out buttons
     modals/DeleteModal.tsx
@@ -61,6 +64,8 @@ src/
                               ownership.ts (assertSandboxOwner/PhaseOwner/ResourceOwner, getOwnedSkill/Task),
                               validation.ts (zod helpers: zId, zText, zHttpUrl, parseInput/tryParseInput),
                               safe-fetch.ts (SSRF-safe HTML fetch for link previews), skill-hours.ts (recompute cached skill hours)
+                              shared/pure: insights.ts (UTC day keys, streak/consistency math, takeaway sentence, formatHours),
+                              skill-colors.ts (preset skill accents; stored as hex data)
   proxy.ts                    optimistic redirect to `/` for `/dashboard/*` without a session cookie (not an auth check)
   types/, utils/              shared types; time/date formatters
 ```
@@ -69,8 +74,8 @@ src/
 | URL | Rendering | Auth check | Data |
 |---|---|---|---|
 | `/` | Server | none | — |
-| `/dashboard` | Server prefetch → client `SkillDashboard` | requireUser in page | skills list, overview, weekly progress/rhythm |
-| `/dashboard/skills/[slug]` | Server prefetch → client | requireUser; 404 if not owner | tasks, hours, timeline, task totals; analytics via RQ |
+| `/dashboard` | Server prefetch → client `HomeDashboard` | requireUser in page | skills list, dashboard insights, 7-week progress |
+| `/dashboard/skills/[slug]` | Server prefetch → client (`loading.tsx` skeleton) | requireUser; 404 if not owner | tasks, hours, timeline, task totals; analytics via RQ |
 | `/dashboard/80-hour-goals` | Server prefetch → client `GoalsView` | requireUser in page | goals list (optimistic add/delete) |
 | `/dashboard/80-hour-goals/[goalId]` | Server prefetch → client `GoalDetailView` | in actions; 404 if not owner | goal + logs (optimistic add/delete) |
 | `/dashboard/sandbox` | Server → client | in actions | getSandboxes, create/delete |
@@ -111,6 +116,7 @@ Server code calls `requireUser()` from `@/lib/require-user` (never `auth.api.get
 - Use `db.transaction` for multi-table writes (see `logSession`).
 - **Data fetching pattern:** the server page calls `await requireUser()` first (this keeps the route dynamic; `prefetchQuery` swallows errors), then `getQueryClient()` → `prefetchQuery` with keys from `lib/query-keys.ts` → `<HydrationBoundary state={dehydrate(qc)}>`. Client components read the same data through the domain hook in `hooks/`. No `useEffect` fetching.
 - **Mutations** go through hooks: optimistic `setQueryData` in `onMutate`, rollback in `onError`, targeted `invalidateQueries` in `onSettled` (e.g. `queryKeys.skills.detail(id)` refreshes all of a skill's data). Ignore optimistic `temp-` ids in follow-up actions.
+- **Dates:** `timeLog.logged_date` holds a calendar date at UTC midnight. Bucket days with `to_char(logged_date,'YYYY-MM-DD')` and compare with UTC date keys from `lib/insights.ts` (`lastNDays`, `dateKey`); format them with `timeZone: "UTC"`.
 - Avoid N+1s: aggregate with `GROUP BY` / `inArray` / a joined subquery instead of a query per item.
 
 ## Env vars (names only, from .env.example)

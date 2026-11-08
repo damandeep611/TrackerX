@@ -1,208 +1,166 @@
 "use client";
-import { Skill } from "@/types/skillDashboardTypes";
-import { useRouter } from "next/navigation";
-import React from "react";
-import { motion } from "motion/react";
-import { ArrowUpRight, Clock, Layers, MoreHorizontal, Zap } from "lucide-react";
 
-interface SkillCardProps {
-  skill: Skill;
+import Link, { useLinkStatus } from "next/link";
+import { ArrowUpRight, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, Well } from "@/components/ui/card";
+import { BarSparkline, SegmentedProgress } from "@/components/ui/metric";
+import { cn } from "@/lib/utils";
+import { daysBetween, formatHours, splitHours, type SkillActivity } from "@/lib/insights";
+import { tint } from "@/lib/skill-colors";
+import type { SkillListItem } from "@/hooks/useSkills";
+
+export type SkillStatus = "active" | "idle" | "new" | "done";
+
+export function getSkillStatus(skill: SkillListItem, activity?: SkillActivity): SkillStatus {
+  if (skill.targetHours > 0 && skill.currentHours >= skill.targetHours) return "done";
+  if ((activity?.minutes7d ?? 0) > 0) return "active";
+  if (!activity?.lastLogged) return "new";
+  return "idle";
 }
 
-export default function SkillCard({ skill }: SkillCardProps) {
-  const percentage = (skill.currentHours / skill.targetHours) * 100;
-  const totalSegments = 38;
-  const completedSegments = Math.round((percentage / 100) * totalSegments);
+const STATUS_BADGE = {
+  active: { label: "Active", variant: "success" },
+  idle: { label: "Idle", variant: "neutral" },
+  new: { label: "Not started", variant: "outline" },
+  done: { label: "Completed", variant: "brand" },
+} as const;
 
-  // const remainingHours = Math.max(0, skill.targetHours - skill.currentHours);
-  //use this remaining hours of skill in the skill overview with tasks list
-  const segmentBg = "#27272a";
-  const navigate = useRouter();
-  // skill.skillColor
-  const activeColor = skill.skillColor;
+function lastLoggedText(lastLogged: string | null | undefined, today: string) {
+  if (!lastLogged) return "No time logged yet";
+  const d = daysBetween(lastLogged, today);
+  if (d <= 0) return "Logged today";
+  if (d === 1) return "Logged yesterday";
+  return `Last logged ${d} days ago`;
+}
 
-  // Original formatting time function
-  const formatTime = (hours: number) => {
-    const wholeHours = Math.floor(hours);
-    const minutes = Math.round((hours - wholeHours) * 60);
-    if (wholeHours === 0 && minutes === 0) {
-      return `0 m`;
-    }
-    if (wholeHours === 0) {
-      return `${minutes}m`;
-    }
-    if (minutes === 0) {
-      return `${wholeHours}h`;
-    }
-    return `${wholeHours} h ${minutes}m`;
-  };
+export default function SkillCard({
+  skill,
+  activity,
+  today,
+}: {
+  skill: SkillListItem;
+  activity?: SkillActivity;
+  today: string;
+}) {
+  return (
+    <Link
+      href={`/dashboard/skills/${skill.slug}`}
+      className="group block rounded-2xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+    >
+      <SkillCardBody skill={skill} activity={activity} today={today} />
+    </Link>
+  );
+}
 
-  const getMotivationTags = (progress: number) => {
-    if (progress === 0) return "Stalled ";
-    if (progress < 5) return "Low";
-    if (progress < 20) return "Progress⚡";
-    if (progress < 50) return "Halfway There!";
-    if (progress < 80) return "Almost There!";
-    return "On Fire 🔥";
-  };
-
-  // Dynamic category color generator with dark theme support
-  const getCategoryColor = (category: string) => {
-    const hash = category.split("").reduce((a, b) => {
-      a = (a << 5) - a + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-
-    const colors = [
-      "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/20",
-      "bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-500/20",
-      "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/20",
-      "bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-500/20",
-      "bg-pink-50 dark:bg-pink-500/10 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-500/20",
-      "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/20",
-      "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 border-red-200 dark:border-red-500/20",
-      "bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-500/20",
-      "bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-500/20",
-      "bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-500/20",
-    ];
-
-    return colors[Math.abs(hash) % colors.length];
-  };
-
-  const getSkillColor = getCategoryColor(skill.category);
+/** Rendered inside the <Link> so it can read the link's pending state. */
+function SkillCardBody({
+  skill,
+  activity,
+  today,
+}: {
+  skill: SkillListItem;
+  activity?: SkillActivity;
+  today: string;
+}) {
+  const { pending } = useLinkStatus();
+  const color = skill.skillColor;
+  const status = getSkillStatus(skill, activity);
+  const badge = STATUS_BADGE[status];
+  const pct = skill.targetHours > 0 ? (skill.currentHours / skill.targetHours) * 100 : 0;
+  const remaining = Math.max(skill.targetHours - skill.currentHours, 0);
+  const week = activity?.minutes7d ?? 0;
+  const total = splitHours(skill.currentHours * 60);
 
   return (
-    <motion.div
-      className="group relative"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.25, 0.25, 0, 1] }}
+    <Card
+      interactive
+      aria-busy={pending}
+      className={cn(
+        "relative h-full overflow-hidden",
+        pending && "border-border-strong shadow-raised"
+      )}
     >
-      <motion.div
-        onClick={() => navigate.push(`/dashboard/skills/${skill.slug}`)}
-        className="relative flex flex-col p-5  bg-[#09090b] dark:bg-[#050505] border border-border/60 rounded-xl transition-all duration-300 shadow-sm cursor-pointer overflow-hidden"
-      >
-        <div
-          className={`absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-current to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${getSkillColor}`}
-        />
+      {/* Pending bar: instant feedback while the skill page loads. */}
+      <span
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 opacity-0 transition-[transform,opacity] duration-700 ease-out",
+          pending && "scale-x-90 opacity-100"
+        )}
+        style={{ background: color }}
+      />
 
-        <div className="relative pb-2">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-4 z-10">
-            <div className="flex gap-3">
-              <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center bg-zinc-900 shadow-inner border border-white/5 transition-colors duration-300 `}
-              >
-                <Layers
-                  size={18}
-                  strokeWidth={1.5}
-                  className={`${getSkillColor} bg-zinc-800`}
-                />
-              </div>
-              <div>
-                <h3 className="text-[15px] font-semibold text-zinc-100 leading-tight  transition-colors">
-                  {skill.skillName}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
-                    {skill.category}
-                  </span>
-                  <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700"></span>
-                  {percentage > 0 && (
-                    <div className="flex items-center justify-baseline gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                      <span className="text-xs text-emerald-400 font-medium">
-                        Active
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <button className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-              <MoreHorizontal size={16} />
-            </button>
-          </div>
-
-          {/* Progress Bar with glassmorphism effect */}
-          <div className="relative mb-2 flex flex-col justify-between">
-            {/* percentage text show */}
-            <div className="flex justify-between items-end mb-2">
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-widest font-semibold text-zinc-500 dark:text-zinc-600 mb-1">
-                  Progress
-                </span>
-                <span className="text-2xl font-medium   text-zinc-200 tabular-nums tracking-tight">
-                  {percentage.toFixed(0)}%
-                  <span className="text-zinc-400 dark:text-zinc-600 text-lg">
-                    %
-                  </span>
-                </span>
-              </div>
-              <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface border border-border text-[10px] font-medium text-zinc-500 dark:text-zinc-300">
-                  <Zap
-                    size={10}
-                    className={`text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400`}
-                  />
-                  {getMotivationTags(percentage)}
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full flex items-center justify-between gap-[1px] h-6 relative pt-4">
-              {Array.from({ length: totalSegments }).map((_, index) => {
-                const isActiveSegement = index < completedSegments;
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ height: "6px", opacity: 1 }}
-                    animate={{
-                      height: isActiveSegement ? "30px" : "10px",
-                      backgroundColor:
-                        index < completedSegments ? activeColor : segmentBg,
-                    }}
-                    transition={{
-                      duration: 0.4,
-                      delay: index * 0.015,
-                      type: "spring",
-                      stiffness: 200,
-                      damping: 20,
-                      ease: "easeOut",
-                    }}
-                    className="w-1.5 h-10 rounded-xs"
-                    style={{
-                      backgroundColor: isActiveSegement
-                        ? activeColor
-                        : segmentBg,
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Stats Footer */}
-          <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400">
-            <div className="flex items-center gap-1.5 text-zinc-400 ">
-              <Clock size={12} strokeWidth={2} />
-              <span className="font-mono">
-                {formatTime(skill.currentHours)}
-              </span>
-              <span className="text-zinc-300 dark:text-zinc-700">/</span>
-              <span className="font-mono">{formatTime(skill.targetHours)}</span>
-            </div>
-
-            {/* details */}
-            <button
-              className={`flex items-center gap-1 cursor-pointer text-[10px] ${getSkillColor} bg-zinc-900 font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0`}
-            >
-              Open Project <ArrowUpRight size={12} />
-            </button>
-          </div>
+      <div className="flex items-start gap-3 px-2.5 pt-2">
+        <span
+          className="flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold"
+          style={{ background: tint(color), color }}
+          aria-hidden
+        >
+          {skill.skillName.trim().charAt(0).toUpperCase() || "?"}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="flex items-center gap-1.5 truncate text-sm font-semibold text-foreground">
+            <span className="truncate">{skill.skillName}</span>
+            {pending ? (
+              <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+            ) : (
+              <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+            )}
+          </h3>
+          <p className="truncate text-xs text-muted-foreground">{skill.category}</p>
         </div>
-      </motion.div>
-    </motion.div>
+        <Badge variant={badge.variant} size="sm" dot={status === "active"}>
+          {badge.label}
+        </Badge>
+      </div>
+
+      <Well className="space-y-3 py-3.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="flex items-baseline gap-1">
+            <span className="tabular text-2xl font-medium text-foreground">{total.value}</span>
+            <span className="text-sm text-muted-foreground">
+              {total.unit}
+              <span className="text-subtle-foreground"> / {skill.targetHours}h</span>
+            </span>
+          </div>
+          <span className="tabular text-sm text-muted-foreground">{Math.min(pct, 100).toFixed(0)}%</span>
+        </div>
+        <SegmentedProgress
+          value={skill.currentHours}
+          max={skill.targetHours}
+          segments={32}
+          height={22}
+          color={color}
+          label={`${skill.skillName} progress`}
+        />
+      </Well>
+
+      <div className="flex items-end justify-between gap-3 px-2.5 pb-2">
+        <div className="min-w-0 text-xs">
+          <p className="text-foreground">
+            {week > 0 ? (
+              <>
+                <span className="tabular">{formatHours(week)}</span>
+                <span className="text-muted-foreground"> this week</span>
+              </>
+            ) : (
+              <span className="text-muted-foreground">
+                {lastLoggedText(activity?.lastLogged, today)}
+              </span>
+            )}
+          </p>
+          <p className="truncate text-subtle-foreground">
+            {status === "done" ? "Target reached" : `${formatHours(remaining * 60)} to go`}
+          </p>
+        </div>
+        <BarSparkline
+          data={activity?.daily14 ?? Array(14).fill(0)}
+          color={color}
+          height={24}
+          label={`${skill.skillName}: minutes per day, last 14 days`}
+        />
+      </div>
+    </Card>
   );
 }

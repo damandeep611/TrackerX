@@ -351,99 +351,12 @@ export async function getTimeLogsByDateForSkill(
   }
 }
 
-// Weekly activity data interface for insights
-interface WeeklyActivityData {
-  day: string;
-  hours: number;
-  hasActivity: boolean;
-}
-
 // Weekly progress data interface for charts
 interface WeeklyProgressData {
   weekLabel: string;
   weekStart: string;
   weekEnd: string;
   hours: number;
-}
-
-// Get last 7 days activity data for insights dashboard
-export async function getLastSevenDaysActivity(): Promise<
-  WeeklyActivityData[]
-> {
-  const userId = await requireUser();
-
-  try {
-    // Calculate date range for last 7 days including today
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 6);
-
-    // Reset time to start of day for accurate date comparison
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(23, 59, 59, 999);
-
-    const result = await db
-      .select({
-        loggedDate: timeLog.logged_date,
-        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(
-          Number
-        ),
-      })
-      .from(timeLog)
-      .where(
-        and(
-          eq(timeLog.user_id, userId),
-          gte(timeLog.logged_date, startDate),
-          lte(timeLog.logged_date, endDate)
-        )
-      )
-      .groupBy(timeLog.logged_date)
-      .orderBy(timeLog.logged_date);
-
-    // Create a map of dates to hours for easy lookup
-    const activityMap = new Map<string, number>();
-    result.forEach((item) => {
-      const dateKey = item.loggedDate.toISOString().split("T")[0];
-      const hours = Math.round((item.totalMinutes / 60) * 10) / 10; // Round to 1 decimal
-      activityMap.set(dateKey, hours);
-    });
-
-    // Generate array for last 7 days
-    const weeklyData: WeeklyActivityData[] = [];
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateKey = date.toISOString().split("T")[0];
-      const dayName = dayNames[date.getDay()];
-
-      const hours = activityMap.get(dateKey) || 0;
-
-      weeklyData.push({
-        day: dayName,
-        hours: hours,
-        hasActivity: hours > 0,
-      });
-    }
-
-    return weeklyData;
-  } catch (error) {
-    console.error("Failed to get weekly activity data:", error);
-    // Return default structure with 7 days and no activity
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const today = new Date();
-
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(today.getDate() - (6 - i));
-      return {
-        day: dayNames[date.getDay()],
-        hours: 0,
-        hasActivity: false,
-      };
-    });
-  }
 }
 
 // Monday 00:00 of the week containing `date` (server-local time).

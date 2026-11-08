@@ -22,6 +22,7 @@ function StatCard({
   color = "var(--brand)",
   delta,
   deltaLabel = "vs last week",
+  deltaSuffix,
   invertDelta,
   caption,
   action,
@@ -40,6 +41,8 @@ function StatCard({
   /** Signed % change; omit to hide the chip. */
   delta?: number
   deltaLabel?: string
+  /** Unit after the delta number; defaults to "%" (use " pts" for rates). */
+  deltaSuffix?: string
   invertDelta?: boolean
   caption?: React.ReactNode
   action?: React.ReactNode
@@ -64,7 +67,7 @@ function StatCard({
         <CardFooter>
           <span className="truncate">{caption}</span>
           {delta !== undefined && (
-            <DeltaChip value={delta} label={deltaLabel} invert={invertDelta} />
+            <DeltaChip value={delta} suffix={deltaSuffix} label={deltaLabel} invert={invertDelta} />
           )}
         </CardFooter>
       )}
