@@ -2,8 +2,10 @@
  * Pure helpers for the home-dashboard insights (shared by the server action
  * and the client widgets; no DB access here).
  *
- * Days are UTC calendar dates ("YYYY-MM-DD"): time logs store `logged_date`
- * as a date at UTC midnight, so UTC keys line up with how entries are written.
+ * Days are calendar date keys ("YYYY-MM-DD"). Time logs store the user's local
+ * date as `logged_date` at UTC midnight, and the server works out the user's
+ * "today" from the `tz` cookie (lib/user-today.ts), passed in as a Date at UTC
+ * midnight. So all date math here runs on UTC getters.
  */
 
 export type DayBucket = { date: string; minutes: number };
@@ -149,4 +151,77 @@ export function buildTakeaway(i: DashboardInsights): string {
     streak = ` Log today to keep your ${s.current}-day streak.`;
 
   return trend + streak;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Skill page                                                                 */
+/* -------------------------------------------------------------------------- */
+
+export type SkillInsights = Omit<DashboardInsights, "skills"> & {
+  totalMinutes: number;
+  lastLogged: string | null;
+  /** Rolling 7-day blocks ending today (8 blocks), oldest → newest. */
+  weekly: { start: string; end: string; minutes: number }[];
+};
+
+export const PACE_WEEKS = 4;
+
+/**
+ * Projected finish at the recent pace (average of the last `PACE_WEEKS` weekly
+ * blocks). Null when the target is reached or there is no recent activity.
+ */
+export function projectEta(
+  insights: SkillInsights,
+  targetHours: number
+): { weeklyMinutes: number; remainingMinutes: number; date: string | null; weeks: number | null } {
+  const recent = insights.weekly.slice(-PACE_WEEKS);
+  const weeklyMinutes = recent.reduce((a, w) => a + w.minutes, 0) / Math.max(recent.length, 1);
+  const remainingMinutes = Math.max(targetHours * 60 - insights.totalMinutes, 0);
+  if (remainingMinutes === 0 || weeklyMinutes <= 0) {
+    return { weeklyMinutes, remainingMinutes, date: null, weeks: null };
+  }
+  const weeks = remainingMinutes / weeklyMinutes;
+  const date = dateKey(new Date(Date.parse(`${insights.today}T00:00:00Z`) + weeks * 7 * 86_400_000));
+  return { weeklyMinutes, remainingMinutes, date, weeks };
+}
+
+/** "Mar 3" or "Mar 3, 2027" when not this year. */
+export function formatDay(key: string, today?: string): string {
+  const d = new Date(`${key}T00:00:00Z`);
+  const sameYear = today ? key.slice(0, 4) === today.slice(0, 4) : true;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
+    timeZone: "UTC",
+  });
+}
+
+/** One or two plain-language sentences for the skill page header. */
+export function buildSkillTakeaway(i: SkillInsights, targetHours: number): string {
+  if (i.totalMinutes === 0) return "No time logged yet. Pick a task and log your first session.";
+  const eta = projectEta(i, targetHours);
+  if (eta.remainingMinutes === 0) {
+    return `Target reached with ${formatHours(i.totalMinutes)} logged. Keep going or raise the target.`;
+  }
+
+  let pace: string;
+  if (eta.date) {
+    pace = `At your recent pace (${formatHours(eta.weeklyMinutes)}/week) you'll reach ${targetHours}h around ${formatDay(eta.date, i.today)}.`;
+  } else {
+    const ago = i.lastLogged ? daysBetween(i.lastLogged, i.today) : null;
+    pace = `No time in the last ${PACE_WEEKS} weeks, so there's no finish date yet${
+      ago ? ` (last logged ${ago} days ago)` : ""
+    }.`;
+  }
+
+  const { minutes, prevMinutes } = i.last7;
+  const diff = minutes - prevMinutes;
+  let week = "";
+  if (minutes > 0 && prevMinutes > 0 && Math.abs(diff) >= 30) {
+    week = ` ${formatHours(minutes)} this week, ${formatHours(Math.abs(diff))} ${diff > 0 ? "more" : "less"} than last week.`;
+  } else if (minutes > 0 && prevMinutes === 0) {
+    week = ` ${formatHours(minutes)} this week after a quiet week before.`;
+  }
+  return pace + week;
 }

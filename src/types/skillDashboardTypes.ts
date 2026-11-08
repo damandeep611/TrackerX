@@ -1,64 +1,39 @@
-export interface Skill {
-  id: string;
-  skillName: string;
-  category: string;
-  targetHours: number;
-  currentHours: number;
-  skillColor: string;
-  slug: string;
-  description?: string | null;
-  createdAt: string;
-}
+/** Shared shapes passed between Server Actions and client components. */
 
-//why type definations ? - well these types or interfaces let us define the shape of the data.
-//  so maintain consistency in frontend and backend as these types are passed to both client and server components
+export const TASK_STATUSES = ["todo", "in_progress", "done"] as const;
+export type TaskStatus = (typeof TASK_STATUSES)[number];
 
-//this skillTodo type is what the todo card will contain
-export interface skillTodo {
+/** A task on a skill, with the time logged against it. */
+export interface SkillTask {
   id: string;
-  skill_id: string; //foreign key linking to the skillCard
+  skill_id: string;
   title: string;
   description: string | null;
-  done: boolean;
-  status: string; // "todo" | "in_progress" | "done"
+  status: TaskStatus;
   tags: string[];
-  date: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  /** Total minutes logged on this task. */
+  minutes: number;
 }
 
-// the structure to define the new skilltodo created by form and server action
-export type newSkillTodo = {
-  title: string;
-  description: string | null;
-  done: boolean;
-  status?: string;
-  tags: string[];
+export type NewSkillTask = {
   skillId: string;
-  date?: string;
+  title: string;
+  description?: string | null;
+  tags?: string[];
+  status?: TaskStatus;
 };
 
-// Time log type for tracking individual time entries
-export interface TimeLog {
-  id: string;
-  task_id: string;
-  user_id: string;
-  skill_id: string;
-  minutes: number;
-  logged_date: string; // ISO string
-  tracked_at: string; // ISO string
-}
+export type SkillTaskPatch = Partial<Pick<SkillTask, "title" | "description" | "tags" | "status">>;
 
-// New time log creation type
 export type NewTimeLog = {
   task_id: string;
   skill_id: string;
   minutes: number;
-  logged_date?: string; // Optional, defaults to today
+  /** The user's local calendar date, "YYYY-MM-DD". */
+  logged_date: string;
 };
 
-// Enhanced skill todo with time logs
-export interface skillTodoWithTimeLogs extends skillTodo {
-  timeLogs?: TimeLog[];
-  totalLoggedTime?: number; // Calculated total from time logs
-}
+/** Longest single time entry, in minutes (owner decision: 3h cap). */
+export const MAX_ENTRY_MINUTES = 180;

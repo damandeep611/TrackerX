@@ -4,6 +4,7 @@ import { and, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import { timeLog } from "@/db/schema/schema";
 import { requireUser } from "@/lib/require-user";
+import { getUserToday } from "@/lib/user-today";
 import {
   lastNDays,
   summarize,
@@ -22,7 +23,7 @@ const SKILL_DAYS = 14;
 export async function getDashboardInsights(): Promise<DashboardInsights> {
   const userId = await requireUser();
 
-  const now = new Date();
+  const now = await getUserToday();
   const keys = lastNDays(HISTORY_DAYS, now);
   const skillKeys = keys.slice(-SKILL_DAYS);
   const historyStart = new Date(`${keys[0]}T00:00:00.000Z`);

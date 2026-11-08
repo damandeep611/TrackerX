@@ -7,8 +7,6 @@ import { z } from "zod";
 import { requireUser } from "@/lib/require-user";
 import { parseInput, zId, zOptionalText, zText } from "@/lib/validation";
 
-const zSlug = z.string().trim().min(1).max(200);
-
 const skillCardInput = z.object({
   skillName: zText(100),
   category: zText(60),
@@ -69,63 +67,6 @@ export async function getSkillCard() {
     createdAt: skill.createdAt.toISOString(),
     currentHours: totalMinutes / 60,
   }));
-}
-
-export async function getCurrentHours(slug: string) {
-  const userId = await requireUser();
-  slug = parseInput(zSlug, slug);
-
-  try {
-    // Get the skill ID from the slug and calculate current hours from time logs
-    const skill = await db
-      .select({ id: skillCard.id })
-      .from(skillCard)
-      .where(
-        and(eq(skillCard.slug, slug), eq(skillCard.userId, userId))
-      )
-      .limit(1);
-
-    if (!skill || skill.length === 0) {
-      return "0.0";
-    }
-
-    const skillId = skill[0].id;
-
-    // Calculate total minutes from time logs for this skill
-    const timeLogResult = await db
-      .select({
-        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(
-          Number
-        ),
-      })
-      .from(timeLog)
-      .where(
-        and(eq(timeLog.skill_id, skillId), eq(timeLog.user_id, userId))
-      );
-
-    const timeLogMinutes = timeLogResult[0]?.totalMinutes || 0;
-    const calculatedHours = timeLogMinutes / 60.0;
-
-    return calculatedHours.toFixed(1);
-  } catch (error) {
-    console.error("Error calculating current hours:", error);
-    return "0.0";
-  }
-}
-
-// Get skill by slug
-export async function getSkillBySlug(slug: string) {
-  const userId = await requireUser();
-  slug = parseInput(zSlug, slug);
-
-  const skills = await db
-    .select()
-    .from(skillCard)
-    .where(
-      and(eq(skillCard.slug, slug), eq(skillCard.userId, userId))
-    );
-
-  return skills[0];
 }
 
 //adding skill card

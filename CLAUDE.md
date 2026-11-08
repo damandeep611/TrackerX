@@ -1,6 +1,6 @@
 # CLAUDE.md — TrackerX (buildxskill)
 
-Personal skill-mastery and time-auditing dashboard. Users track hours on skills (with a Kanban task board), run 80-hour deep-work goal sprints, and plan open-ended projects in "sandboxes".
+Personal skill-mastery and time-auditing dashboard. Users track hours on skills (tasks in a To do / Doing / Done list, quick time logging), run 80-hour deep-work goal sprints, and plan open-ended projects in "sandboxes".
 
 Refactor work is tracked in **`refactor-claude.md`**. Check it before changing code. Its top section, **SESSION HANDOFF**, says where work stopped and what comes next.
 
@@ -12,7 +12,7 @@ Refactor work is tracked in **`refactor-claude.md`**. Check it before changing c
 - Auth: Better Auth **1.7.18**, Google OAuth only, Drizzle adapter
 - Data fetching: TanStack Query 5 over Server Actions, with server prefetch + `HydrationBoundary`; the only Route Handler is Better Auth
 - Charts: Recharts only (via shadcn `ui/chart.tsx`)
-- Icons: **lucide-react only**. Other: date-fns, cheerio (OG scraping), react-hot-toast, @dnd-kit
+- Icons: **lucide-react only**. Other: date-fns, cheerio (OG scraping), react-hot-toast
 - zod 4 validates every Server Action input (helpers in `src/lib/validation.ts`). No rate limiting yet (Upstash was removed in P1).
 - Package manager: **pnpm**
 
@@ -27,10 +27,10 @@ src/
   actions/            Server Actions ("use server"): all data reads/writes
     goalActions.ts, goalLogActions.ts        80-hour goals + session logs
     sandboxActions.ts                        sandboxes, phases, sessions, resources, OG scraping
-    skillCardAction.ts, skillTaskAction.ts   skills + tasks
-    timeLogAction.ts                         time logs + weekly/daily rollups (544 lines)
+    skillCardAction.ts, skillTaskAction.ts   skills + tasks (getSkillTasks returns each task with its logged minutes)
+    timeLogAction.ts                         createTimeLog (1–180 min, user's local date) / deleteTimeLog (undo) + 7-week rollup
     dashboardInsightsAction.ts               home insights: streak, consistency, week-over-week, per-skill activity
-    skillAnalyticsAction.ts
+    skillInsightsAction.ts                   skill page: getSkillInsights (trend/streak/consistency/total), getTagSuggestions
   app/
     api/auth/[...all]/        Better Auth handler
     dashboard/                All app pages (see route map); layout.tsx = Sidebar + ThemeProvider + Toaster;
@@ -47,27 +47,28 @@ src/
     dashboard/<feature>/      feature widgets: home (HomeDashboard, KpiRow, TrendCard, ConsistencyCard, SkillsSection),
                               80-hour-goals (GoalsView, GoalDetailView…), sandbox, sidebar,
                               skillcardComponents (skill-card = <Link> + useLinkStatus pending state, add-skill-dialog),
-                              skills (SkillPageWrapper, SkillHeader…), skilltodos
+                              skill-page (SkillPage, QuickAddTask, TaskList/TaskRow, LogTimeControl, TagPicker,
+                              TaskEditDialog, SkillInsightsTab), TimeZoneCookie (writes the `tz` cookie)
     layout/                   landing page sections (no mock UI or testimonials)
     auth/                     sign-in / sign-out buttons
-    modals/DeleteModal.tsx
   db/
     drizzle.ts                Pool + drizzle client (schema = auth + main; main re-exports sandbox-schema)
     schema/schema.ts          skillCard, skillTask, timeLog, goals, goal_logs
     schema/sandbox-schema.ts  sandboxes, sandbox_phases, sandbox_logs, sandbox_resources
     schema/auth-schema.ts     Better Auth: user, session, account, verification
   hooks/                      one React Query hook file per domain: useSkills (list, per-skill data, time logs),
-                              useDashboardAnalytics, useGoals; plus useSkillTodoManager (local Kanban state)
+                              useDashboardAnalytics, useSkillPage (tasks/insights/tags + optimistic task & time-log mutations), useGoals
   lib/                        auth.ts (Better Auth server config), auth-client.ts, utils.ts (cn),
                               query-keys.ts (hierarchical RQ key factory), query-client.ts (getQueryClient)
                               server-only: require-user.ts (requireUser/getCurrentUser, cached per request),
                               ownership.ts (assertSandboxOwner/PhaseOwner/ResourceOwner, getOwnedSkill/Task),
                               validation.ts (zod helpers: zId, zText, zHttpUrl, parseInput/tryParseInput),
                               safe-fetch.ts (SSRF-safe HTML fetch for link previews), skill-hours.ts (recompute cached skill hours)
-                              shared/pure: insights.ts (UTC day keys, streak/consistency math, takeaway sentence, formatHours),
+                              user-today.ts (user's calendar "today" from the `tz` cookie)
+                              shared/pure: duration.ts (parseDuration "1h 30m", formatDuration, localDateKey), insights.ts (UTC day keys, streak/consistency math, takeaway sentence, formatHours),
                               skill-colors.ts (preset skill accents; stored as hex data)
   proxy.ts                    optimistic redirect to `/` for `/dashboard/*` without a session cookie (not an auth check)
-  types/, utils/              shared types; time/date formatters
+  types/                      shared types (SkillTask, TaskStatus, NewTimeLog, MAX_ENTRY_MINUTES = 180)
 ```
 
 ## Route map
@@ -75,7 +76,7 @@ src/
 |---|---|---|---|
 | `/` | Server | none | — |
 | `/dashboard` | Server prefetch → client `HomeDashboard` | requireUser in page | skills list, dashboard insights, 7-week progress |
-| `/dashboard/skills/[slug]` | Server prefetch → client (`loading.tsx` skeleton) | requireUser; 404 if not owner | tasks, hours, timeline, task totals; analytics via RQ |
+| `/dashboard/skills/[slug]` | Server prefetch → client `SkillPage` (`loading.tsx` skeleton) | requireUser; 404 if not owner | tasks (+minutes), skill insights, tag suggestions |
 | `/dashboard/80-hour-goals` | Server prefetch → client `GoalsView` | requireUser in page | goals list (optimistic add/delete) |
 | `/dashboard/80-hour-goals/[goalId]` | Server prefetch → client `GoalDetailView` | in actions; 404 if not owner | goal + logs (optimistic add/delete) |
 | `/dashboard/sandbox` | Server → client | in actions | getSandboxes, create/delete |
@@ -116,7 +117,8 @@ Server code calls `requireUser()` from `@/lib/require-user` (never `auth.api.get
 - Use `db.transaction` for multi-table writes (see `logSession`).
 - **Data fetching pattern:** the server page calls `await requireUser()` first (this keeps the route dynamic; `prefetchQuery` swallows errors), then `getQueryClient()` → `prefetchQuery` with keys from `lib/query-keys.ts` → `<HydrationBoundary state={dehydrate(qc)}>`. Client components read the same data through the domain hook in `hooks/`. No `useEffect` fetching.
 - **Mutations** go through hooks: optimistic `setQueryData` in `onMutate`, rollback in `onError`, targeted `invalidateQueries` in `onSettled` (e.g. `queryKeys.skills.detail(id)` refreshes all of a skill's data). Ignore optimistic `temp-` ids in follow-up actions.
-- **Dates:** `timeLog.logged_date` holds a calendar date at UTC midnight. Bucket days with `to_char(logged_date,'YYYY-MM-DD')` and compare with UTC date keys from `lib/insights.ts` (`lastNDays`, `dateKey`); format them with `timeZone: "UTC"`.
+- **Dates:** `timeLog.logged_date` holds the user's *local* calendar date at UTC midnight (the client sends `localDateKey()`). Server "today" = `getUserToday()` (from the `tz` cookie set by `TimeZoneCookie`). Bucket days with `to_char(logged_date,'YYYY-MM-DD')`, compare with date keys from `lib/insights.ts` (`lastNDays`, `dateKey`), and format them with `timeZone: "UTC"`.
+- **Time entries** are capped at 3h (`MAX_ENTRY_MINUTES`) in the UI and in `createTimeLog`'s zod schema. Reversible actions use `undoToast` (`components/ui/undo-toast.tsx`) instead of a confirm dialog.
 - Avoid N+1s: aggregate with `GROUP BY` / `inArray` / a joined subquery instead of a query per item.
 
 ## Env vars (names only, from .env.example)

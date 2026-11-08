@@ -1,353 +1,91 @@
 "use server";
 
+import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "@/db/drizzle";
 import { timeLog } from "@/db/schema/schema";
-import { TimeLog, NewTimeLog } from "@/types/skillDashboardTypes";
-import { and, eq, sql, desc, gte, lte, inArray } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { requireUser } from "@/lib/require-user";
-import { getOwnedSkill, getOwnedTask } from "@/lib/ownership";
+import { getOwnedTask } from "@/lib/ownership";
 import { recomputeSkillHours } from "@/lib/skill-hours";
-import { parseInput, tryParseInput, zId } from "@/lib/validation";
+import { tryParseInput, zId } from "@/lib/validation";
+import { MAX_ENTRY_MINUTES, type NewTimeLog } from "@/types/skillDashboardTypes";
+
+const DAY_MS = 86_400_000;
 
 const newTimeLogInput = z.object({
   task_id: zId,
   skill_id: zId,
-  minutes: z.number().int().min(1).max(24 * 60),
+  // One entry is capped at 3h (owner decision); longer sessions are split.
+  minutes: z
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_ENTRY_MINUTES, `Max ${MAX_ENTRY_MINUTES / 60}h per entry`),
+  // The user's local calendar day. Allow ±1 day around UTC "today" for time zones.
   logged_date: z
     .string()
-    .refine((v) => !Number.isNaN(new Date(v).getTime()), "Invalid date")
-    .optional(),
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine((v) => {
+      const t = Date.parse(`${v}T00:00:00Z`);
+      return !Number.isNaN(t) && Math.abs(t - Date.now()) <= 2 * DAY_MS;
+    }, "Invalid date"),
 });
 
-const zDateString = z
-  .string()
-  .refine((v) => !Number.isNaN(new Date(v).getTime()), "Invalid date");
-
-// Create a new time log entry
+/** Log minutes against a task, on the user's local date. */
 export async function createTimeLog(
-  timeLogData: NewTimeLog
-): Promise<{ success: boolean; error?: string; timeLog?: TimeLog }> {
+  data: NewTimeLog
+): Promise<{ success: true; id: string } | { success: false; error: string }> {
   const userId = await requireUser();
+  const parsed = newTimeLogInput.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid time entry" };
+  }
+  const input = parsed.data;
 
   try {
-    const input = tryParseInput(newTimeLogInput, timeLogData);
-    if (!input) {
-      return { success: false, error: "Invalid time log data" };
-    }
-
     // The task must belong to the caller and to that skill (SEC-05).
     const task = await getOwnedTask(input.task_id, input.skill_id, userId);
-    if (!task) {
-      return { success: false, error: "Task not found" };
-    }
+    if (!task) return { success: false, error: "Task not found" };
 
-    // Set logged_date to today if not provided
-    const loggedDate =
-      input.logged_date || new Date().toISOString().split("T")[0];
-
-    const insertedTimeLogs = await db
+    const [row] = await db
       .insert(timeLog)
       .values({
         task_id: input.task_id,
         user_id: userId,
         skill_id: input.skill_id,
         minutes: input.minutes,
-        logged_date: new Date(loggedDate),
+        logged_date: new Date(`${input.logged_date}T00:00:00.000Z`),
         tracked_at: new Date(),
       })
-      .returning();
+      .returning({ id: timeLog.id });
 
-    if (!insertedTimeLogs || insertedTimeLogs.length === 0) {
-      throw new Error("Failed to create time log");
-    }
-
-    const createdTimeLog = insertedTimeLogs[0];
-
-    // Update the skill card's current hours based on time logs
     await recomputeSkillHours(input.skill_id, userId);
-
-    // Only revalidate the specific skill page to reduce unnecessary renders
-    const skill = await getOwnedSkill(input.skill_id, userId);
-    if (skill?.slug) {
-      revalidatePath(`/dashboard/skills/${skill.slug}`);
-    }
-
-    const timeLogResult: TimeLog = {
-      id: createdTimeLog.id,
-      task_id: createdTimeLog.task_id,
-      user_id: createdTimeLog.user_id,
-      skill_id: createdTimeLog.skill_id,
-      minutes: createdTimeLog.minutes,
-      logged_date: createdTimeLog.logged_date.toISOString(),
-      tracked_at: createdTimeLog.tracked_at.toISOString(),
-    };
-
-    return { success: true, timeLog: timeLogResult };
+    return { success: true, id: row.id };
   } catch (error) {
     console.error("Failed to create time log:", error);
-    return { success: false, error: "Failed to create time log" };
+    return { success: false, error: "Failed to log time" };
   }
 }
 
-// Get time logs for a specific task
-export async function getTimeLogsForTask(taskId: string): Promise<TimeLog[]> {
-  const userId = await requireUser();
-  if (!tryParseInput(zId, taskId)) return [];
-
-  try {
-    const timeLogs = await db
-      .select()
-      .from(timeLog)
-      .where(and(eq(timeLog.task_id, taskId), eq(timeLog.user_id, userId)))
-      .orderBy(desc(timeLog.tracked_at));
-
-    return timeLogs.map((log) => ({
-      id: log.id,
-      task_id: log.task_id,
-      user_id: log.user_id,
-      skill_id: log.skill_id,
-      minutes: log.minutes,
-      logged_date: log.logged_date.toISOString(),
-      tracked_at: log.tracked_at.toISOString(),
-    }));
-  } catch (error) {
-    console.error("Failed to get time logs for task:", error);
-    return [];
-  }
-}
-
-// Get total time spent for a task (from time logs)
-export async function getTotalTimeForTask(taskId: string): Promise<number> {
-  const userId = await requireUser();
-  if (!tryParseInput(zId, taskId)) return 0;
-
-  try {
-    const result = await db
-      .select({
-        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(
-          Number
-        ),
-      })
-      .from(timeLog)
-      .where(and(eq(timeLog.task_id, taskId), eq(timeLog.user_id, userId)));
-    const totalMinutes = result[0]?.totalMinutes || 0;
-    return totalMinutes;
-  } catch (error) {
-    console.error("Failed to get total time for task:", error);
-    return 0;
-  }
-}
-
-// Get total time spent for multiple tasks at once (optimized)
-export async function getTotalTimeForTasks(
-  taskIds: string[]
-): Promise<Record<string, number>> {
-  const userId = await requireUser();
-
-  // Return empty object if no task IDs provided
-  if (!taskIds || taskIds.length === 0) {
-    return {};
-  }
-
-  const ids = parseInput(z.array(z.string().max(100)).max(1000), taskIds);
-
-  // Skip optimistic temp IDs ("temp-...") and anything that isn't a uuid
-  const validTaskIds = ids.filter((id) => zId.safeParse(id).success);
-
-  // Return empty object if no valid task IDs
-  if (validTaskIds.length === 0) {
-    return {};
-  }
-
-  try {
-    const timeMap: Record<string, number> = {};
-
-    // Initialize all task IDs with 0 minutes
-    taskIds.forEach((taskId) => {
-      timeMap[taskId] = 0;
-    });
-
-    // One grouped query for all tasks (PERF-02)
-    const rows = await db
-      .select({
-        taskId: timeLog.task_id,
-        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(Number),
-      })
-      .from(timeLog)
-      .where(and(inArray(timeLog.task_id, validTaskIds), eq(timeLog.user_id, userId)))
-      .groupBy(timeLog.task_id);
-
-    for (const row of rows) {
-      timeMap[row.taskId] = row.totalMinutes;
-    }
-
-    return timeMap;
-  } catch (error) {
-    console.error("Failed to get total time for tasks:", error);
-    return {};
-  }
-}
-
-// Get today's total time spent across all skills (updated to use time logs)
-export async function getTodayTotalTimeSpentFromLogs(): Promise<number> {
-  const userId = await requireUser();
-
-  try {
-    const today = new Date();
-    const todayString = today.toISOString().split("T")[0];
-
-    const result = await db
-      .select({
-        totalMinutes: sql<number>`COALESCE(sum(${timeLog.minutes}), 0)`.mapWith(
-          Number
-        ),
-      })
-      .from(timeLog)
-      .where(
-        and(
-          eq(timeLog.user_id, userId),
-          sql`DATE(${timeLog.logged_date}) = ${todayString}`
-        )
-      );
-
-    const totalMinutes = result[0]?.totalMinutes || 0;
-    const totalHours = Math.round((totalMinutes / 60) * 10) / 10;
-
-    console.log(
-      `Today's total time spent (from logs): ${totalHours}h (${totalMinutes} minutes)`
-    );
-    return totalHours;
-  } catch (error) {
-    console.error("Failed to get today's total time spent from logs:", error);
-    return 0;
-  }
-}
-
-// Delete a time log entry
+/** Remove a time entry (used by the "Undo" toast). */
 export async function deleteTimeLog(
   timeLogId: string
 ): Promise<{ success: boolean; error?: string }> {
   const userId = await requireUser();
-  if (!tryParseInput(zId, timeLogId)) {
-    return { success: false, error: "Time log not found or access denied" };
-  }
+  if (!tryParseInput(zId, timeLogId)) return { success: false, error: "Time log not found" };
 
   try {
-    // First, get the skill_id from the time log before deleting it
-    const timeLogToDelete = await db
-      .select({ skill_id: timeLog.skill_id })
-      .from(timeLog)
-      .where(and(eq(timeLog.id, timeLogId), eq(timeLog.user_id, userId)))
-      .limit(1);
-
-    if (!timeLogToDelete || timeLogToDelete.length === 0) {
-      return { success: false, error: "Time log not found or access denied" };
-    }
-
-    const skillId = timeLogToDelete[0].skill_id;
-
-    // Delete the time log
-    const result = await db
+    const [deleted] = await db
       .delete(timeLog)
-      .where(and(eq(timeLog.id, timeLogId), eq(timeLog.user_id, userId)));
+      .where(and(eq(timeLog.id, timeLogId), eq(timeLog.user_id, userId)))
+      .returning({ skillId: timeLog.skill_id });
+    if (!deleted) return { success: false, error: "Time log not found" };
 
-    if (result.rowCount === 0) {
-      return { success: false, error: "Time log not found or access denied" };
-    }
-
-    // Update the skill card's current hours after deletion
-    await recomputeSkillHours(skillId, userId);
-
-    // Only revalidate the specific skill page to reduce unnecessary renders
-    const skill = await getOwnedSkill(skillId, userId);
-    if (skill?.slug) {
-      revalidatePath(`/dashboard/skills/${skill.slug}`);
-    }
-
+    await recomputeSkillHours(deleted.skillId, userId);
     return { success: true };
   } catch (error) {
     console.error("Failed to delete time log:", error);
     return { success: false, error: "Failed to delete time log" };
-  }
-}
-
-// Get time logs for a specific date range
-export async function getTimeLogsForDateRange(
-  startDate: string,
-  endDate: string
-): Promise<TimeLog[]> {
-  const userId = await requireUser();
-  parseInput(z.object({ startDate: zDateString, endDate: zDateString }), { startDate, endDate });
-
-  try {
-    const timeLogs = await db
-      .select()
-      .from(timeLog)
-      .where(
-        and(
-          eq(timeLog.user_id, userId),
-          gte(timeLog.logged_date, new Date(startDate)),
-          lte(timeLog.logged_date, new Date(endDate))
-        )
-      )
-      .orderBy(desc(timeLog.logged_date));
-
-    return timeLogs.map((log) => ({
-      id: log.id,
-      task_id: log.task_id,
-      user_id: log.user_id,
-      skill_id: log.skill_id,
-      minutes: log.minutes,
-      logged_date: log.logged_date.toISOString(),
-      tracked_at: log.tracked_at.toISOString(),
-    }));
-  } catch (error) {
-    console.error("Failed to get time logs for date range:", error);
-    return [];
-  }
-}
-
-// Get time logs grouped by date for a specific skill and date range
-export async function getTimeLogsByDateForSkill(
-  skillId: string,
-  startDate: Date,
-  endDate: Date
-): Promise<Record<string, number>> {
-  const userId = await requireUser();
-  parseInput(
-    z.object({ skillId: zId, startDate: z.date(), endDate: z.date() }),
-    { skillId, startDate, endDate }
-  );
-
-  try {
-    const result = await db
-      .select({
-        date: timeLog.logged_date,
-        totalMinutes: sql<number>`sum(${timeLog.minutes})`.mapWith(Number),
-      })
-      .from(timeLog)
-      .where(
-        and(
-          eq(timeLog.user_id, userId),
-          eq(timeLog.skill_id, skillId),
-          gte(timeLog.logged_date, startDate),
-          lte(timeLog.logged_date, endDate)
-        )
-      )
-      .groupBy(timeLog.logged_date);
-
-    const timeMap: Record<string, number> = {};
-    result.forEach((item) => {
-      const dateKey = item.date.toISOString().split("T")[0];
-      timeMap[dateKey] = (timeMap[dateKey] || 0) + item.totalMinutes;
-    });
-
-    return timeMap;
-  } catch (error) {
-    console.error("Failed to get time logs by date for skill:", error);
-    return {};
   }
 }
 
