@@ -190,6 +190,13 @@
       "when": 1794132895118,
       "tag": "0026_drop_goals",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1794890025738,
+      "tag": "0027_striped_salo",
+      "breakpoints": true
     }
   ]
 }

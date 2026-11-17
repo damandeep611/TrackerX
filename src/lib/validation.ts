@@ -43,6 +43,23 @@ export const zLocalDate = z
     return !Number.isNaN(t) && Math.abs(t - Date.now()) <= 2 * 86_400_000;
   }, "Invalid date");
 
+/**
+ * A calendar date key "YYYY-MM-DD" for any past day (tracker history edits),
+ * up to 2 days ahead of the server's now (time zones). Not before 2020.
+ */
+export const zDateKey = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((v) => {
+    const t = Date.parse(`${v}T00:00:00Z`);
+    return (
+      !Number.isNaN(t) &&
+      new Date(t).toISOString().slice(0, 10) === v &&
+      t >= Date.UTC(2020, 0, 1) &&
+      t - Date.now() <= 2 * 86_400_000
+    );
+  }, "Invalid date");
+
 export class ValidationError extends Error {
   constructor(message = "Invalid input") {
     super(message);

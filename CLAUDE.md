@@ -1,6 +1,6 @@
 # CLAUDE.md — TrackerX (buildxskill)
 
-Personal skill-mastery and time-auditing dashboard. Users track hours on skills (tasks in a To do / Doing / Done list, quick time logging), run open-ended deep-work projects in "sandboxes" (hour target, quick session logging, a milestone marker every 20h on a radial dial).
+Personal skill-mastery and time-auditing dashboard. Users track hours on skills (tasks in a To do / Doing / Done list, quick time logging), run open-ended deep-work projects in "sandboxes" (hour target, quick session logging, a milestone marker every 20h on a radial dial), and plan each day in the **tracker** (task table with estimate/actual time, end-of-day review, tomorrow's list carried into the next day, history).
 
 Refactor work (P1–P9, complete) is tracked in **`refactor-claude.md`**. Open follow-ups (rate limiting, tests) are in **`features-todo.md`**. Check it before changing code. Its top section, **SESSION HANDOFF**, says where work stopped and what comes next.
 
@@ -18,7 +18,7 @@ Refactor work (P1–P9, complete) is tracked in **`refactor-claude.md`**. Open f
 
 ## Commands
 - `pnpm dev` / `pnpm build` / `pnpm lint` (`eslint .` with the native flat config from `eslint-config-next`; `next lint` no longer exists in Next 16). All rules at their defaults (`react-hooks/set-state-in-effect` is an error again since P8).
-- DB: `drizzle.config.ts` → migrations in `migrations/` (`pnpm generate` / `pnpm migrate`). All migrations through `0025` are **applied** (2026-11-08); **`0026_drop_goals.sql` (destructive: drops `goals` + `goal_logs`) is generated, not applied**: deploy the P8 code first, then the owner runs `pnpm migrate` from Windows. The prod DB was originally built with `drizzle-kit push`, so 0010–0020 were baselined into `drizzle.__drizzle_migrations` by hand; use `pnpm generate` + `pnpm migrate` from now on, never `drizzle:push`. Migrations can't run from the owner's WSL2 (Neon WebSocket fails); the owner runs them from a Windows checkout. `drizzle-kit migrate` can exit 1 without printing the error: run the drizzle-orm migrator in a small node script to see it.
+- DB: `drizzle.config.ts` → migrations in `migrations/` (`pnpm generate` / `pnpm migrate`). All migrations through `0026` are applied (2026-11-08). The tracker tables (2026-11-17) need `pnpm generate` + `pnpm migrate`, which **the owner runs** (never run git or DB commands, never add a Claude co-author line). The prod DB was originally built with `drizzle-kit push`, so 0010–0020 were baselined into `drizzle.__drizzle_migrations` by hand; use `pnpm generate` + `pnpm migrate` from now on, never `drizzle:push`. Migrations can't run from the owner's WSL2 (Neon WebSocket fails); the owner runs them from a Windows checkout. `drizzle-kit migrate` can exit 1 without printing the error: run the drizzle-orm migrator in a small node script to see it.
 - No test suite exists.
 
 ## Folder map
@@ -32,6 +32,8 @@ src/
     timeLogAction.ts                         createTimeLog (1–180 min, user's local date) / deleteTimeLog (undo) + 7-week rollup
     dashboardInsightsAction.ts               home insights: streak, consistency, week-over-week, per-skill activity
     skillInsightsAction.ts                   skill page: getSkillInsights (trend/streak/consistency/total), getTagSuggestions
+    trackerActions.ts                        daily tracker: getTrackerDay (day + "from yesterday" carry-in, today only), getTrackerHistory
+                                             (42-day summaries), updateTrackerDay, task add/update/delete/reorder, tomorrow list, importCarryIn/dismissCarryIn
   app/
     api/auth/[...all]/        Better Auth handler
     dashboard/                All app pages (see route map); layout.tsx = Sidebar + ThemeProvider + Toaster;
@@ -47,10 +49,13 @@ src/
                               stat-card (StatCard, StatGrid), dialog, sheet, modal (wraps dialog), tooltip, input (+Textarea), chip,
                               tabs (pill), empty-state, page (PageShell, PageHeader, SectionHeader), skeleton, dropdown-menu, chart
     dashboard/<feature>/      feature widgets: home (HomeDashboard, KpiRow, TrendCard, ConsistencyCard, SkillsSection),
-                              sidebar (nav-config: Dashboard + Sandboxes),
+                              sidebar (nav-config: Dashboard + Tracker + Sandboxes),
                               sandbox (SandboxListView, SandboxCard, SandboxDetailView, MilestoneDial, MilestoneList,
                               QuickLog (chips + panel), SessionList, SandboxInsightsTab, ResourcesPanel, SandboxDialogs),
                               insights (WeeklyHoursCard, shared by the skill + sandbox Insights tabs),
+                              tracker (TrackerPage = RQ container; TrackerView = presentational, data in / TrackerDayActions out;
+                              TaskTable (inline cells, motion Reorder, Alt+↑/↓), DayCard (available time + SegmentedProgress),
+                              EndOfDayCard, CarryInBanner, ReminderNote, TrackerHistory, fields.tsx (InlineText, DurationField), TrackerSkeleton),
                               skillcardComponents (skill-card = <Link> + useLinkStatus pending state, add-skill-dialog),
                               skill-page (SkillPage, QuickAddTask, TaskList/TaskRow, LogTimeControl, TagPicker,
                               TaskEditDialog, SkillInsightsTab), TimeZoneCookie (writes the `tz` cookie)
@@ -59,13 +64,15 @@ src/
     auth/GoogleSignInButton   "Continue with Google": honest pending state, errors → toast; GoogleMark (brand hex allowed)
     brand.tsx                 Brand / BrandMark (sidebar, landing, sign-in)
   db/
-    drizzle.ts                Pool + drizzle client (schema = auth + main; main re-exports sandbox-schema)
-    schema/schema.ts          skillCard, skillTask, timeLog (re-exports sandbox-schema)
-    schema/sandbox-schema.ts  sandboxes, sandbox_phases, sandbox_logs, sandbox_resources
+    drizzle.ts                Pool + drizzle client (schema = auth + main; main re-exports sandbox- + tracker-schema)
+    schema/schema.ts          skillCard, skillTask, timeLog (re-exports sandbox-schema + tracker-schema)
+    schema/sandbox-schema.ts  sandboxes, sandbox_logs, sandbox_resources, sandbox_milestones
+    schema/tracker-schema.ts  tracker_days, tracker_tasks, tracker_tomorrow (Postgres `date` columns, "YYYY-MM-DD" strings)
     schema/auth-schema.ts     Better Auth: user, session, account, verification
   hooks/                      one React Query hook file per domain: useSkills (list, per-skill data, time logs),
                               useDashboardAnalytics, useSkillPage (tasks/insights/tags + optimistic task & time-log mutations),
-                              useSandbox (list/overview/logs/resources + optimistic log/undo, milestone, resource mutations)
+                              useSandbox (list/overview/logs/resources + optimistic log/undo, milestone, resource mutations),
+                              useTracker (day/history + useTrackerActions: one optimistic mutation runner per date, temp ids settled in place)
   lib/                        auth.ts (Better Auth server config), auth-client.ts, utils.ts (cn),
                               query-keys.ts (hierarchical RQ key factory), query-client.ts (getQueryClient)
                               server-only: require-user.ts (requireUser for actions; requirePageUser(path) for pages → redirect to sign-in; getCurrentUser, cached per request),
@@ -76,10 +83,12 @@ src/
                               safe-next.ts (safeNext/signInHref: only /dashboard paths allowed as `?next=`)
                               shared/pure: duration.ts (parseDuration "1h 30m", formatDuration, localDateKey), insights.ts (UTC day keys, streak/consistency math, buildProjectInsights for skills + sandboxes, projectEta/weeklyPace/etaAtPace, takeaway sentences, formatHours),
                               milestones.ts (dial markers every 20h + named ones: buildMarkers, markerStep),
+                              tracker.ts (parseTrackerDuration accepts "1 hour", "1:45 hours"; summarizeDay, estimateDrift, shiftDate, date labels),
                               skill-colors.ts (preset skill accents; stored as hex data)
   proxy.ts                    optimistic redirect to `/sign-in?next=<path>` for `/dashboard/*` without a session cookie (not an auth check)
   types/                      shared types: skillDashboardTypes (SkillTask, TaskStatus, NewTimeLog, MAX_ENTRY_MINUTES = 180),
-                              sandbox (SandboxSummary/Overview/Log/Resource, MILESTONE_STEP_HOURS = 20)
+                              sandbox (SandboxSummary/Overview/Log/Resource, MILESTONE_STEP_HOURS = 20),
+                              tracker (TrackerDay/Task/TomorrowItem/CarryIn/DaySummary, TrackerDayActions, MAX_TRACKER_TASK_MINUTES = 720)
 ```
 
 ## Route map
@@ -89,6 +98,7 @@ src/
 | `/sign-in` | Server | redirects to `next` if signed in | — |
 | `/dashboard` | Server prefetch → client `HomeDashboard` | requirePageUser in page | skills list, dashboard insights, 7-week progress |
 | `/dashboard/skills/[slug]` | Server prefetch → client `SkillPage` (`loading.tsx` skeleton) | requireUser; 404 if not owner | tasks (+minutes), skill insights, tag suggestions |
+| `/dashboard/tracker` | Server prefetch → client `TrackerPage` (`loading.tsx`) | requirePageUser in page | day (`?date=`, default the user's today), history (`?tab=history`); day/tab switch client-side via `history.replaceState` |
 | `/dashboard/sandbox` | Server prefetch → client `SandboxListView` (`loading.tsx`) | requirePageUser in page | sandboxes with totals + 14-day activity (optimistic create/delete/quick log) |
 | `/dashboard/sandbox/[sandboxId]` | Server prefetch → client `SandboxDetailView` (`loading.tsx`) | requireUser; 404 via `getSandboxOverview` if not owner | overview (insights + named milestones), sessions, resources |
 
@@ -97,7 +107,8 @@ src/
 ## Data model
 `user` 1:N → `skillCard` 1:N → `skillTask` 1:N → `timeLog` (timeLog also has skill_id, user_id)
 `user` 1:N → `sandboxes` 1:N → `sandbox_logs` (minutes + `logged_date`), `sandbox_resources`, `sandbox_milestones` (named markers only, unique `(sandbox_id, hour_mark)`). Sandbox totals are summed from `sandbox_logs` (no cached hours column).
-All FKs `ON DELETE CASCADE` (delete the parent only). `skillCard.slug` is unique **per user**. Sandbox child tables have no `userId`, so ownership has to be checked through the parent sandbox.
+`user` 1:N → `tracker_days` (unique `(user_id, date)`) 1:N → `tracker_tasks` (ordered by `position`), `tracker_tomorrow`. A day row is created on its first write and copies the latest reminder; reads of a missing day return an empty day. The "from yesterday" banner reads the latest earlier day (≤14 days back): its unfinished `carry` tasks + its tomorrow list; `carry_in_handled` hides it after import/dismiss.
+All FKs `ON DELETE CASCADE` (delete the parent only). `skillCard.slug` is unique **per user**. Sandbox and tracker child tables have no `userId`, so ownership has to be checked through the parent (sandbox / tracker day; `getOwnedTrackerTask`, `getOwnedTomorrowItem`).
 
 ## Auth flow
 `GoogleSignInButton` → `authClient.signIn.social({ provider: "google", callbackURL: safeNext(next), errorCallbackURL: "/sign-in?next=…" })` → `/api/auth/[...all]` → session cookie. OAuth failures come back as `/sign-in?error=<code>`.
@@ -125,6 +136,7 @@ Server code calls `requireUser()` / `requirePageUser()` / `getCurrentUser()` fro
 - **Data fetching pattern:** the server page calls `await requireUser()` first (this keeps the route dynamic; `prefetchQuery` swallows errors), then `getQueryClient()` → `prefetchQuery` with keys from `lib/query-keys.ts` → `<HydrationBoundary state={dehydrate(qc)}>`. Client components read the same data through the domain hook in `hooks/`. No `useEffect` fetching.
 - **Mutations** go through hooks: optimistic `setQueryData` in `onMutate`, rollback in `onError`, targeted `invalidateQueries` in `onSettled` (e.g. `queryKeys.skills.detail(id)` refreshes all of a skill's data). Ignore optimistic `temp-` ids in follow-up actions.
 - **Dates:** `timeLog.logged_date` and `sandbox_logs.logged_date` hold the user's *local* calendar date at UTC midnight (the client sends `localDateKey()`). Server "today" = `getUserToday()` (from the `tz` cookie set by `TimeZoneCookie`). Bucket days with `to_char(logged_date,'YYYY-MM-DD')`, compare with date keys from `lib/insights.ts` (`lastNDays`, `dateKey`), and format them with `timeZone: "UTC"`.
+- **Tracker dates** use Postgres `date` columns (no UTC-midnight timestamps) and `zDateKey` (any day from 2020 up to +2 days); task estimate/actual times go up to 12h, not the 3h log cap.
 - **Time entries** (skill time logs and sandbox sessions) are capped at 3h (`MAX_ENTRY_MINUTES`) in the UI and in the zod schemas of `createTimeLog` / `logSandboxSession`. Reversible actions use `undoToast` (`components/ui/undo-toast.tsx`) instead of a confirm dialog.
 - Avoid N+1s: aggregate with `GROUP BY` / `inArray` / a joined subquery instead of a query per item.
 

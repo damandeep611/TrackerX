@@ -7,6 +7,9 @@ import {
   sandboxResources,
   skillCard,
   skillTask,
+  trackerDays,
+  trackerTasks,
+  trackerTomorrow,
 } from "@/db/schema/schema";
 
 export class NotFoundError extends Error {
@@ -68,4 +71,28 @@ export async function getOwnedTask(taskId: string, skillId: string, userId: stri
     )
     .limit(1);
   return row ?? null;
+}
+
+/** The tracker task with its day's id + date, or throws unless the day belongs to `userId`. */
+export async function getOwnedTrackerTask(taskId: string, userId: string) {
+  const [row] = await db
+    .select({ id: trackerTasks.id, dayId: trackerTasks.dayId, date: trackerDays.date })
+    .from(trackerTasks)
+    .innerJoin(trackerDays, eq(trackerDays.id, trackerTasks.dayId))
+    .where(and(eq(trackerTasks.id, taskId), eq(trackerDays.userId, userId)))
+    .limit(1);
+  if (!row) throw new NotFoundError("Task");
+  return row;
+}
+
+/** A "tomorrow" item with its day's id + date, or throws unless the day belongs to `userId`. */
+export async function getOwnedTomorrowItem(itemId: string, userId: string) {
+  const [row] = await db
+    .select({ id: trackerTomorrow.id, dayId: trackerTomorrow.dayId, date: trackerDays.date })
+    .from(trackerTomorrow)
+    .innerJoin(trackerDays, eq(trackerDays.id, trackerTomorrow.dayId))
+    .where(and(eq(trackerTomorrow.id, itemId), eq(trackerDays.userId, userId)))
+    .limit(1);
+  if (!row) throw new NotFoundError("Item");
+  return row;
 }

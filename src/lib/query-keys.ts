@@ -26,4 +26,9 @@ export const queryKeys = {
     logs: (id: string) => [...queryKeys.sandboxes.detail(id), "logs"] as const,
     resources: (id: string) => [...queryKeys.sandboxes.detail(id), "resources"] as const,
   },
+  tracker: {
+    all: ["tracker"] as const,
+    day: (date: string) => [...queryKeys.tracker.all, "day", date] as const,
+    history: () => [...queryKeys.tracker.all, "history"] as const,
+  },
 };

@@ -1,4 +1,4 @@
-import { House, Terminal, type LucideIcon } from "lucide-react";
+import { CalendarCheck, House, Terminal, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   title: string;
@@ -8,6 +8,7 @@ export interface NavItem {
 
 export const mainNav: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: House },
+  { title: "Tracker", href: "/dashboard/tracker", icon: CalendarCheck },
   { title: "Sandboxes", href: "/dashboard/sandbox", icon: Terminal },
 ];
 

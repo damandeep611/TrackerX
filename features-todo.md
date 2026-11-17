@@ -18,3 +18,7 @@ There is no test suite. Start where a bug would hurt most: data isolation betwee
 - [ ] **Input validation**: the 3h cap (`minutes` 1–180) in `createTimeLog` / `logSandboxSession`, `zLocalDate` (±2 days), `zHttpUrl`, `safeNext` (only `/dashboard…`, no `//` or `\`).
 - [ ] **Pure logic** (no DB, quick wins): `lib/insights.ts` (streaks, consistency, `projectEta`, takeaway sentences), `lib/milestones.ts` (`buildMarkers`, `markerStep`), `lib/duration.ts` (`parseDuration` formats).
 - [ ] Add a `pnpm test` script and run it in CI (GitHub Actions) on pushes to `main`.
+
+## 3. Tracker follow-ups (v1 shipped 2026-11-17)
+- [ ] Link a tracker task to a skill or sandbox so its actual time also counts there (agreed for later).
+- [ ] Smoke-test on the live DB: create a day, edit cells, reorder (drag + Alt+↑/↓), delete + Undo, End of day → open the next day → "Add to today", past day Edit, History tab.

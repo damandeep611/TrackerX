@@ -13,6 +13,7 @@ import {
 import { user } from "./auth-schema";
 
 export * from "./sandbox-schema";
+export * from "./tracker-schema";
 
 export const skillCard = pgTable("skillcard", {
   id: uuid("id").primaryKey().defaultRandom(),
